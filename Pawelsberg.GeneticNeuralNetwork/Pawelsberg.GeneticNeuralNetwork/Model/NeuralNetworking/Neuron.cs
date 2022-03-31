@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking
+﻿namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking
 {
     public class Neuron : Node
     {

@@ -1,6 +1,4 @@
-﻿using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
-
-namespace Pawelsberg.GeneticNeuralNetwork.Model.Genetics.Mutating
+﻿namespace Pawelsberg.GeneticNeuralNetwork.Model.Genetics.Mutating
 {
     public class MultipleTimesMutator<TSpecimen> : Mutator<TSpecimen> where TSpecimen : ISpecimen
     {

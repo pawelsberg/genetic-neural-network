@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-
-namespace Pawelsberg.GeneticNeuralNetwork.Model.Genetics.Simulating
+﻿namespace Pawelsberg.GeneticNeuralNetwork.Model.Genetics.Simulating
 {
     public class SimulationTimer
     {

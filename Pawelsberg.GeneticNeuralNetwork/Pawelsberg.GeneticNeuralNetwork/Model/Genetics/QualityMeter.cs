@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Pawelsberg.GeneticNeuralNetwork.Model.Genetics
 {
     public class QualityMeter<TSpecimen> where TSpecimen : ISpecimen

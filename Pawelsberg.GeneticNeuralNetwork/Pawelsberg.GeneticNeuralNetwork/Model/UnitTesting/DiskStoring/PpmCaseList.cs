@@ -1,10 +1,3 @@
-using System;
-using System.IO;
-using System.Linq;
-using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
-using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingUnitTesting;
-using Pawelsberg.GeneticNeuralNetwork.Model;
-
 namespace Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting.DiskStoring
 {
     public class PpmCaseList : TestCaseList

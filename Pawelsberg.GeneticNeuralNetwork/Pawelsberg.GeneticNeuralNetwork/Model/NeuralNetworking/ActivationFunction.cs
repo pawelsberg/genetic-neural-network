@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking
+﻿namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking
 {
     public enum ActivationFunction
     {

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-
-namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking.DiskStoring
+﻿namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking.DiskStoring
 {
     public static class NetworkExtension
     {

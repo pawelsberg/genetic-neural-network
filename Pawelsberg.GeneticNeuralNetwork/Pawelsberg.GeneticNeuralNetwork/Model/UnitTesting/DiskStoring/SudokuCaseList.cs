@@ -1,7 +1,4 @@
-﻿using System.IO;
-using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingUnitTesting;
-
-namespace Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting.DiskStoring
+﻿namespace Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting.DiskStoring
 {
     public class SudokuCaseList : TestCaseList
     {

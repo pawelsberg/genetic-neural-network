@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Pawelsberg.GeneticNeuralNetwork.Model
+﻿namespace Pawelsberg.GeneticNeuralNetwork.Model
 {
     public static class RandomGenerator
     {

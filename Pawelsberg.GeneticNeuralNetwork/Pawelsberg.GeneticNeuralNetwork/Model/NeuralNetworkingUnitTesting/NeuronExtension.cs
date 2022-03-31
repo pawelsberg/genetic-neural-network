@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
+﻿using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingUnitTesting
 {
