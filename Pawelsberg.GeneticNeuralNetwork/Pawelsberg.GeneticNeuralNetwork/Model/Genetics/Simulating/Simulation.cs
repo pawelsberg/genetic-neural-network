@@ -200,9 +200,13 @@ namespace Pawelsberg.GeneticNeuralNetwork.Model.Genetics.Simulating
                     if (!Runtime.IsRunningOnMono())
                     {
                         if (generationQualityImprovement)
+#pragma warning disable CA1416 // Validate platform compatibility
                             System.Media.SystemSounds.Asterisk.Play();
+#pragma warning restore CA1416 // Validate platform compatibility
                         else
+#pragma warning disable CA1416 // Validate platform compatibility
                             System.Media.SystemSounds.Beep.Play();
+#pragma warning restore CA1416 // Validate platform compatibility
                     }
 
                 }
