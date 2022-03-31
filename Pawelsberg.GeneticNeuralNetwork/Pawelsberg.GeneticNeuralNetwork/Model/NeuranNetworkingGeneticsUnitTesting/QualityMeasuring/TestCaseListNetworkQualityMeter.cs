@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingUnitTesting;

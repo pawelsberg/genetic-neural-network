@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Xml;
-using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingUnitTesting;
-using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting;
+﻿using System.Xml;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting.DiskStoring
 {

@@ -1,8 +1,4 @@
 ﻿using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting.DiskStoring;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model
 {

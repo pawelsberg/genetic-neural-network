@@ -1,8 +1,4 @@
-﻿using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace Pawelsberg.GeneticNeuralNetwork.Model.Genetics.QueuingParents
+﻿namespace Pawelsberg.GeneticNeuralNetwork.Model.Genetics.QueuingParents
 {
     public class SimpleParentQueuer<TSpecimen> : ParentQueuer<TSpecimen> where TSpecimen : ISpecimen
     {

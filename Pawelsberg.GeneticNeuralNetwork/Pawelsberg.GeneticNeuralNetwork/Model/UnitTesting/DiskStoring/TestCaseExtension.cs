@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using System.Xml;
-using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingUnitTesting;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting.DiskStoring
 {

@@ -1,5 +1,4 @@
-﻿using System;
-using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
+﻿using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGenetics.Mutating

@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.Genetics.QueuingParents;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.Genetics.Simulating

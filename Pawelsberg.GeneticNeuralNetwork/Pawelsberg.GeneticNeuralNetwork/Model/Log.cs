@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Pawelsberg.GeneticNeuralNetwork.Model
 {
     public class Log

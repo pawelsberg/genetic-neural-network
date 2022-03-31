@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Pawelsberg.GeneticNeuralNetwork.Model.Genetics.QueuingParents;
+﻿using Pawelsberg.GeneticNeuralNetwork.Model.Genetics.QueuingParents;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.Genetics
 {

@@ -1,5 +1,3 @@
-using System;
-
 namespace Pawelsberg.GeneticNeuralNetwork.Model.Genetics.Simulating
 {
     public class NextGenerationCreatedEventArgs<TSpecimen> : EventArgs where TSpecimen : ISpecimen

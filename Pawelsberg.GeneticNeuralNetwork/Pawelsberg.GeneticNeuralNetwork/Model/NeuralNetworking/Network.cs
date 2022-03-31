@@ -1,10 +1,4 @@
-﻿using System;
-using System.CodeDom;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
+﻿using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking
 {

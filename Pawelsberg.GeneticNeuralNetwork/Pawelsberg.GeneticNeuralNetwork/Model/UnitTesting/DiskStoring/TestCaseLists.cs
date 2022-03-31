@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-
-namespace Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting.DiskStoring
+﻿namespace Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting.DiskStoring
 {
     public static class TestCaseLists
     {

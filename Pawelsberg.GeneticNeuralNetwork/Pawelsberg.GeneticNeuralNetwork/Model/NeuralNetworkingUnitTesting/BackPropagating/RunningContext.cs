@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
+﻿using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingUnitTesting.BackPropagating.Math;
 using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting;
 using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting.DiskStoring;

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting
+﻿namespace Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting
 {
     public class TestCase
     {

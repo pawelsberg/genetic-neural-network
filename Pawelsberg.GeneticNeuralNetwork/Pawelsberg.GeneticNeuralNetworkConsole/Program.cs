@@ -1,20 +1,19 @@
 ﻿using Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting;
 using Pawelsberg.GeneticNeuralNetworkConsole.Model;
 
-namespace Pawelsberg.GeneticNeuralNetworkConsole
-{
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            NetworkSimulation simulation = new NetworkSimulation()
-            //{
-            //    TestCaseList = TestCaseLists.LoadTestCaseList("default")
-            //}
-            ;
+namespace Pawelsberg.GeneticNeuralNetworkConsole;
 
-            MainMenu mainMenu = new MainMenu(simulation);
-            mainMenu.Run();
-        }
+class Program
+{
+    static void Main(string[] args)
+    {
+        NetworkSimulation simulation = new NetworkSimulation()
+        //{
+        //    TestCaseList = TestCaseLists.LoadTestCaseList("default")
+        //}
+        ;
+
+        MainMenu mainMenu = new MainMenu(simulation);
+        mainMenu.Run();
     }
 }
