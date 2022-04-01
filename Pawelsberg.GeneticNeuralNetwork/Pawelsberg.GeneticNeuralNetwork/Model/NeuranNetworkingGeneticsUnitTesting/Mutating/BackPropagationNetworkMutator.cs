@@ -5,74 +5,73 @@ using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingUnitTesting.BackProp
 using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting;
 using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting.DiskStoring;
 
-namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting.Mutating
+namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting.Mutating;
+
+public class BackPropagationNetworkMutator : Mutator<Network>
 {
-    public class BackPropagationNetworkMutator : Mutator<Network>
+    public TestCaseList TestCaseList { get; private set; }
+    public int Propagations { get; private set; }
+    public double Strength { get; private set; }
+
+    public BackPropagationNetworkMutator(TestCaseList testCaseList, int propagations)
     {
-        public TestCaseList TestCaseList { get; private set; }
-        public int Propagations { get; private set; }
-        public double Strength { get; private set; }
+        TestCaseList = testCaseList;
+        Propagations = propagations;
+        Strength = 0.1d;
+    }
 
-        public BackPropagationNetworkMutator(TestCaseList testCaseList, int propagations)
+    public override MutationDescription Mutate(Network network)
+    {
+        if (network.Inputs.Count < TestCaseList.TestCases.Max(tc => tc.Inputs.Count)
+            || network.Outputs.Count < TestCaseList.TestCases.Max(tc => tc.Outputs.Count))
+            return new MutationDescription() { Text = "No Back Propagation" };
+
+        network.BackPropagation(TestCaseList, Propagations);
+
+
+        return new MutationDescription() { Text = "BackPropagation" };
+    }
+    private void OldBackProp(Network network)
+    {
+        double testCaseLists = TestCaseList.TestCases.Count;
+        foreach (TestCase testCase in TestCaseList.TestCases)
         {
-            TestCaseList = testCaseList;
-            Propagations = propagations;
-            Strength = 0.1d;
-        }
+            if (network.Inputs.Count < testCase.Inputs.Count || network.Outputs.Count < testCase.Outputs.Count)
+                break;
 
-        public override MutationDescription Mutate(Network network)
-        {
-            if (network.Inputs.Count < TestCaseList.TestCases.Max(tc => tc.Inputs.Count)
-                || network.Outputs.Count < TestCaseList.TestCases.Max(tc => tc.Outputs.Count))
-                return new MutationDescription() { Text = "No Back Propagation" };
-
-            network.BackPropagation(TestCaseList, Propagations);
-
-
-            return new MutationDescription() { Text = "BackPropagation" };
-        }
-        private void OldBackProp(Network network)
-        {
-            double testCaseLists = TestCaseList.TestCases.Count;
-            foreach (TestCase testCase in TestCaseList.TestCases)
+            NeuralNetworkingUnitTesting.RunningContext runningContext = network.SafeRun(testCase, Propagations);
+            foreach (Synapse outputSynapse in network.Outputs)
             {
-                if (network.Inputs.Count < testCase.Inputs.Count || network.Outputs.Count < testCase.Outputs.Count)
+                Neuron outputNeuron = network.Nodes.Single(nd => nd.Outputs.Contains(outputSynapse)) as Neuron;
+
+                if (outputNeuron == null)
+                    break; // we cannot do anything for Bias nodes
+
+                double actualOutput = runningContext.SynapsePotentials[outputSynapse];
+
+                if (double.IsNaN(actualOutput))
                     break;
 
-                NeuralNetworkingUnitTesting.RunningContext runningContext = network.SafeRun(testCase, Propagations);
-                foreach (Synapse outputSynapse in network.Outputs)
+                int outputIndex = network.Outputs.IndexOf(outputSynapse);
+
+                if (outputIndex >= testCase.Outputs.Count)
+                    break; // there is no corresponding output in test case
+
+                double expectedOutput = testCase.Outputs[outputIndex];
+                double relativeError = expectedOutput / actualOutput;
+                if (double.IsNaN(relativeError) || double.IsInfinity(relativeError))
+                    break;
+
+                double correction = Math.Max(-2, Math.Min(2, relativeError)) * Strength / testCaseLists / outputNeuron.Inputs.Count;
+
+                for (int outNeuronInputIndex = 0; outNeuronInputIndex < outputNeuron.Inputs.Count; outNeuronInputIndex++)
                 {
-                    Neuron outputNeuron = network.Nodes.Single(nd => nd.Outputs.Contains(outputSynapse)) as Neuron;
-
-                    if (outputNeuron == null)
-                        break; // we cannot do anything for Bias nodes
-
-                    double actualOutput = runningContext.SynapsePotentials[outputSynapse];
-
-                    if (double.IsNaN(actualOutput))
-                        break;
-
-                    int outputIndex = network.Outputs.IndexOf(outputSynapse);
-
-                    if (outputIndex >= testCase.Outputs.Count)
-                        break; // there is no corresponding output in test case
-
-                    double expectedOutput = testCase.Outputs[outputIndex];
-                    double relativeError = expectedOutput / actualOutput;
-                    if (double.IsNaN(relativeError) || double.IsInfinity(relativeError))
-                        break;
-
-                    double correction = Math.Max(-2, Math.Min(2, relativeError)) * Strength / testCaseLists / outputNeuron.Inputs.Count;
-
-                    for (int outNeuronInputIndex = 0; outNeuronInputIndex < outputNeuron.Inputs.Count; outNeuronInputIndex++)
-                    {
-                        double inputMultiplier = outputNeuron.InputMultiplier[outNeuronInputIndex];
-                        inputMultiplier *= 1 + correction;
-                        outputNeuron.InputMultiplier[outNeuronInputIndex] = inputMultiplier;
-                    }
+                    double inputMultiplier = outputNeuron.InputMultiplier[outNeuronInputIndex];
+                    inputMultiplier *= 1 + correction;
+                    outputNeuron.InputMultiplier[outNeuronInputIndex] = inputMultiplier;
                 }
             }
-
         }
+
     }
 }

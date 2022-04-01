@@ -1,7 +1,6 @@
-﻿namespace Pawelsberg.GeneticNeuralNetwork.Model.Genetics
+﻿namespace Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
+
+public abstract class Mutator<TSpecimen> where TSpecimen : ISpecimen
 {
-    public abstract class Mutator<TSpecimen> where TSpecimen : ISpecimen
-    {
-        public abstract MutationDescription Mutate(TSpecimen network);
-    }
+    public abstract MutationDescription Mutate(TSpecimen network);
 }

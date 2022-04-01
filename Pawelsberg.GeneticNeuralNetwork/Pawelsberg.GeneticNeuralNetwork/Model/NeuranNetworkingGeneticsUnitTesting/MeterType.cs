@@ -1,11 +1,10 @@
-namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting
+namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting;
+
+public enum MeterType
 {
-    public enum MeterType
-    {
-        Normal,
-        LowestMultipliers,
-        Sequential,
-        Aggregate,
-        PropagationsAgnostic
-    }
+    Normal,
+    LowestMultipliers,
+    Sequential,
+    Aggregate,
+    PropagationsAgnostic
 }

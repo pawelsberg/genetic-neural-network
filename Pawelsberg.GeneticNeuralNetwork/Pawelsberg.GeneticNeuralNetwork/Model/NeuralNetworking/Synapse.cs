@@ -1,7 +1,6 @@
-﻿namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking
+﻿namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
+
+public class Synapse
 {
-    public class Synapse
-    {
-        public Synapse() { }
-    }
+    public Synapse() { }
 }

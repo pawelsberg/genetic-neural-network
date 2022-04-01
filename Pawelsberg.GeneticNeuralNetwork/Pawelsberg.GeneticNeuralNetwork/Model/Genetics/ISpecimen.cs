@@ -1,8 +1,7 @@
-namespace Pawelsberg.GeneticNeuralNetwork.Model.Genetics
+namespace Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
+
+public interface ISpecimen
 {
-    public interface ISpecimen
-    {
-        ISpecimen DeepClone();
-        MutationDescription MutationDescription { get; set; }
-    }
+    ISpecimen DeepClone();
+    MutationDescription MutationDescription { get; set; }
 }
