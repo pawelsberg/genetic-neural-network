@@ -1,10 +1,9 @@
-namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting
+namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting;
+
+public enum MutatorsType
 {
-    public enum MutatorsType
-    {
-        Normal,
-        Cleaner,
-        BackpropagationOnly,
-        NormalWithBackpropagation
-    }
+    Normal,
+    Cleaner,
+    BackpropagationOnly,
+    NormalWithBackpropagation
 }

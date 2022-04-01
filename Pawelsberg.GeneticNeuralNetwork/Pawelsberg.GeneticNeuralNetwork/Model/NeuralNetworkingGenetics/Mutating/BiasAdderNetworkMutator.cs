@@ -1,25 +1,24 @@
 using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
 
-namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGenetics.Mutating
+namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGenetics.Mutating;
+
+public class BiasAdderNetworkMutator : Mutator<Network>
 {
-    public class BiasAdderNetworkMutator : Mutator<Network>
+    public int MaxNodes { get; set; }
+
+    public BiasAdderNetworkMutator(int maxNodes)
     {
-        public int MaxNodes { get; set; }
+        MaxNodes = maxNodes;
+    }
 
-        public BiasAdderNetworkMutator(int maxNodes)
+    public override MutationDescription Mutate(Network network)
+    {
+        if (network.Nodes.Count < MaxNodes)
         {
-            MaxNodes = maxNodes;
+            int insertIndex = RandomGenerator.Random.Next(network.Nodes.Count);
+            network.Nodes.Insert(insertIndex, new Bias());
         }
-
-        public override MutationDescription Mutate(Network network)
-        {
-            if (network.Nodes.Count < MaxNodes)
-            {
-                int insertIndex = RandomGenerator.Random.Next(network.Nodes.Count);
-                network.Nodes.Insert(insertIndex, new Bias());
-            }
-            return new MutationDescription() { Text = "BiasAdder" };
-        }
+        return new MutationDescription() { Text = "BiasAdder" };
     }
 }

@@ -1,7 +1,6 @@
-﻿namespace Pawelsberg.GeneticNeuralNetwork.Model.Genetics
+﻿namespace Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
+
+public class MutationDescription
 {
-    public class MutationDescription
-    {
-        public string Text { get; set; }
-    }
+    public string Text { get; set; }
 }

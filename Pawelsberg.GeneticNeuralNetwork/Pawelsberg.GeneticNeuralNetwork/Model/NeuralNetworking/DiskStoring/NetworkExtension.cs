@@ -1,27 +1,26 @@
-﻿namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking.DiskStoring
+﻿namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking.DiskStoring;
+
+public static class NetworkExtension
 {
-    public static class NetworkExtension
+    public static void Save(this Network thisNetwork, string fileName)
     {
-        public static void Save(this Network thisNetwork, string fileName)
-        {
 
-            using (FileStream fileStream = File.Open(fileName, FileMode.Create))
-            using (StreamWriter streamWriter = new StreamWriter(fileStream))
-            {
-                streamWriter.Write(thisNetwork.ToString());
-                streamWriter.Flush();
-            }
+        using (FileStream fileStream = File.Open(fileName, FileMode.Create))
+        using (StreamWriter streamWriter = new StreamWriter(fileStream))
+        {
+            streamWriter.Write(thisNetwork.ToString());
+            streamWriter.Flush();
         }
-        public static Network Load(string fileName)
+    }
+    public static Network Load(string fileName)
+    {
+        using (FileStream fileStream = File.Open(fileName, FileMode.Open))
+        using (StreamReader streamReader = new StreamReader(fileStream))
         {
-            using (FileStream fileStream = File.Open(fileName, FileMode.Open))
-            using (StreamReader streamReader = new StreamReader(fileStream))
-            {
-                string text = streamReader.ReadToEnd();
-                Network network = NetworkTextExtension.Parse(text);
+            string text = streamReader.ReadToEnd();
+            Network network = NetworkTextExtension.Parse(text);
 
-                return network;
-            }
+            return network;
         }
     }
 }

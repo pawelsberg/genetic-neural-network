@@ -1,9 +1,8 @@
-﻿namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting
+﻿namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting;
+
+public enum ParentQueuerType
 {
-    public enum ParentQueuerType
-    {
-        Normal,
-        Unique,
-        RandomEnd
-    }
+    Normal,
+    Unique,
+    RandomEnd
 }
