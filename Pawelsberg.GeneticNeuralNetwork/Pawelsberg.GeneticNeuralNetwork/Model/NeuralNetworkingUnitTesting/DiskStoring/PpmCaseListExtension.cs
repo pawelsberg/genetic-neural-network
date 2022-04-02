@@ -7,7 +7,9 @@ public static class PpmCaseListExtension
 {
     public static void Save(this PpmCaseList thisPpmCaseList, Network network, int propagations, string name)
     {
-        using (FileStream fileStream = File.Open(Directory.GetCurrentDirectory() + PpmCaseList.Subdirectory + Path.DirectorySeparatorChar + name + "." + PpmCaseList.Extension, FileMode.Create))
+        string fileName = Path.Combine(DataDirectory.FullPath, PpmCaseList.Subdirectory, name + "." + PpmCaseList.Extension);
+        Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+        using (FileStream fileStream = File.Open(fileName, FileMode.Create))
         using (StreamWriter streamWriter = new StreamWriter(fileStream))
         {
             streamWriter.WriteLine("P3");

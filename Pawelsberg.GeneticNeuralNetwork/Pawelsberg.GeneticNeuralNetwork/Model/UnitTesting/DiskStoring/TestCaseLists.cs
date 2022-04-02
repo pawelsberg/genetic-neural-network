@@ -2,11 +2,11 @@
 
 public static class TestCaseLists
 {
-    public static readonly string Subdirectory = Path.DirectorySeparatorChar + "TestCases";
+    public static readonly string Subdirectory = "TestCases";
     public const string Extension = "TestCases.XML";
     public static IEnumerable<string> GetNames()
     {
-        string[] files = Directory.GetFiles(Directory.GetCurrentDirectory() + Subdirectory, "*." + Extension);
+        string[] files = Directory.GetFiles(Path.Combine(DataDirectory.FullPath, Subdirectory), "*." + Extension);
 
         for (int i = 0; i < files.Length; i++)
         {
@@ -21,16 +21,16 @@ public static class TestCaseLists
 
     public static TestCaseList LoadTestCaseList(string name)
     {
-        return TestCaseList.Load(Directory.GetCurrentDirectory() + Subdirectory + Path.DirectorySeparatorChar + name + "." + Extension);
+        return TestCaseList.Load(Path.Combine(DataDirectory.FullPath, Subdirectory, name + "." + Extension));
     }
 
     public static void Save(TestCaseList testCase, string name)
     {
-        testCase.Save(Directory.GetCurrentDirectory() + Subdirectory + Path.DirectorySeparatorChar + name + "." + Extension);
+        testCase.Save(Path.Combine(DataDirectory.FullPath, Subdirectory, name + "." + Extension));
     }
 
     public static void Delete(string name)
     {
-        File.Delete(Directory.GetCurrentDirectory() + Subdirectory + Path.DirectorySeparatorChar + name + "." + Extension);
+        File.Delete(Path.Combine(DataDirectory.FullPath, Subdirectory, name + "." + Extension));
     }
 }

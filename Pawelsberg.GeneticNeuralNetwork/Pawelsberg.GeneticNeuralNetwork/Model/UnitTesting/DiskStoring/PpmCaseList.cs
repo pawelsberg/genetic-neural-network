@@ -2,11 +2,11 @@ namespace Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting.DiskStoring;
 
 public class PpmCaseList : TestCaseList
 {
-    public static readonly string Subdirectory = Path.DirectorySeparatorChar + "PpmCases";
+    public static readonly string Subdirectory = "PpmCases";
     public const string Extension = "ppm";
     public PpmCaseList(string name)
     {
-        using (StreamReader streamReader = File.OpenText(Directory.GetCurrentDirectory() + Subdirectory + Path.DirectorySeparatorChar + name + "." + Extension))
+        using (StreamReader streamReader = File.OpenText(Path.Combine(DataDirectory.FullPath, Subdirectory, name + "." + Extension)))
         {
             streamReader.ReadLine(); // P3
             streamReader.ReadLine(); // Comment

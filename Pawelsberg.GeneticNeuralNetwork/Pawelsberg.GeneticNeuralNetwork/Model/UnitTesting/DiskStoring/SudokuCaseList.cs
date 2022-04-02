@@ -2,11 +2,11 @@
 
 public class SudokuCaseList : TestCaseList
 {
-    public static readonly string Subdirectory = Path.DirectorySeparatorChar + "SudokuCases";
+    public static readonly string Subdirectory = "SudokuCases";
     public const string Extension = "SudokuCase.txt";
     public SudokuCaseList()
     {
-        foreach (string fileName in Directory.EnumerateFiles(Directory.GetCurrentDirectory() + Subdirectory, "*." + Extension))
+        foreach (string fileName in Directory.EnumerateFiles(Path.Combine(DataDirectory.FullPath, Subdirectory), "*." + Extension))
         {
             using (StreamReader streamReader = File.OpenText(fileName))
             {

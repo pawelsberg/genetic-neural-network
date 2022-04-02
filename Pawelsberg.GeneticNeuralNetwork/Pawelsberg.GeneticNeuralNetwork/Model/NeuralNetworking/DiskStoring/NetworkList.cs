@@ -2,11 +2,11 @@
 
 public static class NetworkList
 {
-    public static readonly string Subdirectory = Path.DirectorySeparatorChar + "Networks";
+    public static readonly string Subdirectory = "Networks";
     public const string Extension = "Network.txt";
     public static IEnumerable<string> GetNames()
     {
-        string[] files = Directory.GetFiles(Directory.GetCurrentDirectory() + Subdirectory, "*." + Extension);
+        string[] files = Directory.GetFiles(Path.Combine(DataDirectory.FullPath, Subdirectory), "*." + Extension);
 
         for (int i = 0; i < files.Length; i++)
         {
@@ -20,23 +20,23 @@ public static class NetworkList
 
     public static Network LoadNetwork(string name)
     {
-        return NetworkExtension.Load(Directory.GetCurrentDirectory() + Subdirectory + Path.DirectorySeparatorChar + name + "." + Extension);
+        return NetworkExtension.Load(Path.Combine(DataDirectory.FullPath, Subdirectory, name + "." + Extension));
     }
 
     public static void Save(Network network, string name)
     {
-        network.Save(Directory.GetCurrentDirectory() + Subdirectory + Path.DirectorySeparatorChar + name + "." + Extension);
+        network.Save(Path.Combine(DataDirectory.FullPath, Subdirectory, name + "." + Extension));
     }
 
     public static void Delete(string name)
     {
-        File.Delete(Directory.GetCurrentDirectory() + Subdirectory + Path.DirectorySeparatorChar + name + "." + Extension);
+        File.Delete(Path.Combine(DataDirectory.FullPath, Subdirectory, name + "." + Extension));
     }
 
     public static IEnumerable<Network> LoadAll()
     {
         List<Network> networks = new List<Network>();
-        foreach (string filePath in Directory.GetFiles(Directory.GetCurrentDirectory() + Subdirectory, "*." + Extension))
+        foreach (string filePath in Directory.GetFiles(Path.Combine(DataDirectory.FullPath, Subdirectory), "*." + Extension))
         {
             networks.Add(NetworkExtension.Load(filePath));
         }

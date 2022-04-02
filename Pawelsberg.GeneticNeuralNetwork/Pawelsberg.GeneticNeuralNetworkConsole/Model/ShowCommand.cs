@@ -26,10 +26,10 @@ public class ShowCommand : Command
             else if (strText == "vis")
                 _vis = true;
             else
-                throw new Exception("Usage: show [test]");
+                throw new Exception("Usage: show [test|tests]");
 
             if (!text.EOT)
-                throw new Exception("Usage: show [test]");
+                throw new Exception("Usage: show [test|tests]");
         }
 
         base.LoadParameters(text);

@@ -47,6 +47,7 @@ public class RunCommand : Command
         {
             if (_fractionDoneFileName != null)
             {
+                Directory.CreateDirectory(Path.GetDirectoryName(_fractionDoneFileName));
                 fileStream = new FileStream(_fractionDoneFileName, FileMode.Create, FileAccess.Write);
                 textWriter = new StreamWriter(fileStream);
                 Write(fileStream, textWriter, 0d);
