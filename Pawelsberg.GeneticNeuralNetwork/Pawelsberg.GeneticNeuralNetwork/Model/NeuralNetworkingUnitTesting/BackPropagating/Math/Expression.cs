@@ -94,6 +94,8 @@ public class MultiplyOperation : Expression
                 double constVal = 1; // multiplication of all constants
                 constants.ForEach(c => constVal = constVal * c.Value);
                 List<Expression> nonConstants = optimisedExpressions.Where(e => !constants.Contains(e)).ToList();
+                // TODO: more possible optimisations - mul of mul 
+                //                                   - mull of the same thing twice    2 x thing
                 if (constants.Count > 0 && nonConstants.Count == 0)
                     return new Constant { Value = constVal }; // if there are only constants - combine them into one
                 else if (constants.Count == 0 && nonConstants.Count == 1 || constants.Count > 0 && nonConstants.Count == 1 && constVal == 1)
@@ -117,8 +119,8 @@ public class MultiplyOperation : Expression
         if (Expressions.Count < 1)
             throw new Exception("Nothing to multiply");
 
+        // derivative of the product of two functions
         SumOperation sumOperation = new SumOperation();
-
         sumOperation.Expressions.Add(new MultiplyOperation { Expressions = new List<Expression> { Expressions.First().DerivativeOver(multiplierExpression), new MultiplyOperation { Expressions = Expressions.Skip(1).ToList() }.DeepClone() } });
         sumOperation.Expressions.Add(new MultiplyOperation { Expressions = new List<Expression> { Expressions.First().DeepClone(), new MultiplyOperation { Expressions = Expressions.Skip(1).ToList() }.DerivativeOver(multiplierExpression) } });
 
@@ -215,16 +217,39 @@ public class ActivationFunctionOperation : Expression
     }
     public override Expression DeepClone()
     {
-        return new ActivationFunctionOperation { Expression = Expression.DeepClone(), Value = Value };
+        return new ActivationFunctionOperation { Expression = Expression.DeepClone(), Value = Value, ActivationFunction = ActivationFunction };
     }
 
     public override Expression DerivativeOver(Multiplier multiplierExpression)
     {
-        // WARNING assuming Derivative is 0 or 1
-        return ActivationFunction.Derivative(Value) == 0 ? new Constant { Value = 0 } : Expression.DerivativeOver(multiplierExpression).Optimised();
+        return new ActivationDerivativeFunctionOperation { Expression = Expression.DerivativeOver(multiplierExpression).Optimised(), Value = Value, ActivationFunction = ActivationFunction };
     }
     public override string ToString()
     {
         return $"{ActivationFunction.ToLetterCode()}({Expression.ToString()})";
+    }
+}
+public class ActivationDerivativeFunctionOperation : Expression
+{
+    public ActivationFunction ActivationFunction { get; set; }
+    public override double Value { get; set; }
+    public Expression Expression { get; set; }
+    public override List<Expression> Expressions { get { return new List<Expression> { Expression }; } }
+    public override void Calc()
+    {
+        Expression.Calc();
+        Value = ActivationFunction.ApplyDerivative(Expression.Value);
+    }
+    public override Expression DeepClone()
+    {
+        return new ActivationDerivativeFunctionOperation { Expression = Expression.DeepClone(), Value = Value, ActivationFunction = ActivationFunction };
+    }
+    public override Expression DerivativeOver(Multiplier multiplierExpression)
+    {
+        throw new Exception("Trying to calculate second derivative of the activation function - unexpected");
+    }
+    public override string ToString()
+    {
+        return $"{ActivationFunction.ToLetterCode()}'({Expression.ToString()})";
     }
 }

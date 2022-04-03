@@ -9,7 +9,7 @@ public static class NeuronExtension
     {
         SumOperation sumExpression = new SumOperation();
 
-        // calculate output potential
+        // calculate output potential expression
         Dictionary<Synapse, Expression> synapseExpressions = runningContext.SynapseExpressions;
         for (int inputIndex = 0; inputIndex < thisNeuron.Inputs.Count; inputIndex++)
         {

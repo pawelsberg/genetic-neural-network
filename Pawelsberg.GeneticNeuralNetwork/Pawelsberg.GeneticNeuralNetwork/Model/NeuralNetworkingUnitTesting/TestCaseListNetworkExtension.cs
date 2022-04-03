@@ -35,14 +35,10 @@ public static class TestCaseListNetworkExtension
                 ActivationFunction = ActivationFunction.Linear
 
             }).ToList();
-        network.Nodes.AddRange(outputNeurons);
 
         foreach (TestCase testCase in thisTestCaseList.TestCases)
         {
             Neuron testCaseCountNeuron = new Neuron(); // will get as a value number of inputs satisfying test case
-            network.Nodes.Add(testCaseCountNeuron);
-
-
 
             for (int tcInputIndex = 0; tcInputIndex < testCase.Inputs.Count; tcInputIndex++)
             {
@@ -54,7 +50,7 @@ public static class TestCaseListNetworkExtension
                 testCaseCountNeuron.AddInput(valueCheckSynapse, 1);
 
             }
-
+            network.Nodes.Add(testCaseCountNeuron);
             Synapse testCaseSynapse = network.CreateJeNetworkPart(testCaseCountNeuron, testCase.Inputs.Count, bias);
 
             Neuron testCaseNeuron = new Neuron(); // 1 if test case detected, 0 otherwise
@@ -76,6 +72,7 @@ public static class TestCaseListNetworkExtension
                 }
             }
         }
+        network.Nodes.AddRange(outputNeurons);
         return network;
     }
 
