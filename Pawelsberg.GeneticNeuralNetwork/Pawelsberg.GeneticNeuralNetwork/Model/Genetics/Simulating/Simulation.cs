@@ -197,18 +197,13 @@ public class Simulation<TSpecimen> where TSpecimen : ISpecimen
                 }
                 BestEver = _generation.Best;
                 BestEverQuality = _generation.BestQuality;
-                if (!Runtime.IsRunningOnMono())
+                if (OperatingSystem.IsWindows())
                 {
                     if (generationQualityImprovement)
-#pragma warning disable CA1416 // Validate platform compatibility
                         System.Media.SystemSounds.Asterisk.Play();
-#pragma warning restore CA1416 // Validate platform compatibility
                     else
-#pragma warning disable CA1416 // Validate platform compatibility
                         System.Media.SystemSounds.Beep.Play();
-#pragma warning restore CA1416 // Validate platform compatibility
                 }
-
             }
             GenerationNumber++;
 
