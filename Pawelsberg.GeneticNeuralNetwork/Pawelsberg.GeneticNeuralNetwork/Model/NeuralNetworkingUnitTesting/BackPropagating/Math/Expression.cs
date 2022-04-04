@@ -58,7 +58,7 @@ public class Multiplier : Expression
     }
     public override Expression DerivativeOver(Multiplier multiplierExpression)
     {
-        return new Constant { Value = multiplierExpression.Synapse == Synapse ? 1 : 0 };
+        return new Constant { Value = multiplierExpression.Synapse == Synapse ? Value : 0 };
     }
     public override string ToString()
     {
@@ -93,7 +93,7 @@ public class MultiplyOperation : Expression
                 List<Constant> constants = optimisedExpressions.Where(e => e is Constant).Cast<Constant>().ToList();
                 double constVal = 1; // multiplication of all constants
                 constants.ForEach(c => constVal = constVal * c.Value);
-                List<Expression> nonConstants = optimisedExpressions.Where(e => !constants.Contains(e)).ToList();
+                List<Expression> nonConstants = optimisedExpressions.Where(e => !constants.Contains(e)).Select(e => e.DeepClone()).ToList();
                 // TODO: more possible optimisations - mul of mul 
                 //                                   - mull of the same thing twice    2 x thing
                 if (constants.Count > 0 && nonConstants.Count == 0)

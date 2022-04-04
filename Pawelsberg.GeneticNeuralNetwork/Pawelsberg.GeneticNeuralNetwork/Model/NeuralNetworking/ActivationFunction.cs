@@ -42,10 +42,10 @@ public static class ActivationFunctionExtension
                 return 1;
             case ActivationFunction.Threshold:
                 // derivative of the threshold activation function is input in range from -1 to 1 zero otherwise
-                return outputPotential >= -1 && outputPotential <= 1 ? outputPotential : 0; 
+                return outputPotential >= -1 && outputPotential <= 1 ? 1 : 0; 
             case ActivationFunction.Squashing:
                 // derivative of the threshold activation function is input in range from 0 to 1 zero otherwise
-                return outputPotential >= 0 && outputPotential <= 1 ? outputPotential : 0;
+                return outputPotential >= 0 && outputPotential <= 1 ? 1 : 0;
         }
     }
     public static ActivationFunction FromLetterCode(string letterCode)

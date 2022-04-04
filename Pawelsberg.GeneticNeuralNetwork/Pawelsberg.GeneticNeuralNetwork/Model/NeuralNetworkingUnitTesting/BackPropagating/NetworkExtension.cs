@@ -52,6 +52,22 @@ public static class NetworkExtension
             }
         }
     }
+    public static void BackPropagation(this Network thisNetwork, TestCaseList testCaseList, int propagations, Synapse notOutSynapse)
+    {
+        RunningContext runningContext = thisNetwork.SafeRun(propagations);
+        runningContext.OptimiseExpressions();
+
+        double costInfluence = runningContext.CalcNotOutSynapsesCostInfluence(thisNetwork, testCaseList, notOutSynapse);
+        foreach (Neuron neuron in thisNetwork.Nodes.Where(n => n is Neuron))
+        {
+            foreach (Synapse inputSynapse in neuron.Inputs)
+                if (inputSynapse == notOutSynapse)
+                {
+                    neuron.InputMultiplier[neuron.Inputs.IndexOf(inputSynapse)] += 2 * costInfluence;               
+                }
+        }
+    }
 
 
-}
+
+    }

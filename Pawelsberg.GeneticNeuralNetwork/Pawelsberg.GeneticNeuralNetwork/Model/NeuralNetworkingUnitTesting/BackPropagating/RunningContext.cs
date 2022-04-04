@@ -54,20 +54,34 @@ public class RunningContext
         Dictionary<Synapse, double> notOutSynapsesCostInfluence = new Dictionary<Synapse, double>();
 
         // zero all inputs (even not in test case)
-        network.Inputs.Select(inSy => SynapseExpressions[inSy] as Input).ToList().ForEach(inp => inp.Value = 0);
+        network
+            .GetAllSynapses()
+            .Select(inSy => SynapseExpressions[inSy])
+            .SelectMany(syEx=>syEx.GetExpressionsRecursive())
+            .Select(ex=>ex as Input)
+            .Where(inEx=>inEx is not null)
+            .ToList()
+            .ForEach(inEx => inEx.Value = 0);
 
         // apply input values from the test case
         for (int index = 0; index < testCase.Inputs.Count; index++)
         {
             Synapse inputSynapse = network.Inputs[index];
             int inputVal = testCase.Inputs[index];
-            Input inputExpression = SynapseExpressions[inputSynapse] as Input;
-            inputExpression.Value = inputVal;
+            List<Input> inputs = SynapseExpressions
+                .Values
+                .SelectMany(synEx => synEx.GetExpressionsRecursive())
+                .Where(input => input is Input)
+                .Cast<Input>()
+                .Where(input => input.InputSynapse == inputSynapse)
+                .ToList();
+
+            foreach (var input in inputs)
+                input.Value = inputVal;
         }
 
         // calculate all output values
         network.Outputs.Select(outSy => SynapseExpressions[outSy]).ToList().ForEach(outSy => outSy.Calc());
-
 
         foreach (Synapse notOutSynapse in network.GetAllSynapses().Where(s => !network.Outputs.Contains(s)))
         {
@@ -82,10 +96,25 @@ public class RunningContext
                 // calculate outExpression derivative over multiplierExpression
 
                 Expression derivative = GetOrCalcDerivativeOverMultiplier(outExpression, multiplierExpression);
+                
+                // apply input values from the test case
+                for (int index = 0; index < testCase.Inputs.Count; index++)
+                {
+                    Synapse inputSynapse = network.Inputs[index];
+                    int inputVal = testCase.Inputs[index];
+                    List<Input> inputs = derivative.GetExpressionsRecursive()
+                        .Where(input => input is Input)
+                        .Cast<Input>()
+                        .Where(input => input.InputSynapse == inputSynapse)
+                        .ToList();
+
+                    foreach (var input in inputs)
+                        input.Value = inputVal;
+                }
 
                 derivative.Calc();
 
-                costInfluence += 2 * derivative.Value * (expectedOutput - outExpression.Value);
+                costInfluence += derivative.Value * (expectedOutput - outExpression.Value);
             }
 
             notOutSynapsesCostInfluence.Add(notOutSynapse, costInfluence / network.Outputs.Count);
@@ -93,6 +122,76 @@ public class RunningContext
 
         return notOutSynapsesCostInfluence;
     }
+
+    public double CalcNotOutSynapsesCostInfluence(Network network, TestCase testCase, Synapse notOutSynapse)
+    {
+
+        // zero all inputs (even not in test case)
+        network
+            .GetAllSynapses()
+            .Select(inSy => SynapseExpressions[inSy])
+            .SelectMany(syEx => syEx.GetExpressionsRecursive())
+            .Select(ex => ex as Input)
+            .Where(inEx => inEx is not null)
+            .ToList()
+            .ForEach(inEx => inEx.Value = 0);
+
+        // apply input values from the test case
+        for (int index = 0; index < testCase.Inputs.Count; index++)
+        {
+            Synapse inputSynapse = network.Inputs[index];
+            int inputVal = testCase.Inputs[index];
+            List<Input> inputs = SynapseExpressions
+                .Values
+                .SelectMany(synEx => synEx.GetExpressionsRecursive())
+                .Where(input => input is Input)
+                .Cast<Input>()
+                .Where(input => input.InputSynapse == inputSynapse)
+                .ToList();
+
+            foreach (var input in inputs)
+                input.Value = inputVal;
+        }
+
+        // calculate all output values
+        network.Outputs.Select(outSy => SynapseExpressions[outSy]).ToList().ForEach(outSy => outSy.Calc());
+
+
+        Multiplier multiplierExpression = GetMultiplierExpression(notOutSynapse);
+        double costInfluence = 0;
+        foreach (Synapse outputSynapse in network.Outputs)
+        {
+            if (network.Outputs.IndexOf(outputSynapse) >= testCase.Outputs.Count)
+                continue;
+            Expression outExpression = SynapseExpressions[outputSynapse];
+            int expectedOutput = testCase.Outputs[network.Outputs.IndexOf(outputSynapse)];
+            // calculate outExpression derivative over multiplierExpression
+
+            Expression derivative = GetOrCalcDerivativeOverMultiplier(outExpression, multiplierExpression);
+
+            // apply input values from the test case
+            for (int index = 0; index < testCase.Inputs.Count; index++)
+            {
+                Synapse inputSynapse = network.Inputs[index];
+                int inputVal = testCase.Inputs[index];
+                List<Input> inputs = derivative.GetExpressionsRecursive()
+                    .Where(input => input is Input)
+                    .Cast<Input>()
+                    .Where(input => input.InputSynapse == inputSynapse)
+                    .ToList();
+
+                foreach (var input in inputs)
+                    input.Value = inputVal;
+            }
+
+            derivative.Calc();
+
+            costInfluence += derivative.Value * (expectedOutput - outExpression.Value);
+        }
+
+       return costInfluence / network.Outputs.Count;
+    }
+
 
     public Dictionary<Synapse, double> CalcNotOutSynapsesCostInfluence(Network thisNetwork, TestCaseList testCaseList)
     {
@@ -110,6 +209,17 @@ public class RunningContext
         }
         return totalNotOutSynapsesCostInfluence;
     }
+
+    public double CalcNotOutSynapsesCostInfluence(Network thisNetwork, TestCaseList testCaseList, Synapse notOutSynapse)
+    {
+        double costInfluence = 0;
+        foreach (TestCase testCase in testCaseList.TestCases)
+        {
+            costInfluence += CalcNotOutSynapsesCostInfluence(thisNetwork, testCase, notOutSynapse);
+        }
+        return costInfluence / testCaseList.TestCases.Count;
+    }
+
 
     public void OptimiseExpressions()
     {
