@@ -26,52 +26,14 @@ public class BackPropagationNetworkMutator : Mutator<Network>
             || network.Outputs.Count < TestCaseList.TestCases.Max(tc => tc.Outputs.Count))
             return new MutationDescription() { Text = "No Back Propagation" };
 
-        network.BackPropagation(TestCaseList, Propagations);
+        List<Synapse> notOutSynapses = network.GetAllSynapses().Where(s => !network.Outputs.Contains(s)).ToList();
+        int notOutSynapseIndex = RandomGenerator.Random.Next(notOutSynapses.Count);
+
+        Synapse notOutSynapse = notOutSynapses[notOutSynapseIndex];
+
+        network.BackPropagation(TestCaseList, Propagations, notOutSynapse);
 
 
         return new MutationDescription() { Text = "BackPropagation" };
-    }
-    private void OldBackProp(Network network)
-    {
-        double testCaseLists = TestCaseList.TestCases.Count;
-        foreach (TestCase testCase in TestCaseList.TestCases)
-        {
-            if (network.Inputs.Count < testCase.Inputs.Count || network.Outputs.Count < testCase.Outputs.Count)
-                break;
-
-            NeuralNetworkingUnitTesting.RunningContext runningContext = network.SafeRun(testCase, Propagations);
-            foreach (Synapse outputSynapse in network.Outputs)
-            {
-                Neuron outputNeuron = network.Nodes.Single(nd => nd.Outputs.Contains(outputSynapse)) as Neuron;
-
-                if (outputNeuron == null)
-                    break; // we cannot do anything for Bias nodes
-
-                double actualOutput = runningContext.SynapsePotentials[outputSynapse];
-
-                if (double.IsNaN(actualOutput))
-                    break;
-
-                int outputIndex = network.Outputs.IndexOf(outputSynapse);
-
-                if (outputIndex >= testCase.Outputs.Count)
-                    break; // there is no corresponding output in test case
-
-                double expectedOutput = testCase.Outputs[outputIndex];
-                double relativeError = expectedOutput / actualOutput;
-                if (double.IsNaN(relativeError) || double.IsInfinity(relativeError))
-                    break;
-
-                double correction = Math.Max(-2, Math.Min(2, relativeError)) * Strength / testCaseLists / outputNeuron.Inputs.Count;
-
-                for (int outNeuronInputIndex = 0; outNeuronInputIndex < outputNeuron.Inputs.Count; outNeuronInputIndex++)
-                {
-                    double inputMultiplier = outputNeuron.InputMultiplier[outNeuronInputIndex];
-                    inputMultiplier *= 1 + correction;
-                    outputNeuron.InputMultiplier[outNeuronInputIndex] = inputMultiplier;
-                }
-            }
-        }
-
     }
 }
