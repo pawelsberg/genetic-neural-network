@@ -1,7 +1,7 @@
 # genetic-neural-network
 Genetic algorithm evolving structure and weights of the neural networks to perform some tasks. 
 This program operates through a Command-Line Interface (CLI). For a brief description of the commands, use the >help command. 
-For a detailed description, refer to COMMANDS.md.
+For a detailed description, refer to [COMMANDS.md](COMMANDS.md).
 
 # Prerequisites 
 The program doesn't require installation. It uses `%appdata%\Pawelsberg.GeneticNeuralNetwork` folder to load/save data.
@@ -176,6 +176,6 @@ Use the following for the full list of commands:
 >help
 ```
 # Next steps
-Consider reading COMMANDS.md to discover a full power of the application.
+Consider reading [COMMANDS.md](COMMANDS.md) to discover a full power of the application.
 
 
