@@ -5,16 +5,15 @@ namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingUnitTesting.Back
 public abstract class Expression
 {
     public abstract double Value { get; set; }
-    public virtual void Calc() { }
+    public virtual void CalcValue() { }
     public virtual List<Expression> Expressions { get; set; } = new List<Expression>();
     public IEnumerable<Expression> GetExpressionsRecursive()
     {
         return Expressions.SelectMany(e => e.GetExpressionsRecursive()).Concat(new List<Expression> { this });
     }
-    public virtual Expression DerivativeOver(Multiplier multiplierExpression)
-    {
-        return new Constant { Value = 0 };
-    }
+
+    public abstract Expression DerivativeOver(Multiplier multiplierExpression);
+
     public virtual Expression Optimised()
     {
         return DeepClone();
@@ -24,6 +23,11 @@ public abstract class Expression
 public class Constant : Expression
 {
     public override double Value { get; set; }
+    public override Expression DerivativeOver(Multiplier multiplierExpression)
+    {
+        return new Constant { Value = 0 };
+    }
+
     public override Expression DeepClone()
     {
         return new Constant { Value = Value };
@@ -37,6 +41,11 @@ public class Input : Expression
 {
     public Synapse InputSynapse { get; set; }
     public override double Value { get; set; }
+
+    public override Expression DerivativeOver(Multiplier multiplierExpression)
+    {
+        return new Constant { Value = 0 };
+    }
 
     public override Expression DeepClone()
     {
@@ -70,21 +79,38 @@ public class MultiplyOperation : Expression
 {
     public override List<Expression> Expressions { get; set; } = new List<Expression>();
     public override double Value { get; set; }
-    public override void Calc()
+    public override void CalcValue()
     {
-        Expressions.ForEach(e => e.Calc());
+        Expressions.ForEach(e => e.CalcValue());
         Value = Expressions.Select(e => e.Value).Aggregate((e1, e2) => e1 * e2);
+    }
+
+    public List<Expression> FlattenMultiplyOperation()
+    {   // get nested multiply operations to a single list
+        List<Expression> factors = new List<Expression>();
+        foreach (var expr in Expressions)
+        {
+            if (expr is MultiplyOperation)
+                factors.AddRange((expr as MultiplyOperation).FlattenMultiplyOperation());
+            else
+                factors.Add(expr);
+        }
+        return factors;
+
     }
 
     public override Expression Optimised()
     {
-        if (Expressions.Any(expr => expr is Constant && (expr as Constant).Value == 0))
+        // get nested multiply operations to a single list
+        var expressions = FlattenMultiplyOperation();
+
+        if (expressions.Any(expr => expr is Constant && (expr as Constant).Value == 0))
         { // Multiply by zero is zero
             return new Constant() { Value = 0 };
         }
         else
         {
-            List<Expression> optimisedExpressions = Expressions.Select(expr => expr.Optimised()).ToList();
+            List<Expression> optimisedExpressions = expressions.Select(expr => expr.Optimised()).ToList();
             if (optimisedExpressions.Any(expr => expr is Constant && (expr as Constant).Value == 0))
             { // Multiply by zero in optimised is zero
                 return new Constant() { Value = 0 };
@@ -93,10 +119,8 @@ public class MultiplyOperation : Expression
             {
                 List<Constant> constants = optimisedExpressions.Where(e => e is Constant).Cast<Constant>().ToList();
                 double constVal = 1; // multiplication of all constants
-                constants.ForEach(c => constVal = constVal * c.Value);
+                constants.ForEach(c => constVal *= c.Value);
                 List<Expression> nonConstants = optimisedExpressions.Where(e => !constants.Contains(e)).Select(e => e.DeepClone()).ToList();
-                // TODO: more possible optimisations - mul of mul 
-                //                                   - mull of the same thing twice    2 x thing
                 if (constants.Count > 0 && nonConstants.Count == 0)
                     return new Constant { Value = constVal }; // if there are only constants - combine them into one
                 else if (constants.Count == 0 && nonConstants.Count == 1 || constants.Count > 0 && nonConstants.Count == 1 && constVal == 1)
@@ -137,9 +161,9 @@ public class SumOperation : Expression
 {
     public override List<Expression> Expressions { get; set; } = new List<Expression>();
     public override double Value { get; set; }
-    public override void Calc()
+    public override void CalcValue()
     {
-        Expressions.ForEach(e => e.Calc());
+        Expressions.ForEach(e => e.CalcValue());
         Value = Expressions.Sum(e => e.Value);
     }
 
@@ -193,9 +217,9 @@ public class ActivationFunctionOperation : Expression
     public Expression Expression { get; set; }
     public override List<Expression> Expressions { get { return new List<Expression> { Expression }; } }
     public override double Value { get; set; }
-    public override void Calc()
+    public override void CalcValue()
     {
-        Expression.Calc();
+        Expression.CalcValue();
         Value = ActivationFunction.Apply(Expression.Value);
     }
 
@@ -248,9 +272,9 @@ public class ActivationDerivativeFunctionOperation : Expression
     public override double Value { get; set; }
     public Expression Expression { get; set; }
     public override List<Expression> Expressions { get { return new List<Expression> { Expression }; } }
-    public override void Calc()
+    public override void CalcValue()
     {
-        Expression.Calc();
+        Expression.CalcValue();
         Value = ActivationFunction.ApplyDerivative(Expression.Value);
     }
     public override Expression DeepClone()

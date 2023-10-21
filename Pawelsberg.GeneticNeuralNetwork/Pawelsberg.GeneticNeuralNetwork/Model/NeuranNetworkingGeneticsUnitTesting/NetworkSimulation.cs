@@ -125,6 +125,7 @@ public class NetworkSimulation : Simulation<Network>
     {
         switch (_mutatorsType)
         {
+            case MutatorsType.None: Mutators = NetworkMutators.CreateNone(); break;
             case MutatorsType.Normal: Mutators = NetworkMutators.CreateNormal(MaxNodes, MaxSynapses); break;
             case MutatorsType.Cleaner: Mutators = NetworkMutators.CreateCleaner(MaxNodes, MaxSynapses); break;
             case MutatorsType.BackpropagationOnly: Mutators = NetworkMutators.CreateBackpropagationOnly(TestCaseList, Propagations); break;

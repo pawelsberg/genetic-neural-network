@@ -8,6 +8,12 @@ namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTest
 
 public class NetworkMutators : Mutators<Network>
 {
+    public static NetworkMutators CreateNone()
+    {
+        NetworkMutators mutators = new NetworkMutators();
+        mutators.Add(new NothingDoerMutator<Network>(), 1d);
+        return mutators;
+    }
     public static NetworkMutators CreateNormal(int maxNodes, int maxSynapses)
     {
         NetworkMutators mutators = new NetworkMutators();

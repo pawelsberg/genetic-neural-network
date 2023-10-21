@@ -81,7 +81,7 @@ public class RunningContext
         }
 
         // calculate all output values
-        network.Outputs.Select(outSy => SynapseExpressions[outSy]).ToList().ForEach(outSy => outSy.Calc());
+        network.Outputs.Select(outSy => SynapseExpressions[outSy]).ToList().ForEach(outSy => outSy.CalcValue());
 
         foreach (Synapse notOutSynapse in network.GetAllSynapses().Where(s => !network.Outputs.Contains(s)))
         {
@@ -112,7 +112,7 @@ public class RunningContext
                         input.Value = inputVal;
                 }
 
-                derivative.Calc();
+                derivative.CalcValue();
 
                 costInfluence += derivative.Value * (expectedOutput - outExpression.Value);
             }
@@ -154,7 +154,7 @@ public class RunningContext
         }
 
         // calculate all output values
-        network.Outputs.Select(outSy => SynapseExpressions[outSy]).ToList().ForEach(outSy => outSy.Calc());
+        network.Outputs.Select(outSy => SynapseExpressions[outSy]).ToList().ForEach(outSy => outSy.CalcValue());
 
 
         Multiplier multiplierExpression = GetMultiplierExpression(notOutSynapse);
@@ -184,7 +184,7 @@ public class RunningContext
                     input.Value = inputVal;
             }
 
-            derivative.Calc();
+            derivative.CalcValue();
 
             costInfluence += derivative.Value * (expectedOutput - outExpression.Value);
         }

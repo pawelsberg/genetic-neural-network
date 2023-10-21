@@ -2,6 +2,7 @@ namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTest
 
 public enum MutatorsType
 {
+    None,
     Normal,
     Cleaner,
     BackpropagationOnly,
