@@ -186,9 +186,9 @@ public class SumOperation : Expression
                 double constVal = constants.Sum(c => c.Value);
                 List<Expression> nonConstants = optimisedExpressions.Where(e => !constants.Contains(e)).ToList();
                 if (constants.Count > 0 && nonConstants.Count == 0)
-                    return new Constant { Value = constVal }; // all const with sum 0
+                    return new Constant { Value = constVal }; // all const replace with a sum
                 else if (constants.Count == 0 && nonConstants.Count == 1 || constants.Count > 0 && nonConstants.Count == 1 && constVal == 0)
-                    return nonConstants[0]; // all const sum to 0 - there  is one nonConst
+                    return nonConstants[0]; // all const sum to 0 - there is one nonConst
                 else if (constants.Count == 0 && nonConstants.Count > 1 || constants.Count > 0 && nonConstants.Count > 0 && constVal == 0)
                     return new SumOperation { Expressions = nonConstants, Value = Value }; // all const sum to 0 - there are many nonconst
                 else // there many nonconst and many const not summing to 0
@@ -225,23 +225,10 @@ public class ActivationFunctionOperation : Expression
 
     public override Expression Optimised()
     {
-        if (Expression is Constant && (Expression as Constant).Value == 0)
-        {
-            return new Constant() { Value = 0 };
-        }
-        else
-        {
-            Expression optimisedExpression = Expression.Optimised();
-            if (optimisedExpression is Constant && (optimisedExpression as Constant).Value == 0)
-            {
-                return new Constant() { Value = 0 };
-            }
-            else
-            {
-                return new ActivationFunctionOperation { Expression = optimisedExpression, ActivationFunction = ActivationFunction, Value = Value };
-            }
-        }
+        Expression optimisedExpression = Expression.Optimised();
+        return new ActivationFunctionOperation { Expression = optimisedExpression, ActivationFunction = ActivationFunction, Value = Value };
     }
+
     public override Expression DeepClone()
     {
         return new ActivationFunctionOperation { Expression = Expression.DeepClone(), Value = Value, ActivationFunction = ActivationFunction };
@@ -250,16 +237,16 @@ public class ActivationFunctionOperation : Expression
     public override Expression DerivativeOver(Multiplier multiplierExpression)
     {
         // Chain rule
-        MultiplyOperation result = new MultiplyOperation()
-        {
-            Expressions = new List<Expression>()
-            {
-                new ActivationDerivativeFunctionOperation {Expression = new Constant() {Value = Expression.Value}, Value = ActivationFunction.ApplyDerivative(Expression.Value), ActivationFunction = ActivationFunction},
-                Expression.DerivativeOver(multiplierExpression).Optimised()
-            }
-        };
+        MultiplyOperation result = new MultiplyOperation();
+        result.Expressions = new List<Expression>();
+        ActivationDerivativeFunctionOperation activationDerivativeFunctionOperation = new ActivationDerivativeFunctionOperation();
+        activationDerivativeFunctionOperation.Expression = Expression.DeepClone();
+        activationDerivativeFunctionOperation.Value = ActivationFunction.ApplyDerivative(Expression.Value);
+        activationDerivativeFunctionOperation.ActivationFunction = ActivationFunction;
+        result.Expressions.Add(activationDerivativeFunctionOperation);
+        Expression derivativeOverMultiplierExpression = Expression.DerivativeOver(multiplierExpression).Optimised();
+        result.Expressions.Add(derivativeOverMultiplierExpression);
         return result;
-
     }
     public override string ToString()
     {
@@ -287,19 +274,8 @@ public class ActivationDerivativeFunctionOperation : Expression
     }
     public override Expression Optimised()
     {
-        if (Expression is Constant)
-            return new Constant() { Value = ActivationFunction.ApplyDerivative((Expression as Constant)!.Value) };
-        else
-        {
-            Expression optimisedExpression = Expression.Optimised();
-
-            if (optimisedExpression is Constant)
-                return new Constant() { Value = ActivationFunction.ApplyDerivative((Expression as Constant)!.Value) };
-            else
-            {
-                return new ActivationDerivativeFunctionOperation { Expression = optimisedExpression, ActivationFunction = ActivationFunction, Value = Value };
-            }
-        }
+        Expression optimisedExpression = Expression.Optimised();
+        return new ActivationDerivativeFunctionOperation { Expression = optimisedExpression, ActivationFunction = ActivationFunction, Value = Value };
     }
 
     public override string ToString()
