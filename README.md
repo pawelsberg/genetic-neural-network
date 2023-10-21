@@ -1,12 +1,16 @@
 # genetic-neural-network
 Genetic algorithm evolving structure and weights of the neural networks to perform some tasks. 
-This program uses CLI (command-line interface). For a brief description of the commands use `>help` command or for a full description see COMMANDS.md 
+This program operates through a Command-Line Interface (CLI). For a brief description of the commands, use the >help command. 
+For a detailed description, refer to COMMANDS.md.
+
+# Prerequisites 
+Program doesn't need an installation. It uses `%appdata%\Pawelsberg.GeneticNeuralNetwork` folder to load/save data.
 
 # Tutorial:
 ## 1) 'Is it 5' neural network
 This example shows how to use this program to generate a neural network that realises function checking if the input value is equal to 5.
 Function (neural network) will return 1 if the input value is equal 5 otherwise function will return 0.
-The following table describes behaviour:
+The following table describes the behaviour:
 | Input Value | Output Value |
 | ----------- | ------------ |
 | -1          | 0            |
@@ -16,10 +20,10 @@ The following table describes behaviour:
 | 6           | 0            |
 | 100         | 0            |
 
-
+The neural network will be evolved to recognize the number 5 if it appears as an input.
 ### a) Prepare test case list
 First we need to prepare a list of test cases that will describe wanted behaviour.
-In the `%appdata%/Pawelsberg.GeneticNeuralNetwork\TestCases` folder create a file with test cases named `isit5.TestCases.XML`:
+In the `%appdata%\Pawelsberg.GeneticNeuralNetwork\TestCases` folder create a file with test cases named `isit5.TestCases.XML`:
 ```xml
 <TestCaseList>
 	<TestCase>
@@ -49,7 +53,7 @@ In the `%appdata%/Pawelsberg.GeneticNeuralNetwork\TestCases` folder create a fil
 </TestCaseList>
 ```
 ### b) Start simulation
-Open application. Load test case list by command:
+Open application. Load test case list by command (note you need to skip TestCases.XML extension):
 ```
 >loadtcl isit5
 ```
@@ -71,6 +75,7 @@ Generation: 10820
 Best Ever Network (Nodes:1,Synapses:2)
 Last Successful Mutations:
 ```
+Best Ever Network is a best specimen so far during simulation. This network is evolved further to improve Quality (fit of the neural network to realise a list test cases). 
 To check how well the current best network is peforming in solving test cases use command:
 ```
 >show test
@@ -99,6 +104,7 @@ Inputs: 100.0
 ExpOut:   0.0
 Output:   0.0
 ```
+Note for input 5 the output (Output=0) is not matching the expected output (ExpOut = 1).
 ### c) save results
 After some time program will generate a neural network that works well with the set of test cases:
 ```
@@ -169,5 +175,7 @@ Use the following for the full list of commands:
 ```
 >help
 ```
+# Next steps
+Consider reading COMMANDS.md to discover a full power of the application.
 
 
