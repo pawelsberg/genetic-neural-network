@@ -131,7 +131,7 @@ There are the following variables to be changed:
   Default value: `Normal`
 ### `mutatorsType`
   Defines the way mutations are introduced to the specimens to create new specimens for a next generation.
-  Possible values are: `Normal`,`Cleaner`,`BackpropagationOnly`,`NormalWithBackpropagation`.
+  Possible values are: `None`,`Normal`,`Cleaner`,`BackpropagationOnly`,`NormalWithBackpropagation`.
   
   Default value: `Normal`
 ### `seed`
