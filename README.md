@@ -178,5 +178,5 @@ Use the following for the full list of commands:
 ```
 # Next steps
 Consider reading [COMMANDS.md](COMMANDS.md) to discover a full power of the application.
-
+I also recommend reading GLOSSARY.md to familiarise yourself with the terminology used in the program.
 
