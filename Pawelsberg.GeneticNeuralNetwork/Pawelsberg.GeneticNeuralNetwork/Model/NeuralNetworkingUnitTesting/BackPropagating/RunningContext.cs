@@ -168,7 +168,7 @@ public class RunningContext
             // calculate outExpression derivative over multiplierExpression
 
             Expression derivative = GetOrCalcDerivativeOverMultiplier(outExpression, multiplierExpression);
-
+            derivative = derivative.Optimised();
             // apply input values from the test case
             for (int index = 0; index < testCase.Inputs.Count; index++)
             {
@@ -189,7 +189,7 @@ public class RunningContext
             costInfluence += derivative.Value * (expectedOutput - outExpression.Value);
         }
 
-       return costInfluence / network.Outputs.Count;
+        return costInfluence / network.Outputs.Count;
     }
 
 

@@ -99,6 +99,7 @@ public class ShowCommand : Command
         }
         else
         {
+            Console.ForegroundColor = ConsoleColor.Gray;
             Network bestEver = simulation.BestEver;
             if (bestEver != null)
             {

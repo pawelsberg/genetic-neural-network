@@ -58,7 +58,8 @@ public class Multiplier : Expression
     }
     public override Expression DerivativeOver(Multiplier multiplierExpression)
     {
-        return new Constant { Value = multiplierExpression.Synapse == Synapse ? Value : 0 };
+        var result = new Constant { Value = multiplierExpression.Synapse == Synapse ? 1 : 0 };
+        return result;
     }
     public override string ToString()
     {
@@ -124,7 +125,8 @@ public class MultiplyOperation : Expression
         sumOperation.Expressions.Add(new MultiplyOperation { Expressions = new List<Expression> { Expressions.First().DerivativeOver(multiplierExpression), new MultiplyOperation { Expressions = Expressions.Skip(1).ToList() }.DeepClone() } });
         sumOperation.Expressions.Add(new MultiplyOperation { Expressions = new List<Expression> { Expressions.First().DeepClone(), new MultiplyOperation { Expressions = Expressions.Skip(1).ToList() }.DerivativeOver(multiplierExpression) } });
 
-        return sumOperation.Optimised();
+        var result = sumOperation.Optimised();
+        return result;
     }
     public override string ToString()
     {
@@ -177,7 +179,8 @@ public class SumOperation : Expression
 
     public override Expression DerivativeOver(Multiplier multiplierExpression)
     {
-        return new SumOperation { Expressions = Expressions.Select(e => e.DerivativeOver(multiplierExpression)).ToList() }.Optimised();
+        Expression result = new SumOperation { Expressions = Expressions.Select(e => e.DerivativeOver(multiplierExpression)).ToList() }.Optimised();
+        return result;
     }
     public override string ToString()
     {
@@ -222,7 +225,17 @@ public class ActivationFunctionOperation : Expression
 
     public override Expression DerivativeOver(Multiplier multiplierExpression)
     {
-        return new ActivationDerivativeFunctionOperation { Expression = Expression.DerivativeOver(multiplierExpression).Optimised(), Value = Value, ActivationFunction = ActivationFunction };
+        // Chain rule
+        MultiplyOperation result = new MultiplyOperation()
+        {
+            Expressions = new List<Expression>()
+            {
+                new ActivationDerivativeFunctionOperation {Expression = new Constant() {Value = Expression.Value}, Value = ActivationFunction.ApplyDerivative(Expression.Value), ActivationFunction = ActivationFunction},
+                Expression.DerivativeOver(multiplierExpression).Optimised()
+            }
+        };
+        return result;
+
     }
     public override string ToString()
     {
@@ -248,6 +261,23 @@ public class ActivationDerivativeFunctionOperation : Expression
     {
         throw new Exception("Trying to calculate second derivative of the activation function - unexpected");
     }
+    public override Expression Optimised()
+    {
+        if (Expression is Constant)
+            return new Constant() { Value = ActivationFunction.ApplyDerivative((Expression as Constant)!.Value) };
+        else
+        {
+            Expression optimisedExpression = Expression.Optimised();
+
+            if (optimisedExpression is Constant)
+                return new Constant() { Value = ActivationFunction.ApplyDerivative((Expression as Constant)!.Value) };
+            else
+            {
+                return new ActivationDerivativeFunctionOperation { Expression = optimisedExpression, ActivationFunction = ActivationFunction, Value = Value };
+            }
+        }
+    }
+
     public override string ToString()
     {
         return $"{ActivationFunction.ToLetterCode()}'({Expression.ToString()})";
