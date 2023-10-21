@@ -71,15 +71,15 @@ Usages:
 
 There are the following variables to be changed:
 ### `maxNodes`
-  Is the maximum number of nodes up to which genetic alghorithm will try to create them. 
-  If current number of nodes is greater than this number then genetic alghorithm will not try to add any new nodes beyond this number.
+  Is the maximum number of nodes up to which genetic algorithm will try to create them. 
+  If current number of nodes is greater then this number then genetic algorithm will not try to add any new nodes beyond this number.
   Note that this limit doesn't apply to situations like loading neural network or the `>create` command. 
   Only to the situation when a child neural network specimen is generated.
   
   Default value: `10`
 ### `maxSynapses`
-  Maximum number of synapses to which genetic alghorithm will try to create them.
-  If the current number of synapses is greater then this number then genetic alghorithm will not try to add any further synapses.
+  Maximum number of synapses to which genetic algorithm will try to create them.
+  If the current number of synapses is greater then this number then genetic algorithm will not try to add any further synapses.
   Note that this limit doesn't apply to situations like loading neural network or the `>create` command. 
   Only to the situation when a child neural network specimen is generated.
   
@@ -95,7 +95,7 @@ There are the following variables to be changed:
 
   Default value: `5`
 ### `maxSpecimens`
-  Maximum number of specimens created per generation by genetic alghorithm.
+  Maximum number of specimens created per generation by genetic algorithm.
   Note that this limit doesn't apply to situations like loading neural networks using `>load ...` and `>loadall` commands. 
   In this case number of specimens per generation can be exceeded.
   
@@ -110,7 +110,7 @@ There are the following variables to be changed:
   Default value: `5`
 ### `meterType`
   Type of meter to measure quality of the neural network. 
-  Each of the meters consist number of measurements summed together to give a final value of quality.
+  Each meter type consists of a number of measurements summed together to give a final value of quality.
   Possible values:
   #### `Normal`
   Standard set of measurements
@@ -135,9 +135,11 @@ There are the following variables to be changed:
   
   Default value: `Normal`
 ### `seed`
-  Seed number for random operations. If provided will result in a repetable result of the simulation. If the value is `x` then it depends on time.
+  Seed number for random operations. 
+  If provided will result in a repetable result of the simulation. 
+  If the value is `x`, the seed is generated based on the current time, leading to non-deterministic results.
 
-  Default value: *x*
+  Default value: `x`
 ## `show`         
 Show the results of the genetic algorithm simulation.
 Use 'test' as a parameter to show also test results.
