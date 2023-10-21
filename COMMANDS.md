@@ -68,6 +68,46 @@ Usages:
 `>set`
 `>set (variable name)`
 `>set (variable name) (new value)`
+
+There are the following variables to be changed:
+### maxNodes
+  Is the maximum number of nodes up to which genetic alghorithm will try to create them. 
+  If current number of nodes is greater than this number then genetic alghorithm will not try to add any new nodes beyond this number.
+  Note that this limit doesn't apply to situations like loading neural network or the `>create` command. 
+  Only to the situation when a child neural network specimen is generated.
+  
+  Default value: *10*
+### maxSynapses
+
+  Default value: *30*
+### propagations
+
+  Default value: *4*
+### successfulMutationsLength
+
+  Default value: *5*
+### maxSpecimens
+  
+  Default value: *4*
+  
+### delayTimeMs
+
+  Default value: *5*
+### generationMultiplier
+
+  Default value: *5*
+### meterType
+
+  Default value: *Normal*
+### parentQueuer
+
+  Default value: *Normal*
+### mutatorsType
+  
+  Default value: *Normal*
+### seed
+
+  Default value: *x*
 ## show          
 Show the results of the genetic algorithm simulation.
 Use 'test' as a parameter to show also test results.
