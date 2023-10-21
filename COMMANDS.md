@@ -1,5 +1,5 @@
 # Description of the Commands
-## create
+## `create`
 Creates a neural network that fits test case list. 
 The neural network generated will perfectly work for the current test case list. 
 Output of the neural network will match expected output for all test cases.
@@ -7,61 +7,61 @@ It is highly probable that the network generated will have many times more synap
 Further evolution can improve the solution.
 
 Usage: `>create`
-## help
+## `help`
 Shows the list of commands and a brief description. 
 To get more details about a specific command add the command name after `help`.
 
 Usages:
 `>help`
 `>help (command name)`
-## load          
+## `load`          
 Loads specific neural network as additional specimen in generation.
 
 Usage: `>load (network name)`
-## loadall
+## `loadall`
 Loads all neural networks as additional specimens.
 
 Usage: `>loadall`
-## loadclear     
+## `loadclear`     
 Loads specific neural network as the only specimen in generation. 
 This command will remove all other specimens from the generation.
 The simplest possible network (containing one input and one output with one node) is named 'pass'.
 You can load it ussing this command to restart simulation. For this run `>loadclear pass` command.
 
 Usage: `>loadclear (network name)`
-## loadppmtcl    
+## `loadppmtcl`    
 Loads a test case list in ppm format.
 
 Usage: `>loadppmtcl (ppm test case list name)`
-## loadsudokutcl 
+## `loadsudokutcl`
 Loads a test case list in sudoku format.
 
 Usage: `>loadsudokutcl (sudoku test case list name)`
-## loadtcl       
+## `loadtcl`       
 Loads a test case list (standard type described in TestCases.XML files).
 
 Usage: `>loadtcl (test case list name)`
-## pause         
+## `pause`         
 Pause genetic algorithm.
 
 Usage: `>pause`
-## quit          
+## `quit`          
 Exit the program without saving.
 
 Usage: `>quit`
-## run           
+## `run`           
 Start genetic algorithm for specific number of generations.
 
 Usage: `>run (number of generations)`
-## save          
+## `save`          
 Save the best neural network. Existing network with the same name will be overwritten.
 
 Usage: `>save (network name)`
-## saveppm       
+## `saveppm`       
 Save the best neural network in ppm format.
 
 Usage: `>saveppm (ppm name)`
-## set           
+## `set`           
 Show/set general settings of genetic algorithm.
 
 Usages:
@@ -70,45 +70,75 @@ Usages:
 `>set (variable name) (new value)`
 
 There are the following variables to be changed:
-### maxNodes
+### `maxNodes`
   Is the maximum number of nodes up to which genetic alghorithm will try to create them. 
   If current number of nodes is greater than this number then genetic alghorithm will not try to add any new nodes beyond this number.
   Note that this limit doesn't apply to situations like loading neural network or the `>create` command. 
   Only to the situation when a child neural network specimen is generated.
   
-  Default value: *10*
-### maxSynapses
-
-  Default value: *30*
-### propagations
-
-  Default value: *4*
-### successfulMutationsLength
-
-  Default value: *5*
-### maxSpecimens
+  Default value: `10`
+### `maxSynapses`
+  Maximum number of synapses to which genetic alghorithm will try to create them.
+  If the current number of synapses is greater then this number then genetic alghorithm will not try to add any further synapses.
+  Note that this limit doesn't apply to situations like loading neural network or the `>create` command. 
+  Only to the situation when a child neural network specimen is generated.
   
-  Default value: *4*
+  Default value: `30`
+### `propagations`
+  Number of times a neural network is processed to calculate output. 
+  This matters if the neural network have loops. 
+  If the neural network shouldn't have loops it can be set to 1. 
+
+  Default value: `4`
+### `successfulMutationsLength`
+  This is the number of latest mutations saved and displayed when running `>show` command.
+
+  Default value: `5`
+### `maxSpecimens`
+  Maximum number of specimens created per generation by genetic alghorithm.
+  Note that this limit doesn't apply to situations like loading neural networks using `>load ...` and `>loadall` commands. 
+  In this case number of specimens per generation can be exceeded.
   
-### delayTimeMs
-
-  Default value: *5*
-### generationMultiplier
-
-  Default value: *5*
-### meterType
-
-  Default value: *Normal*
-### parentQueuer
-
-  Default value: *Normal*
-### mutatorsType
+  Default value: `4`
+### `delayTimeMs`
+  Period of time for UI/background simulator synchronisation.
   
-  Default value: *Normal*
-### seed
+  Default value: `5`
+### `generationMultiplier`
+  Maximum number of generations to be processed in `delayTimeMs` period.
+
+  Default value: `5`
+### `meterType`
+  Type of meter to measure quality of the neural network. 
+  Each of the meters consist number of measurements summed together to give a final value of quality.
+  Possible values:
+  #### `Normal`
+  Standard set of measurements
+  #### `LowestMultipliers`
+  Network with lowest sum of node multipliers is prefered.
+  #### `Sequential`
+  Measures subsequent test cases only if previous were satissfied.
+  #### `Aggregate`
+  Checks only the test cases.
+  #### `PropagationsAgnostic`
+  Runs network for a range of propagations to make sure network is number of propagations agnostic.
+    
+  Default value: `Normal`
+### `parentQueuer`
+  Defines how specimens are being selected for the next generation.
+  Possible values are: `Normal`,`Unique`,`RandomEnd`
+
+  Default value: `Normal`
+### `mutatorsType`
+  Defines the way mutations are introduced to the specimens to create new specimens for a next generation.
+  Possible values are: `Normal`,`Cleaner`,`BackpropagationOnly`,`NormalWithBackpropagation`.
+  
+  Default value: `Normal`
+### `seed`
+  Seed number for random operations. If provided will result in a repetable result of the simulation. If the value is `x` then it depends on time.
 
   Default value: *x*
-## show          
+## `show`         
 Show the results of the genetic algorithm simulation.
 Use 'test' as a parameter to show also test results.
 Use 'tests' to show test results in more concise form.
@@ -117,7 +147,7 @@ Usages:
 `>show`
 `>show test`
 `>show tests`
-## start         
+## `start`         
 Start genetic algorithm simulation.
 
 Usage: `>start`
