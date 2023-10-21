@@ -1,6 +1,8 @@
 # genetic-neural-network
-Genetic algorithm evolving structure and weights of the neural networks to perform some tasks
-# Examples of usage:
+Genetic algorithm evolving structure and weights of the neural networks to perform some tasks. 
+This program uses CLI (command-line interface). For a brief description of the commands use `>help` command or for a full description see COMMANDS.md 
+
+# Tutorial:
 ## 1) 'Is it 5' neural network
 This example shows how to use this program to generate a neural network that realises function checking if the input value is equal to 5.
 Function (neural network) will return 1 if the input value is equal 5 otherwise function will return 0.
