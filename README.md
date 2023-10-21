@@ -4,7 +4,7 @@ This program operates through a Command-Line Interface (CLI). For a brief descri
 For a detailed description, refer to COMMANDS.md.
 
 # Prerequisites 
-Program doesn't need an installation. It uses `%appdata%\Pawelsberg.GeneticNeuralNetwork` folder to load/save data.
+The program doesn't require installation. It uses `%appdata%\Pawelsberg.GeneticNeuralNetwork` folder to load/save data.
 
 # Tutorial:
 ## 1) 'Is it 5' neural network
@@ -134,7 +134,7 @@ Inputs: 100.0
 ExpOut:   0.0
 Output:   0.0
 ```
-Expected values (ExpOut) equal actual values returned from the network (Output).
+The actual values (Output) returned from the network match the expected values (ExpOut).
 The network generated has 3 nodes and 6 synapses:
 ```
 >show
