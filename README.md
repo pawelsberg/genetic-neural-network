@@ -52,6 +52,7 @@ In the `%appdata%\Pawelsberg.GeneticNeuralNetwork\TestCases` folder create a fil
 	</TestCase>
 </TestCaseList>
 ```
+You may need to create folder first if it doesn't exist.
 ### b) Start simulation
 Open application. Load test case list by command (note you need to skip TestCases.XML extension):
 ```
