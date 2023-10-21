@@ -121,5 +121,7 @@ public class ShowCommand : Command
 
         }
     }
-    public override string ShortDescription { get { return "Show the results of the genetic algorithm simulation"; } }
+    public override string ShortDescription { get { return "Show the results of the genetic algorithm simulation.\n" +
+                                                           " Use 'test' as a parameter to show also test results.\n" +
+                                                           " Use 'tests' to show test results in more concise form."; } }
 }
