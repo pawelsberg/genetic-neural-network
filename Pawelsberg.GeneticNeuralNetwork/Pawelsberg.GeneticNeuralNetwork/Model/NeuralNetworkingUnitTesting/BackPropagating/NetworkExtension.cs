@@ -63,7 +63,7 @@ public static class NetworkExtension
             foreach (Synapse inputSynapse in neuron.Inputs)
                 if (inputSynapse == notOutSynapse)
                 {
-                    neuron.InputMultiplier[neuron.Inputs.IndexOf(inputSynapse)] += 0.000001/ costInfluence;               
+                    neuron.InputMultiplier[neuron.Inputs.IndexOf(inputSynapse)] += 0.0001 * costInfluence;               
                 }
         }
     }
