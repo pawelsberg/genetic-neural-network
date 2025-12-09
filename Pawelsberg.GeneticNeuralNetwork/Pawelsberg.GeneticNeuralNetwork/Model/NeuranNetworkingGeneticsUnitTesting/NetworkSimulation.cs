@@ -90,6 +90,9 @@ public class NetworkSimulation : Simulation<Network>
         _maxNodes = 10;
         _maxSynapses = 30;
         _propagations = 4;
+        _mutatorsType = MutatorsType.NormalWithBackpropagation;
+        _meterType = MeterType.Normal;
+        _parentQueuerType = ParentQueuerType.Normal;
 
         UpdateGenerationMeter();
         CreateSimulationMeter();

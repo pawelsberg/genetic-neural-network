@@ -71,7 +71,7 @@ public class NetworkMutators : Mutators<Network>
     public static NetworkMutators CreateNormalWithBackpropagation(int maxNodes, int maxSynapses, TestCaseList testCaseList, int propagations)
     {
         NetworkMutators mutators = new NetworkMutators();
-        mutators.Add(new RandomNumberOfTimesMutator<Network>(new BackPropagationNetworkMutator(testCaseList, propagations), 1, 1), 0.001d);
+        mutators.Add(new RandomNumberOfTimesMutator<Network>(new BackPropagationNetworkMutator(testCaseList, propagations), 1, 1), 0.01d);
         mutators.Add(new RandomNumberOfTimesMutator<Network>(new NeuronAdderNetworkMutator(maxNodes), 1, 3), 3d);
         mutators.Add(new RandomNumberOfTimesMutator<Network>(new BiasAdderNetworkMutator(maxNodes), 1, 3), 3d);
         mutators.Add(new RandomNumberOfTimesMutator<Network>(new NodeRemoverNetworkMutator(), 1, 3), 5d);

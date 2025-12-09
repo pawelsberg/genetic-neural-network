@@ -4,7 +4,7 @@ namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingUnitTesting.Back
 
 public abstract class Expression
 {
-    public abstract double Value { get; set; }
+    public double Value { get; set; }
     public virtual void CalcValue() { }
     public virtual List<Expression> Expressions { get; set; } = new List<Expression>();
     public IEnumerable<Expression> GetExpressionsRecursive()
@@ -22,7 +22,6 @@ public abstract class Expression
 }
 public class Constant : Expression
 {
-    public override double Value { get; set; }
     public override Expression DerivativeOver(Multiplier multiplierExpression)
     {
         return new Constant { Value = 0 };
@@ -40,8 +39,7 @@ public class Constant : Expression
 public class Input : Expression
 {
     public Synapse InputSynapse { get; set; }
-    public override double Value { get; set; }
-
+ 
     public override Expression DerivativeOver(Multiplier multiplierExpression)
     {
         return new Constant { Value = 0 };
@@ -59,8 +57,7 @@ public class Input : Expression
 public class Multiplier : Expression
 {
     public Synapse Synapse { get; set; }
-    public override double Value { get; set; }
-
+ 
     public override Expression DeepClone()
     {
         return new Multiplier { Synapse = Synapse, Value = Value };
@@ -78,7 +75,6 @@ public class Multiplier : Expression
 public class MultiplyOperation : Expression
 {
     public override List<Expression> Expressions { get; set; } = new List<Expression>();
-    public override double Value { get; set; }
     public override void CalcValue()
     {
         Expressions.ForEach(e => e.CalcValue());
@@ -160,7 +156,6 @@ public class MultiplyOperation : Expression
 public class SumOperation : Expression
 {
     public override List<Expression> Expressions { get; set; } = new List<Expression>();
-    public override double Value { get; set; }
     public override void CalcValue()
     {
         Expressions.ForEach(e => e.CalcValue());
@@ -216,7 +211,6 @@ public class ActivationFunctionOperation : Expression
     public ActivationFunction ActivationFunction { get; set; }
     public Expression Expression { get; set; }
     public override List<Expression> Expressions { get { return new List<Expression> { Expression }; } }
-    public override double Value { get; set; }
     public override void CalcValue()
     {
         Expression.CalcValue();
@@ -256,9 +250,8 @@ public class ActivationFunctionOperation : Expression
 public class ActivationDerivativeFunctionOperation : Expression
 {
     public ActivationFunction ActivationFunction { get; set; }
-    public override double Value { get; set; }
     public Expression Expression { get; set; }
-    public override List<Expression> Expressions { get { return new List<Expression> { Expression }; } }
+    public override List<Expression> Expressions { get { return new List<Expression> { Expression }; } } // TODO lacks setter - can be a source of a bug in the future.
     public override void CalcValue()
     {
         Expression.CalcValue();
@@ -274,6 +267,9 @@ public class ActivationDerivativeFunctionOperation : Expression
     }
     public override Expression Optimised()
     {
+        if (ActivationFunction == ActivationFunction.Linear)
+            return new Constant { Value = 1 };
+
         Expression optimisedExpression = Expression.Optimised();
         return new ActivationDerivativeFunctionOperation { Expression = optimisedExpression, ActivationFunction = ActivationFunction, Value = Value };
     }
