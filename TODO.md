@@ -23,3 +23,4 @@
     2. Sudoku
 8. Load commands - allow listing possibilities by pressing tab - if name started it will show only options starting from the already provided string.
 9. Set commands - allow using tab to show variables and values - if enums.
+10. Add top command - shows live simulation information.
