@@ -17,7 +17,6 @@ public class SetCommand : Command
         Func<string, object> parseInt = (text) => int.Parse(text);
         Func<string, object> parseMeterType = (text) => Enum.Parse(typeof(MeterType), text);
         Func<string, object> parseParentQueuerType = (text) => Enum.Parse(typeof(ParentQueuerType), text);
-        Func<string, object> parseMutatorsType = (text) => Enum.Parse(typeof(MutatorsType), text);
 
         _variableList = new List<Variable>()
         {
@@ -30,10 +29,8 @@ public class SetCommand : Command
             new Variable() { Name = "generationMultiplier", Getter = (sim)=> sim.GenerationMultiplier, Setter = (sim,val)=> sim.GenerationMultiplier = (int)val, Parse = parseInt },
             new Variable() { Name = "meterType", Getter = (sim)=> sim.MeterType, Setter = (sim,val)=> sim.MeterType = (MeterType)val, Parse = parseMeterType },
             new Variable() { Name = "parentQueuer", Getter = (sim)=> sim.ParentQueuerType, Setter = (sim,val)=> sim.ParentQueuerType = (ParentQueuerType)val, Parse = parseParentQueuerType },
-            new Variable() { Name = "mutatorsType", Getter = (sim)=> sim.MutatorsType, Setter = (sim,val)=> sim.MutatorsType = (MutatorsType)val, Parse = parseMutatorsType },
             new Variable() { Name = "seed", Getter = (sim)=> "x", Setter = (sim,val)=> RandomGenerator.Random = new Random((int)val), Parse = parseInt }
         };
-
     }
 
     public override void LoadParameters(CodedText text)

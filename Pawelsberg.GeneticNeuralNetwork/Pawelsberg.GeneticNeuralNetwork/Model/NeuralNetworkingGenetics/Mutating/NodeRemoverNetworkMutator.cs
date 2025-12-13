@@ -1,10 +1,13 @@
 using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
+using Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting.Mutating.DiskStoring;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGenetics.Mutating;
 
-public class NodeRemoverNetworkMutator : Mutator<Network>
+public class NodeRemoverNetworkMutator : Mutator<Network>, INetworkMutatorTextConvertible
 {
+    public static string TextName = "NodeRemover";
+
     public override MutationDescription Mutate(Network network)
     {
         int index = RandomGenerator.Random.Next(network.Nodes.Count);
@@ -14,4 +17,6 @@ public class NodeRemoverNetworkMutator : Mutator<Network>
 
         return new MutationDescription() { Text = "NodeRemover" };
     }
+
+    public string ToText() => TextName;
 }

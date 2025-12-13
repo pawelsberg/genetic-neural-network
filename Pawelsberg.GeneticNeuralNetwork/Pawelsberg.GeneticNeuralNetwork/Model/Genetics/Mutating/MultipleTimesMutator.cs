@@ -2,11 +2,12 @@
 
 public class MultipleTimesMutator<TSpecimen> : Mutator<TSpecimen> where TSpecimen : ISpecimen
 {
-    private readonly Mutators<TSpecimen> _mutators;
+    // TODO - support also references to parent mutators 
+    public Mutators<TSpecimen> Mutators { get; private set; }
     private readonly int _count;
     public MultipleTimesMutator(Mutators<TSpecimen> mutators, int count)
     {
-        _mutators = mutators;
+        Mutators = mutators;
         _count = count;
     }
 
@@ -16,7 +17,7 @@ public class MultipleTimesMutator<TSpecimen> : Mutator<TSpecimen> where TSpecime
         mutationDescription.Text = string.Format("MultipleTimes:Running {0} mutations:(", _count);
         for (int i = 0; i < _count; i++)
         {
-            MutationDescription subMutationDescription = _mutators.Mutate(specimen);
+            MutationDescription subMutationDescription = Mutators.Mutate(specimen);
             mutationDescription.Text += (i == 0 ? "" : ",") + subMutationDescription.Text;
         }
         mutationDescription.Text += ")";

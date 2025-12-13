@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestCaseList>
+  <TestCase>
+    <Input>1</Input>
+    <Output>1</Output>
+  </TestCase>
+  <TestCase>
+    <Input>2</Input>
+    <Output>1</Output>
+    <Output>2</Output>
+  </TestCase>
+  <TestCase>
+    <Input>10</Input>
+    <Output>1</Output>
+    <Output>2</Output>
+    <Output>3</Output>
+    <Output>4</Output>
+    <Output>5</Output>
+    <Output>6</Output>
+    <Output>7</Output>
+    <Output>8</Output>
+    <Output>9</Output>
+    <Output>10</Output>
+  </TestCase>
+  <TestCase>
+    <Input>4</Input>
+    <Output>1</Output>
+    <Output>2</Output>
+    <Output>3</Output>
+    <Output>4</Output>
+  </TestCase>
+  <TestCase>
+    <Input>6</Input>
+    <Output>1</Output>
+    <Output>2</Output>
+    <Output>3</Output>
+    <Output>4</Output>
+    <Output>5</Output>
+    <Output>6</Output>
+  </TestCase>
+</TestCaseList>

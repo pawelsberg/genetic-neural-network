@@ -1,17 +1,18 @@
 using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
-using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingUnitTesting;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingUnitTesting.BackPropagating;
-using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting;
+using Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting.Mutating.DiskStoring;
 using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting.DiskStoring;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting.Mutating;
 
-public class BackPropagationNetworkMutator : Mutator<Network>
+public class BackPropagationNetworkMutator : Mutator<Network>, IUpdatableNetworkMutator, INetworkMutatorTextConvertible
 {
-    public TestCaseList TestCaseList { get; private set; }
-    public int Propagations { get; private set; }
-    public double Strength { get; private set; }
+    public static string TextName = "BackPropagation";
+
+    public TestCaseList TestCaseList { get; set; }
+    public int Propagations { get; set; }
+    public double Strength { get; set; }
 
     public BackPropagationNetworkMutator(TestCaseList testCaseList, int propagations)
     {
@@ -36,4 +37,12 @@ public class BackPropagationNetworkMutator : Mutator<Network>
 
         return new MutationDescription() { Text = "BackPropagation" };
     }
+
+    public void UpdateParameters(int maxNodes, int maxSynapses, int propagations, TestCaseList testCaseList)
+    {
+        TestCaseList = testCaseList;
+        Propagations = propagations;
+    }
+
+    public string ToText() => TextName;
 }

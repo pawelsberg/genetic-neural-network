@@ -17,7 +17,6 @@ public class NetworkSimulation : Simulation<Network>
     private TestCaseList _testCaseList;
     private MeterType _meterType;
     private ParentQueuerType _parentQueuerType;
-    private MutatorsType _mutatorsType;
 
     public int MaxNodes
     {
@@ -75,12 +74,12 @@ public class NetworkSimulation : Simulation<Network>
             UpdateParentQueuer();
         }
     }
-    public MutatorsType MutatorsType
+    public NetworkMutators NetworkMutators
     {
-        get { return _mutatorsType; }
+        get { return Mutators as NetworkMutators; }
         set
         {
-            _mutatorsType = value;
+            Mutators = value;
             UpdateMutators();
         }
     }
@@ -90,9 +89,9 @@ public class NetworkSimulation : Simulation<Network>
         _maxNodes = 10;
         _maxSynapses = 30;
         _propagations = 4;
-        _mutatorsType = MutatorsType.NormalWithBackpropagation;
         _meterType = MeterType.Normal;
         _parentQueuerType = ParentQueuerType.Normal;
+        NetworkMutators = NetworkMutators.CreateNormal(_maxNodes, _maxSynapses);
 
         UpdateGenerationMeter();
         CreateSimulationMeter();
@@ -115,6 +114,12 @@ public class NetworkSimulation : Simulation<Network>
                 throw new ArgumentOutOfRangeException();
         }
     }
+
+    private void UpdateMutators()
+    {
+        NetworkMutators.UpdateParameters(_maxNodes, _maxSynapses, _propagations, _testCaseList);
+    }
+
     private void CreateSimulationMeter()
     {
         double qualityForOneNode = 1d;
@@ -123,19 +128,6 @@ public class NetworkSimulation : Simulation<Network>
         baseMeter.Children.Add(new TotalNodesNetworkQualityMeter(baseMeter, qualityForOneNode));
         baseMeter.Children.Add(new TotalSynapsesNetworkQualityMeter(baseMeter, qualityForOneSynapse));
         SimulationMeter = baseMeter;
-    }
-    private void UpdateMutators()
-    {
-        switch (_mutatorsType)
-        {
-            case MutatorsType.None: Mutators = NetworkMutators.CreateNone(); break;
-            case MutatorsType.Normal: Mutators = NetworkMutators.CreateNormal(MaxNodes, MaxSynapses); break;
-            case MutatorsType.Cleaner: Mutators = NetworkMutators.CreateCleaner(MaxNodes, MaxSynapses); break;
-            case MutatorsType.BackpropagationOnly: Mutators = NetworkMutators.CreateBackpropagationOnly(TestCaseList, Propagations); break;
-            case MutatorsType.NormalWithBackpropagation: Mutators = NetworkMutators.CreateNormalWithBackpropagation(MaxNodes, MaxSynapses, TestCaseList, Propagations); break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
     }
     private void UpdateGenerationMeter()
     {

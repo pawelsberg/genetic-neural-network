@@ -1,0 +1,26 @@
+<TestCaseList>
+	<TestCase>
+		<Input>-1</Input>
+		<Output>0</Output>
+	</TestCase>
+	<TestCase>
+		<Input>0</Input>
+		<Output>0</Output>
+	</TestCase>
+	<TestCase>
+		<Input>4</Input>
+		<Output>0</Output>
+	</TestCase>
+	<TestCase>
+		<Input>5</Input>
+		<Output>1</Output>
+	</TestCase>
+	<TestCase>
+		<Input>6</Input>
+		<Output>0</Output>
+	</TestCase>
+	<TestCase>
+		<Input>100</Input>
+		<Output>0</Output>
+	</TestCase>
+</TestCaseList>

@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestCaseList>
+  <TestCase>
+    <Input>1</Input>
+    <Output>0</Output>
+    <Output>1</Output>
+    <Output>2</Output>
+    <Output>3</Output>
+    <Output>4</Output>
+    <Output>5</Output>
+  </TestCase>
+</TestCaseList>

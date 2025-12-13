@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestCaseList>
+  <TestCase>
+    <Input>1</Input>
+    <Input>1</Input>
+    <Output>2</Output>
+  </TestCase>
+  <TestCase>
+    <Input>2</Input>
+    <Input>2</Input>
+    <Output>4</Output>
+  </TestCase>
+  <TestCase>
+    <Input>168952</Input>
+    <Input>-9658745</Input>
+    <Output>-9489793</Output>
+  </TestCase>
+</TestCaseList>

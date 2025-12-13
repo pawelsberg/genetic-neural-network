@@ -12,6 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Resources\InitialData\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Pawelsberg.GeneticNeuralNetwork\Pawelsberg.GeneticNeuralNetwork.csproj" />
   </ItemGroup>
 

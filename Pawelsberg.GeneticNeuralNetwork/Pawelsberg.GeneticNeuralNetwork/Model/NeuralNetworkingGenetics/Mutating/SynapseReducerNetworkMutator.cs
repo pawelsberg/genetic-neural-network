@@ -1,10 +1,13 @@
 using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
+using Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting.Mutating.DiskStoring;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGenetics.Mutating;
 
-public class SynapseReducerNetworkMutator : Mutator<Network>
+public class SynapseReducerNetworkMutator : Mutator<Network>, INetworkMutatorTextConvertible
 {
+    public static string TextName = "SynapseReducer";
+
     public override MutationDescription Mutate(Network network)
     {
         foreach (Node sourceNode in network.Nodes)
@@ -38,4 +41,6 @@ public class SynapseReducerNetworkMutator : Mutator<Network>
         }
         return new MutationDescription() { Text = "SynapseReducer" };
     }
+
+    public string ToText() => TextName;
 }

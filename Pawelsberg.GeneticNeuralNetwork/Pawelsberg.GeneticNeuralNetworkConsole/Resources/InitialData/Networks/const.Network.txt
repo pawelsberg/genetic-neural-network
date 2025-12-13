@@ -1,0 +1,14 @@
+Input 0 * 43.0000000000000 -> Neuron(L) 5
+Neuron(T) 4 * 13.0000000000000 -> Neuron(L) 0
+Neuron(T) 4 * 12.0000000000000 -> Neuron(L) 1
+Neuron(T) 4 * 23.0000000000000 -> Neuron(L) 2
+Neuron(L) 5 * 1.0000000000000 -> Neuron(L) 3
+Neuron(T) 4 * -11.0000000000000 -> Neuron(L) 3
+Neuron(L) 5 * 0.0232585067035 -> Neuron(T) 4
+Neuron(T) 4 -> Output 0
+Neuron(L) 0 -> Output 1
+Neuron(L) 2 -> Output 2
+Neuron(L) 5 -> Output 3
+Neuron(L) 1 -> Output 4
+Neuron(L) 3 -> Output 5
+Neuron(L) 5 -> Output 6

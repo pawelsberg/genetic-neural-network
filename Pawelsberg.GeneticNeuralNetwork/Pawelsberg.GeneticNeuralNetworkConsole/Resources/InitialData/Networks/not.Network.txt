@@ -1,0 +1,3 @@
+Input 0 * -1.0000000000000 -> Neuron(S) 1
+Bias 0 * 1.0000000000000 -> Neuron(S) 1
+Neuron(S) 1 -> Output 0

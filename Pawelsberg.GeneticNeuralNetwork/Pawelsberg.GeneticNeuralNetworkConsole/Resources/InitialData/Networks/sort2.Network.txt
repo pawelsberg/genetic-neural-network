@@ -1,0 +1,34 @@
+Input 0 * -2.0000000000000 -> Neuron(T) 7
+Input 1 * 4.7643117270444 -> Neuron(T) 7
+Input 2 * 0.0000000000000 -> Neuron(T) 7
+Input 3 * -0.1057745393564 -> Neuron(L) 13
+Neuron(L) 1 * 0.4676565905067 -> Neuron(L) 0
+Neuron(L) 0 * 30.0177981390171 -> Neuron(L) 10
+Neuron(L) 0 * 3.0000000000000 -> Neuron(S) 14
+Neuron(L) 11 * -0.8909136239728 -> Neuron(L) 1
+Neuron(H) 5 * 0.4736512868902 -> Neuron(Σ) 2
+Neuron(Σ) 4 * 0.9932291866453 -> Neuron(Σ) 2
+Neuron(Σ) 2 * 0.0003153278098 -> Neuron(L) 6
+Neuron(H) 5 * 3.0000000000000 -> Neuron(L) 3
+Neuron(S) 14 * 27.0000000000000 -> Neuron(L) 3
+Neuron(H) 5 * 1.0009598132476 -> Neuron(Σ) 4
+Neuron(L) 8 * -1.9880304790285 -> Neuron(H) 5
+Neuron(H) 5 * 3.0000000000000 -> Neuron(L) 6
+Neuron(H) 5 * -1.0003184510853 -> Neuron(L) 8
+Neuron(H) 5 * 1.9904170818112 -> Neuron(H) 12
+Neuron(H) 5 * -4.1908347919263 -> Neuron(T) 9
+Neuron(T) 7 * 0.0096467079008 -> Neuron(L) 6
+Neuron(H) 12 * 1.0521500804649 -> Neuron(L) 6
+Neuron(S) 14 * 1.0000000000000 -> Neuron(L) 6
+Neuron(L) 11 * -0.0009910849074 -> Neuron(T) 7
+Neuron(T) 7 * 10.0524796913306 -> Neuron(H) 12
+Neuron(T) 9 * 5.3106802084776 -> Neuron(L) 8
+Neuron(S) 14 * -8.9998819807704 -> Neuron(L) 8
+Neuron(L) 8 * -1.0000000000000 -> Neuron(H) 12
+Neuron(L) 10 * -0.8174126276731 -> Neuron(L) 13
+Neuron(H) 12 * -29.0000000000000 -> Neuron(L) 11
+Neuron(L) 11 * 2.0000000000000 -> Neuron(L) 11
+Neuron(L) 13 * -2.0000000000000 -> Neuron(L) 11
+Neuron(T) 7 -> Output 0
+Neuron(L) 6 -> Output 1
+Neuron(L) 3 -> Output 2

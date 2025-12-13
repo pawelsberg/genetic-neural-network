@@ -1,15 +1,20 @@
 ﻿using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
+using Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting.Mutating.DiskStoring;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGenetics.Mutating;
 
-public class SynapseReconnectorNetworkMutator : Mutator<Network>
+public class SynapseReconnectorNetworkMutator : Mutator<Network>, INetworkMutatorTextConvertible
 {
+    public static string TextName = "SynapseReconnector";
+
     public override MutationDescription Mutate(Network network)
     {
         TryReconnectRandomSynapse(network); // try reconnect random synapse from neuron - if it has synapses
         return new MutationDescription() { Text = "SynapseReconnector" };
     }
+
+    public string ToText() => TextName;
 
     private void TryReconnectRandomSynapse(Network network)
     {

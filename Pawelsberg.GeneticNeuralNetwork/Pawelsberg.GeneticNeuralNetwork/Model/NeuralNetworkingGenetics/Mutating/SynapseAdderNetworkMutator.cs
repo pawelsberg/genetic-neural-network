@@ -1,11 +1,16 @@
 using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
+using Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting.Mutating;
+using Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting.Mutating.DiskStoring;
+using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting.DiskStoring;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGenetics.Mutating;
 
-public class SynapseAdderNetworkMutator : Mutator<Network>
+public class SynapseAdderNetworkMutator : Mutator<Network>, IUpdatableNetworkMutator, INetworkMutatorTextConvertible
 {
-    private int MaxSynapses { get; set; }
+    public static string TextName = "SynapseAdder";
+
+    public int MaxSynapses { get; set; }
     public SynapseAdderNetworkMutator(int maxSynapses)
     {
         MaxSynapses = maxSynapses;
@@ -52,4 +57,11 @@ public class SynapseAdderNetworkMutator : Mutator<Network>
             }
         }
     }
+
+    public void UpdateParameters(int maxNodes, int maxSynapses, int propagations, TestCaseList testCaseList)
+    {
+        MaxSynapses = maxSynapses;
+    }
+
+    public string ToText() => TextName;
 }

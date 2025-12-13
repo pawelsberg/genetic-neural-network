@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestCaseList>
+  <TestCase>
+    <Input>1</Input>
+    <Output>1</Output>
+    <Output>13</Output>
+    <Output>23</Output>
+    <Output>43</Output>
+    <Output>12</Output>
+    <Output>32</Output>
+    <Output>43</Output>
+  </TestCase>
+</TestCaseList>

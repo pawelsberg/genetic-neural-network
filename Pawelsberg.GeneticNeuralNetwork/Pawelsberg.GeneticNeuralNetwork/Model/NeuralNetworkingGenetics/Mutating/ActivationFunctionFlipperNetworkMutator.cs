@@ -1,10 +1,13 @@
 ﻿using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
+using Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting.Mutating.DiskStoring;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGenetics.Mutating;
 
-public class ActivationFunctionNetworkMutator : Mutator<Network>
+public class ActivationFunctionNetworkMutator : Mutator<Network>, INetworkMutatorTextConvertible
 {
+    public static string TextName = "ActivationFunctionFlipper";
+
     public override MutationDescription Mutate(Network network)
     {
         int neuronIndex = RandomGenerator.Random.Next(network.Nodes.Count);
@@ -15,4 +18,6 @@ public class ActivationFunctionNetworkMutator : Mutator<Network>
         }
         return new MutationDescription() { Text = "ActivationFunctionFlipper" };
     }
+
+    public string ToText() => TextName;
 }

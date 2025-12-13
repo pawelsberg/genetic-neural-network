@@ -1,10 +1,13 @@
 using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
+using Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting.Mutating.DiskStoring;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGenetics.Mutating;
 
-public class NeuronReducerNetworkMutator : Mutator<Network>
+public class NeuronReducerNetworkMutator : Mutator<Network>, INetworkMutatorTextConvertible
 {
+    public static string TextName = "NeuronReducer";
+
     public override MutationDescription Mutate(Network network)
     {
         while (true)
@@ -33,4 +36,6 @@ public class NeuronReducerNetworkMutator : Mutator<Network>
         return new MutationDescription() { Text = "NeuronReducer" };
 
     }
+
+    public string ToText() => TextName;
 }

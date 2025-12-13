@@ -1,0 +1,2 @@
+Input 0 * 0.0000000000000 -> Neuron(L) 0
+Neuron(L) 0 -> Output 0

@@ -23,7 +23,10 @@ public class CommandDispatcher
             {LoadSudokuCaseListCommand.Name, () => new LoadSudokuCaseListCommand()},
             {LoadPpmTestCaseListCommand.Name, () => new LoadPpmTestCaseListCommand()},
             {HelpCommand.Name, ()=> new HelpCommand(this)},
-            {SavePpmCommand.Name, () => new SavePpmCommand()}
+            {SavePpmCommand.Name, () => new SavePpmCommand()},
+            {InitCommand.Name, () => new InitCommand()},
+            {LoadMutatorsCommand.Name, () => new LoadMutatorsCommand()},
+            {SaveMutatorsCommand.Name, () => new SaveMutatorsCommand()}
         };
     }
     public Command GetCommand(string commandName)

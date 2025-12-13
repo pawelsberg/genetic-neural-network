@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestCaseList>
+  <TestCase>
+    <Input>-3</Input>
+    <Output>1</Output>
+  </TestCase>
+  <TestCase>
+    <Input>-2</Input>
+    <Output>1</Output>
+  </TestCase>
+  <TestCase>
+    <Input>-1</Input>
+    <Output>1</Output>
+  </TestCase>
+  <TestCase>
+    <Input>1</Input>
+    <Output>1</Output>
+  </TestCase>
+  <TestCase>
+    <Input>2</Input>
+    <Output>1</Output>
+  </TestCase>
+  <TestCase>
+    <Input>3</Input>
+    <Output>1</Output>
+  </TestCase>
+</TestCaseList>

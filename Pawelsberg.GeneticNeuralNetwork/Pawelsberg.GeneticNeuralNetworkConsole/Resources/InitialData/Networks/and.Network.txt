@@ -1,0 +1,5 @@
+Input 0 * 1.0000000000000 -> Neuron(S) 0
+Input 1 * 1.0000000000000 -> Neuron(S) 0
+Input 2 * 1.0000000000000 -> Neuron(S) 0
+Neuron(S) 0 * -2.0000000000000 -> Neuron(S) 0
+Neuron(S) 0 -> Output 0

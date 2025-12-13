@@ -2,6 +2,7 @@ namespace Pawelsberg.GeneticNeuralNetwork.Model.Genetics.Mutating;
 
 public class RandomNumberOfTimesMutator<TSpecimen> : Mutator<TSpecimen> where TSpecimen : ISpecimen
 {
+    // TODO - support also references to parent mutators 
     public Mutator<TSpecimen> Mutator { get; private set; }
     public int MinNumberOfTimes { get; private set; }
     public int MaxNumberOfTimes { get; private set; }
