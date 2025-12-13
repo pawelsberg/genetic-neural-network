@@ -14,6 +14,10 @@ To get more details about a specific command add the command name after `help`.
 Usages:
 `>help`
 `>help (command name)`
+## `init`
+Extracts embedded resources (test cases, networks, mutators configurations) to the AppData folder. Run this command once when you first start using the application to populate sample data.
+
+Usage: `>init`
 ## `load`          
 Loads specific neural network as additional specimen in generation.
 
@@ -26,9 +30,13 @@ Usage: `>loadall`
 Loads specific neural network as the only specimen in generation. 
 This command will remove all other specimens from the generation.
 The simplest possible network (containing one input and one output with one node) is named 'pass'.
-You can load it ussing this command to restart simulation. For this run `>loadclear pass` command.
+You can load it using this command to restart simulation. For this run `>loadclear pass` command.
 
 Usage: `>loadclear (network name)`
+## `loadmutators`
+Loads mutators configuration from a file. This allows you to use custom or previously saved mutation settings.
+
+Usage: `>loadmutators (mutators name)`
 ## `loadppmtcl`    
 Loads a test case list in ppm format.
 
@@ -57,6 +65,10 @@ Usage: `>run (number of generations)`
 Save the best neural network. Existing network with the same name will be overwritten.
 
 Usage: `>save (network name)`
+## `savemutators`
+Saves the current mutators configuration to a file. This allows you to preserve custom mutation settings for later use.
+
+Usage: `>savemutators (mutators name)`
 ## `saveppm`       
 Save the best neural network in ppm format.
 
