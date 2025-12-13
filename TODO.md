@@ -2,6 +2,7 @@
 1. Mutators:
     1. allow listing,
     2. allow modifying
+    3. back propagation doing all weights changes in one go.
 2. Meter types:
     1. in file,
     2. allow loading,
