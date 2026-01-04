@@ -65,12 +65,36 @@ There are defined here parent queuers that select parents for reproduction:
  An enum representing a type of activation function used by a neuron.
 `Network`
  Represents a neural network consisting of nodes and synapses. Inputs and outputs of a neural network are represented by designated synapses.
- #### In Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking.DiskStoring
+#### In Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking.DiskStoring
 Rutines for saving/loading neural networks to/from disk.
 
-### Key Classes/Enums in UnitTesting
+### Key Classes in UnitTesting
 `TestCase`
  Represents a single test case with input and expected output.
+`TestCaseList`
+  Represents a collection of test cases representing a single algorithm.
+#### In Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting.DiskStoring
+Various routines for saving/loading test cases and test case lists to/from disk.
+
+### Key Classes in NeuralNetworkingGenetics
+Genetic algorithm logic for neural networks without knowledge of test cases.
+#### In Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGenetics.Mutating
+Mutators of neural networks - not related to test cases.
+#### In Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGenetics.QualityMeasuring
+Quality measurement of neural networks - not related to test cases.
+
+### Key Classes in NeuralNetworkingUnitTesting
+Neural network unit testing logic without knowledge of genetic algorithm.
+`NetworkExtension`
+ Extension methods for neural networks to run test cases.
+#### In Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingUnitTesting.BackPropagating
+Backpropagation logic for neural networks to fulfill test cases.
+##### In Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingUnitTesting.BackPropagating.Math
+Math for backpropagation.
+
+
+
+
 
  TODO: finish
 

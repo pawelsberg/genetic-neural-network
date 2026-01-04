@@ -1,7 +1,7 @@
 using Pawelsberg.GeneticNeuralNetwork.Model;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingUnitTesting;
-using Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting;
+using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting;
 using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting;
 using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting.DiskStoring;
 

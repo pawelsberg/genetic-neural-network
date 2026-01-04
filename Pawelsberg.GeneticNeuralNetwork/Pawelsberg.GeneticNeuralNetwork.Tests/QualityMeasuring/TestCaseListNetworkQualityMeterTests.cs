@@ -1,11 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
-using Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting.QualityMeasuring;
+using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.QualityMeasuring;
 using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting;
-using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting.DiskStoring;
 using Xunit;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Tests.QualityMeasuring;

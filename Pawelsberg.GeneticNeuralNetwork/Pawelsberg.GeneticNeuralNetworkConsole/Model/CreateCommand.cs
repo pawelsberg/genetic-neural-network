@@ -1,6 +1,6 @@
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingUnitTesting;
-using Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting;
+using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting;
 
 namespace Pawelsberg.GeneticNeuralNetworkConsole.Model;
 

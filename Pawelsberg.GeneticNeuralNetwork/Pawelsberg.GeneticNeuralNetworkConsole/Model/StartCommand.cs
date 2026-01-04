@@ -1,4 +1,4 @@
-using Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting;
+using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting;
 
 namespace Pawelsberg.GeneticNeuralNetworkConsole.Model;
 

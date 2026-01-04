@@ -1,6 +1,5 @@
 ﻿using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
 using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting;
-using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting.DiskStoring;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingUnitTesting;
 

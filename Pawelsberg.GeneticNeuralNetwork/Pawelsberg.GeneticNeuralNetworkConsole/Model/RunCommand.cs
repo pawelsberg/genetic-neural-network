@@ -1,7 +1,7 @@
 using Pawelsberg.GeneticNeuralNetwork.Model;
 using Pawelsberg.GeneticNeuralNetwork.Model.Genetics.Simulating;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
-using Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting;
+using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting;
 
 namespace Pawelsberg.GeneticNeuralNetworkConsole.Model;
 

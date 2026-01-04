@@ -1,5 +1,5 @@
 using Pawelsberg.GeneticNeuralNetwork.Model;
-using Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting;
+using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting;
 using System.Text;
 
 namespace Pawelsberg.GeneticNeuralNetworkConsole.Model;
