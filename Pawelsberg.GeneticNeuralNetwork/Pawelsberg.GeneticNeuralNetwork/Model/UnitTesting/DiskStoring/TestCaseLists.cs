@@ -21,7 +21,7 @@ public static class TestCaseLists
 
     public static TestCaseList LoadTestCaseList(string name)
     {
-        return TestCaseList.Load(Path.Combine(DataDirectory.FullPath, Subdirectory, name + "." + Extension));
+        return TestCaseListExtension.Load(Path.Combine(DataDirectory.FullPath, Subdirectory, name + "." + Extension));
     }
 
     public static void Save(TestCaseList testCase, string name)

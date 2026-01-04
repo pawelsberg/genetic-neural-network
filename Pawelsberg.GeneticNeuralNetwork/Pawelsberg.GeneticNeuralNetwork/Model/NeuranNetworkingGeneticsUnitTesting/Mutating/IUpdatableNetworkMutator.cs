@@ -1,4 +1,4 @@
-﻿using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting.DiskStoring;
+﻿using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting.Mutating
 {

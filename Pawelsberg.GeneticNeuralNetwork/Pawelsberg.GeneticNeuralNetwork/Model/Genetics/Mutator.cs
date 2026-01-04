@@ -2,5 +2,5 @@
 
 public abstract class Mutator<TSpecimen> where TSpecimen : ISpecimen
 {
-    public abstract MutationDescription Mutate(TSpecimen network);
+    public abstract MutationDescription Mutate(TSpecimen specimen);
 }

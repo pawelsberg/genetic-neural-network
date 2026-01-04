@@ -1,23 +1,9 @@
-﻿using System.Xml;
-
-namespace Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting.DiskStoring;
+namespace Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting;
 
 public class TestCaseList
 {
-    private const string c_xmlTestCaseList = "TestCaseList";
-
     public List<TestCase> TestCases { get; set; }
 
-    public TestCaseList(XmlReader reader) : this()
-    {
-        reader.ReadToFollowing(c_xmlTestCaseList);
-        bool emptyTestCase = reader.IsEmptyElement;
-        reader.ReadStartElement(c_xmlTestCaseList);
-        while (reader.IsStartElement())
-            TestCases.Add(TestCaseExtension.Load(reader));
-        if (!emptyTestCase)
-            reader.ReadEndElement(); // c_xmlTestCaseList
-    }
     public TestCaseList()
     {
         TestCases = new List<TestCase>();
@@ -120,28 +106,5 @@ public class TestCaseList
         //return;
         //   quality -  41.38333
         #endregion
-
     }
-
-    public void Save(string fileName)
-    {
-        XmlWriterSettings xmlWriterSettings = new XmlWriterSettings();
-        xmlWriterSettings.Indent = true;
-        XmlWriter writer = XmlWriter.Create(fileName, xmlWriterSettings);
-        writer.WriteStartElement(c_xmlTestCaseList);
-        foreach (TestCase testCase in TestCases)
-            testCase.Save(writer);
-
-        writer.WriteEndElement(); // TestCaseList
-        writer.Close();
-    }
-
-    public static TestCaseList Load(string fileName)
-    {
-        XmlReader reader = XmlReader.Create(fileName);
-        TestCaseList result = new TestCaseList(reader);
-        reader.Close();
-        return result;
-    }
-
 }

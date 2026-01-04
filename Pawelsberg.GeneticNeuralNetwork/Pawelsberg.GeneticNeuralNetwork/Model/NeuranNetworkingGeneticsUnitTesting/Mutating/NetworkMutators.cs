@@ -2,7 +2,7 @@
 using Pawelsberg.GeneticNeuralNetwork.Model.Genetics.Mutating;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGenetics.Mutating;
-using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting.DiskStoring;
+using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting.Mutating;
 

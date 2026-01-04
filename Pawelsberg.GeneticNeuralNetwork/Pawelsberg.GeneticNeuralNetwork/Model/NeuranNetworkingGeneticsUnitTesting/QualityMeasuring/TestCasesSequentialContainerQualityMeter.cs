@@ -4,7 +4,6 @@ using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting.QualityMeasuring.DiskStoring;
 using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting;
-using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting.DiskStoring;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting.QualityMeasuring;
 
