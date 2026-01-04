@@ -3,7 +3,15 @@ namespace Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 public class QualityMeter<TSpecimen> where TSpecimen : ISpecimen
 {
     public QualityMeter<TSpecimen> Parent { get; private set; }
-    public List<QualityMeter<TSpecimen>> Children { get; private set; }
+    
+    private List<QualityMeter<TSpecimen>> _children;
+    public virtual List<QualityMeter<TSpecimen>> Children 
+    { 
+        get
+        {
+            return _children;
+        }
+    }
 
     protected virtual double MaxMeterQuality { get { return 0d; } }
     public double MaxQualityRecursive
@@ -13,7 +21,7 @@ public class QualityMeter<TSpecimen> where TSpecimen : ISpecimen
     public QualityMeter(QualityMeter<TSpecimen> parent)
     {
         Parent = parent;
-        Children = new List<QualityMeter<TSpecimen>>();
+        _children = new List<QualityMeter<TSpecimen>>();
     }
 
     public virtual QualityMeasurement<TSpecimen> MeasureMeterQuality(TSpecimen spec, QualityMeasurement<TSpecimen> parentQualityMeasurement)

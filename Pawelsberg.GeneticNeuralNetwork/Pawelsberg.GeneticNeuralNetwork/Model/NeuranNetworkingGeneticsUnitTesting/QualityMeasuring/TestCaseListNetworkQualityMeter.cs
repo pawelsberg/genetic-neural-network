@@ -1,3 +1,4 @@
+using System.Globalization;
 using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingUnitTesting;
@@ -6,8 +7,9 @@ using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting.DiskStoring;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting.QualityMeasuring;
 
-public class TestCaseListNetworkQualityMeter : QualityMeter<Network>
+public class TestCaseListNetworkQualityMeter : QualityMeter<Network>, INetworkQualityMeterTextConvertible, ITestCasesQualityMeterContainer
 {
+    public static string TextName = "TestCaseList";
     public TestCaseList TestCaseList { get; set; }
     public int Propagations { get; set; }
 
@@ -17,6 +19,8 @@ public class TestCaseListNetworkQualityMeter : QualityMeter<Network>
         TestCaseList = testCaseList;
         Propagations = propagations;
     }
+
+    public string ToText() => $"{TextName}({Propagations.ToString(CultureInfo.InvariantCulture)})";
 
     public override QualityMeasurement<Network> MeasureMeterQuality(Network network, QualityMeasurement<Network> parentQualityMeasurement)
     {

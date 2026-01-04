@@ -137,4 +137,161 @@ public class CodedText
         if (character == '(') depth++;
         else if (character == ')') depth--;
     }
+
+    /// <summary>
+    /// Gets the indentation level of a line (number of leading spaces divided by 2).
+    /// </summary>
+    public static int GetIndentLevel(string line)
+    {
+        int spaces = 0;
+        foreach (char c in line)
+        {
+            if (c == ' ') spaces++;
+            else break;
+        }
+        return spaces / 2;
+    }
+
+    /// <summary>
+    /// Extracts the text name (identifier) before the first parenthesis.
+    /// </summary>
+    public static string ExtractTextName(string content)
+    {
+        int parenIndex = content.IndexOf('(');
+        if (parenIndex > 0)
+        {
+            return content.Substring(0, parenIndex).Trim();
+        }
+        return content.Trim();
+    }
+
+    /// <summary>
+    /// Splits a text into lines, removing empty entries.
+    /// </summary>
+    public static string[] SplitIntoLines(string text)
+    {
+        return text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+    }
+
+    /// <summary>
+    /// Splits a hyphen-separated range string into two integers.
+    /// Returns (value, value) if no hyphen is present.
+    /// </summary>
+    public static (int from, int to) SplitRange(string inner)
+    {
+        if (inner.Contains('-'))
+        {
+            int hyphenIndex = inner.IndexOf('-');
+            int from = int.Parse(inner.Substring(0, hyphenIndex).Trim(), System.Globalization.CultureInfo.InvariantCulture);
+            int to = int.Parse(inner.Substring(hyphenIndex + 1).Trim(), System.Globalization.CultureInfo.InvariantCulture);
+            return (from, to);
+        }
+        else
+        {
+            int value = int.Parse(inner.Trim(), System.Globalization.CultureInfo.InvariantCulture);
+            return (value, value);
+        }
+    }
+
+    /// <summary>
+    /// Splits a comma-separated parameter string into trimmed parts.
+    /// </summary>
+    public static string[] SplitParams(string inner)
+    {
+        return inner.Split(',').Select(s => s.Trim()).ToArray();
+    }
+}
+
+/// <summary>
+/// A wrapper for parsing multi-line text with indentation support.
+/// </summary>
+public class CodedLines
+{
+    private readonly string[] _lines;
+    public int Index { get; set; }
+    public int Count => _lines.Length;
+    public bool EndOfLines => Index >= _lines.Length;
+
+    public CodedLines(string text)
+    {
+        _lines = CodedText.SplitIntoLines(text);
+    }
+
+    public CodedLines(string[] lines)
+    {
+        _lines = lines;
+    }
+
+    /// <summary>
+    /// Gets a line by absolute index without changing the current index.
+    /// </summary>
+    public string this[int index] => _lines[index];
+
+    /// <summary>
+    /// Gets the current line or null if at end.
+    /// </summary>
+    public string? CurrentLine => Index < _lines.Length ? _lines[Index] : null;
+
+    /// <summary>
+    /// Gets the current line's trimmed content or null if at end.
+    /// </summary>
+    public string? CurrentContent => CurrentLine?.Trim();
+
+    /// <summary>
+    /// Gets the current line's indent level.
+    /// </summary>
+    public int CurrentIndent => CurrentLine != null ? CodedText.GetIndentLevel(CurrentLine) : 0;
+
+    /// <summary>
+    /// Advances to the next line.
+    /// </summary>
+    public void Advance() => Index++;
+
+    /// <summary>
+    /// Reads and advances the current line if it exists.
+    /// </summary>
+    public string? ReadLine()
+    {
+        if (EndOfLines) return null;
+        return _lines[Index++];
+    }
+
+    /// <summary>
+    /// Gets the indent level at a specific index.
+    /// </summary>
+    public int GetIndentAt(int index) => index < _lines.Length ? CodedText.GetIndentLevel(_lines[index]) : 0;
+
+    /// <summary>
+    /// Collects all lines at a deeper indent than the base indent, advancing the index.
+    /// Returns the trimmed content of each collected line.
+    /// </summary>
+    public List<string> CollectIndentedContent(int baseIndent)
+    {
+        var specs = new List<string>();
+        while (!EndOfLines)
+        {
+            int indent = CurrentIndent;
+            if (indent <= baseIndent)
+                break;
+            specs.Add(CurrentContent!);
+            Advance();
+        }
+        return specs;
+    }
+
+    /// <summary>
+    /// Skips empty lines (blank or whitespace-only).
+    /// </summary>
+    public void SkipEmptyLines()
+    {
+        while (!EndOfLines && string.IsNullOrWhiteSpace(CurrentLine))
+        {
+            Advance();
+        }
+    }
+
+    /// <summary>
+    /// Gets the underlying lines array (for interop with legacy code).
+    /// </summary>
+    public string[] ToArray() => _lines;
 }

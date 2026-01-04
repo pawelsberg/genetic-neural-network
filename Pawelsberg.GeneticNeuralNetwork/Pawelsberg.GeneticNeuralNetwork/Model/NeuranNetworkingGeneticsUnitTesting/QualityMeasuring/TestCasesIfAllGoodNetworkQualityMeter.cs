@@ -1,16 +1,20 @@
+using System.Globalization;
 using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting.QualityMeasuring;
 
-public class TestCasesIfAllGoodNetworkQualityMeter : QualityMeter<Network>
+public class TestCasesIfAllGoodNetworkQualityMeter : QualityMeter<Network>, INetworkQualityMeterTextConvertible
 {
+    public static string TextName = "IfAllGood";
     public double GoodDifference { get; set; }
 
     public TestCasesIfAllGoodNetworkQualityMeter(QualityMeter<Network> parent, double goodDifference) : base(parent)
     {
         GoodDifference = goodDifference;
     }
+
+    public string ToText() => $"{TextName}({GoodDifference.ToString(CultureInfo.InvariantCulture)})";
 
     public override QualityMeasurement<Network> MeasureMeterQuality(Network network, QualityMeasurement<Network> parentQualityMeasurement)
     {

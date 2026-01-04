@@ -1,16 +1,21 @@
+using System.Globalization;
 using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
+using Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting.QualityMeasuring;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGenetics.QualityMeasuring;
 
-public class NoLoopsNetworkQualityMeter : QualityMeter<Network>
+public class NoLoopsNetworkQualityMeter : QualityMeter<Network>, INetworkQualityMeterTextConvertible
 {
+    public static string TextName = "NoLoops";
     public double QualityForZeroLoops { get; set; }
 
     public NoLoopsNetworkQualityMeter(QualityMeter<Network> parent, double qualityForZeroLoops) : base(parent)
     {
         QualityForZeroLoops = qualityForZeroLoops;
     }
+
+    public string ToText() => $"{TextName}({QualityForZeroLoops.ToString(CultureInfo.InvariantCulture)})";
 
     public override QualityMeasurement<Network> MeasureMeterQuality(Network network, QualityMeasurement<Network> parentQualityMeasurement)
     {

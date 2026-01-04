@@ -15,8 +15,8 @@ public class NetworkSimulation : Simulation<Network>
     private int _maxSynapses;
     private int _propagations;
     private TestCaseList _testCaseList;
-    private MeterType _meterType;
     private ParentQueuerType _parentQueuerType;
+    private Func<int, TestCaseList, QualityMeter<Network>> _qualityMeterFactory;
 
     public int MaxNodes
     {
@@ -42,7 +42,7 @@ public class NetworkSimulation : Simulation<Network>
         set
         {
             _propagations = value;
-            UpdateGenerationMeter();
+            UpdateGenerationMeterPropagations();
             UpdateMutators();
         }
     }
@@ -52,17 +52,8 @@ public class NetworkSimulation : Simulation<Network>
         set
         {
             _testCaseList = value;
-            UpdateGenerationMeter();
+            UpdateGenerationMeterTestCaseList();
             UpdateMutators();
-        }
-    }
-    public MeterType MeterType
-    {
-        get { return _meterType; }
-        set
-        {
-            _meterType = value;
-            UpdateGenerationMeter();
         }
     }
     public ParentQueuerType ParentQueuerType
@@ -83,17 +74,26 @@ public class NetworkSimulation : Simulation<Network>
             UpdateMutators();
         }
     }
+    public Func<int, TestCaseList, QualityMeter<Network>> QualityMeterFactory
+    {
+        get { return _qualityMeterFactory; }
+        set
+        {
+            _qualityMeterFactory = value;
+            RebuildGenerationMeter();
+        }
+    }
 
     public NetworkSimulation()
     {
         _maxNodes = 10;
         _maxSynapses = 30;
         _propagations = 4;
-        _meterType = MeterType.Normal;
         _parentQueuerType = ParentQueuerType.Normal;
         NetworkMutators = NetworkMutators.CreateNormal(_maxNodes, _maxSynapses);
 
-        UpdateGenerationMeter();
+        _qualityMeterFactory = NetworkQualityMeters.CreateNormal;
+        RebuildGenerationMeter();
         CreateSimulationMeter();
         UpdateMutators();
         UpdateParentQueuer();
@@ -129,28 +129,29 @@ public class NetworkSimulation : Simulation<Network>
         baseMeter.Children.Add(new TotalSynapsesNetworkQualityMeter(baseMeter, qualityForOneSynapse));
         SimulationMeter = baseMeter;
     }
-    private void UpdateGenerationMeter()
+
+    private void RebuildGenerationMeter()
     {
-        switch (_meterType)
+        GenerationMeter = _qualityMeterFactory(_propagations, _testCaseList);
+    }
+
+    private void UpdateGenerationMeterPropagations()
+    {
+        if (GenerationMeter is ITestCasesQualityMeterContainer container)
+            container.Propagations = _propagations;
+        else
+            RebuildGenerationMeter();
+    }
+
+    private void UpdateGenerationMeterTestCaseList()
+    {
+        if (GenerationMeter is ITestCasesQualityMeterContainer container)
         {
-            case MeterType.Normal:
-                GenerationMeter = NetworkQualityMeters.CreateNormal(_propagations, _testCaseList);
-                break;
-            case MeterType.PropagationsAgnostic:
-                GenerationMeter = NetworkQualityMeters.CreatePropagationsAgnostic(_propagations, _testCaseList);
-                break;
-            case MeterType.LowestMultipliers:
-                GenerationMeter = NetworkQualityMeters.CreateLowestMultipliers(_propagations, _testCaseList);
-                break;
-            case MeterType.Sequential:
-                GenerationMeter = NetworkQualityMeters.CreateSequential(_propagations, _testCaseList);
-                break;
-            case MeterType.Aggregate:
-                GenerationMeter = NetworkQualityMeters.CreateAggregate(_propagations, _testCaseList);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
+            container.TestCaseList = _testCaseList;
+            RecalculateMaxPossibleQuality();
         }
+        else
+            RebuildGenerationMeter();
     }
 
     private void OnNextGenerationCreated(object sender, NextGenerationCreatedEventArgs<Network> nextGenerationCreatedEventArgs)

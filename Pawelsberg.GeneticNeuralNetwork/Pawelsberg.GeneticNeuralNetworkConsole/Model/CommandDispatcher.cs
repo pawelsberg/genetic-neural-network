@@ -26,7 +26,9 @@ public class CommandDispatcher
             {SavePpmCommand.Name, () => new SavePpmCommand()},
             {InitCommand.Name, () => new InitCommand()},
             {LoadMutatorsCommand.Name, () => new LoadMutatorsCommand()},
-            {SaveMutatorsCommand.Name, () => new SaveMutatorsCommand()}
+            {SaveMutatorsCommand.Name, () => new SaveMutatorsCommand()},
+            {LoadQualityMetersCommand.Name, () => new LoadQualityMetersCommand()},
+            {SaveQualityMetersCommand.Name, () => new SaveQualityMetersCommand()}
         };
     }
     public Command GetCommand(string commandName)

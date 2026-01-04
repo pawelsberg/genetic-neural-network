@@ -15,7 +15,6 @@ public class SetCommand : Command
     public SetCommand()
     {
         Func<string, object> parseInt = (text) => int.Parse(text);
-        Func<string, object> parseMeterType = (text) => Enum.Parse(typeof(MeterType), text);
         Func<string, object> parseParentQueuerType = (text) => Enum.Parse(typeof(ParentQueuerType), text);
 
         _variableList = new List<Variable>()
@@ -27,7 +26,6 @@ public class SetCommand : Command
             new Variable() { Name = "maxSpecimens", Getter = (sim)=> sim.MaxSpecimens, Setter = (sim,val)=> sim.MaxSpecimens = (int)val, Parse = parseInt },
             new Variable() { Name = "delayTimeMs", Getter = (sim)=> sim.SimulationTimer.DelayTimeMs, Setter = (sim,val)=> sim.SimulationTimer.DelayTimeMs = (int)val, Parse = parseInt },
             new Variable() { Name = "generationMultiplier", Getter = (sim)=> sim.GenerationMultiplier, Setter = (sim,val)=> sim.GenerationMultiplier = (int)val, Parse = parseInt },
-            new Variable() { Name = "meterType", Getter = (sim)=> sim.MeterType, Setter = (sim,val)=> sim.MeterType = (MeterType)val, Parse = parseMeterType },
             new Variable() { Name = "parentQueuer", Getter = (sim)=> sim.ParentQueuerType, Setter = (sim,val)=> sim.ParentQueuerType = (ParentQueuerType)val, Parse = parseParentQueuerType },
             new Variable() { Name = "seed", Getter = (sim)=> "x", Setter = (sim,val)=> RandomGenerator.Random = new Random((int)val), Parse = parseInt }
         };

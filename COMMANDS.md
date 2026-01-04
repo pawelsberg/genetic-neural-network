@@ -41,6 +41,10 @@ Usage: `>loadmutators (mutators name)`
 Loads a test case list in ppm format.
 
 Usage: `>loadppmtcl (ppm test case list name)`
+## `loadqm`
+Loads quality meters configuration from a file. This allows you to customize how neural network quality is measured.
+
+Usage: `>loadqm (quality meters name)`
 ## `loadsudokutcl`
 Loads a test case list in sudoku format.
 
@@ -73,6 +77,10 @@ Usage: `>savemutators (mutators name)`
 Save the best neural network in ppm format.
 
 Usage: `>saveppm (ppm name)`
+## `saveqm`
+Saves the current quality meters configuration to a file. This allows you to preserve custom quality measurement settings for later use.
+
+Usage: `>saveqm (quality meters name)`
 ## `set`           
 Show/set general settings of genetic algorithm.
 
@@ -120,31 +128,10 @@ There are the following variables to be changed:
   Maximum number of generations to be processed in `delayTimeMs` period.
 
   Default value: `5`
-### `meterType`
-  Type of meter to measure quality of the neural network. 
-  Each meter type consists of a number of measurements summed together to give a final value of quality.
-  Possible values:
-  #### `Normal`
-  Standard set of measurements
-  #### `LowestMultipliers`
-  Network with lowest sum of node multipliers is prefered.
-  #### `Sequential`
-  Measures subsequent test cases only if previous were satissfied.
-  #### `Aggregate`
-  Checks only the test cases.
-  #### `PropagationsAgnostic`
-  Runs network for a range of propagations to make sure network is number of propagations agnostic.
-    
-  Default value: `Normal`
 ### `parentQueuer`
   Defines how specimens are being selected for the next generation.
   Possible values are: `Normal`,`Unique`,`RandomEnd`
 
-  Default value: `Normal`
-### `mutatorsType`
-  Defines the way mutations are introduced to the specimens to create new specimens for a next generation.
-  Possible values are: `None`,`Normal`,`Cleaner`,`BackpropagationOnly`,`NormalWithBackpropagation`.
-  
   Default value: `Normal`
 ### `seed`
   Seed number for random operations. 

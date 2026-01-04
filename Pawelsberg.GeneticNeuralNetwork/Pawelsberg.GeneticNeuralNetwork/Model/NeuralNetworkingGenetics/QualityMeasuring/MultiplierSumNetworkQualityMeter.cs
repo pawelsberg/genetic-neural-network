@@ -1,16 +1,21 @@
+using System.Globalization;
 using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
+using Pawelsberg.GeneticNeuralNetwork.Model.NeuranNetworkingGeneticsUnitTesting.QualityMeasuring;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGenetics.QualityMeasuring;
 
-public class MultiplierSumNetworkQualityMeter : QualityMeter<Network>
+public class MultiplierSumNetworkQualityMeter : QualityMeter<Network>, INetworkQualityMeterTextConvertible
 {
+    public static string TextName = "MultiplierSum";
     public double QualityForSumEqOne { get; set; }
 
     public MultiplierSumNetworkQualityMeter(QualityMeter<Network> parent, double qualityForSumEqOne) : base(parent)
     {
         QualityForSumEqOne = qualityForSumEqOne;
     }
+
+    public string ToText() => $"{TextName}({QualityForSumEqOne.ToString(CultureInfo.InvariantCulture)})";
 
     public override QualityMeasurement<Network> MeasureMeterQuality(Network network, QualityMeasurement<Network> parentQualityMeasurement)
     {
