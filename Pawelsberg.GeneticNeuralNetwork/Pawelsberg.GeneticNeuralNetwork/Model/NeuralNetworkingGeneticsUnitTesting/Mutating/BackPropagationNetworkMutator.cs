@@ -6,7 +6,7 @@ using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.Mutating;
 
-public class BackPropagationNetworkMutator : Mutator<Network>, IUpdatableNetworkMutator, INetworkMutatorTextConvertible
+public class BackPropagationNetworkMutator : Mutator<Network>, ITestCaseDependentMutator, INetworkMutatorTextConvertible
 {
     public static string TextName = "BackPropagation";
 
@@ -36,12 +36,6 @@ public class BackPropagationNetworkMutator : Mutator<Network>, IUpdatableNetwork
 
 
         return new MutationDescription() { Text = "BackPropagation" };
-    }
-
-    public void UpdateParameters(int maxNodes, int maxSynapses, int propagations, TestCaseList testCaseList)
-    {
-        TestCaseList = testCaseList;
-        Propagations = propagations;
     }
 
     public string ToText() => TextName;

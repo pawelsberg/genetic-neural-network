@@ -1,12 +1,10 @@
 using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
-using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.Mutating;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.Mutating.DiskStoring;
-using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGenetics.Mutating;
 
-public class TransparentNeuronAdderNetworkMutator : Mutator<Network>, IUpdatableNetworkMutator, INetworkMutatorTextConvertible
+public class TransparentNeuronAdderNetworkMutator : Mutator<Network>, IMaxNodesLimitedMutator, IMaxSynapsesLimitedMutator, INetworkMutatorTextConvertible
 {
     public static string TextName = "TransparentNeuronAdder";
 
@@ -58,12 +56,6 @@ public class TransparentNeuronAdderNetworkMutator : Mutator<Network>, IUpdatable
                 network.Nodes.Add(newNeuron);
             }
         }
-    }
-
-    public void UpdateParameters(int maxNodes, int maxSynapses, int propagations, TestCaseList testCaseList)
-    {
-        MaxNodes = maxNodes;
-        MaxSynapses = maxSynapses;
     }
 
     public string ToText() => TextName;

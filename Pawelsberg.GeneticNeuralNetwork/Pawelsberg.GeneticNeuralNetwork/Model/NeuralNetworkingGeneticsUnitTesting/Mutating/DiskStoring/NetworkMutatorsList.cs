@@ -21,7 +21,7 @@ namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTest
             return files;
         }
 
-        public static NetworkMutators LoadNetworkMutators(string name, int maxNodes, int maxSynapses, int propagations, TestCaseList testCaseList)
+        public static NetworkMutators Load(string name, int maxNodes, int maxSynapses, int propagations, TestCaseList testCaseList)
         {
             return NetworkMutatorsExtension.Load(Path.Combine(DataDirectory.FullPath, Subdirectory, name + "." + Extension), maxNodes, maxSynapses, propagations, testCaseList);
         }

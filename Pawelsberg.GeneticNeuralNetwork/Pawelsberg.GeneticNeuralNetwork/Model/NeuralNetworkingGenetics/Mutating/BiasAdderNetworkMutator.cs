@@ -1,12 +1,10 @@
 using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
-using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.Mutating;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.Mutating.DiskStoring;
-using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGenetics.Mutating;
 
-public class BiasAdderNetworkMutator : Mutator<Network>, IUpdatableNetworkMutator, INetworkMutatorTextConvertible
+public class BiasAdderNetworkMutator : Mutator<Network>, IMaxNodesLimitedMutator, INetworkMutatorTextConvertible
 {
     public static string TextName = "BiasAdder";
 
@@ -25,11 +23,6 @@ public class BiasAdderNetworkMutator : Mutator<Network>, IUpdatableNetworkMutato
             network.Nodes.Insert(insertIndex, new Bias());
         }
         return new MutationDescription() { Text = "BiasAdder" };
-    }
-
-    public void UpdateParameters(int maxNodes, int maxSynapses, int propagations, TestCaseList testCaseList)
-    {
-        MaxNodes = maxNodes;
     }
 
     public string ToText() => TextName;

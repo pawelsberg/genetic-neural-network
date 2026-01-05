@@ -22,7 +22,7 @@ public class LoadMutatorsCommand : Command
 
     public override void Run(NetworkSimulation simulation)
     {
-        NetworkMutators mutators = NetworkMutatorsList.LoadNetworkMutators(_name, simulation.MaxNodes, simulation.MaxSynapses, simulation.Propagations, simulation.TestCaseList);
+        NetworkMutators mutators = NetworkMutatorsList.Load(_name, simulation.MaxNodes, simulation.MaxSynapses, simulation.Propagations, simulation.TestCaseList);
         simulation.Mutators = mutators;
         Console.ForegroundColor = ConsoleColor.Gray;
         Console.WriteLine($"Loaded mutators from {_name}");

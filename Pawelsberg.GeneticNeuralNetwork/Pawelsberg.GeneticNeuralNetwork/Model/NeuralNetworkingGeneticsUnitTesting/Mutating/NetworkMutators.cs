@@ -48,8 +48,15 @@ public class NetworkMutators : Mutators<Network>
 
     private void UpdateParameters(Mutator<Network> mutator, int maxNodes, int maxSynapses, int propagations, TestCaseList testCaseList)
     {
-        if (mutator is IUpdatableNetworkMutator updatableMutator)
-            updatableMutator.UpdateParameters(maxNodes, maxSynapses, propagations, testCaseList);
+        if (mutator is IMaxNodesLimitedMutator maxNodesLimitedMutator)
+            maxNodesLimitedMutator.MaxNodes = maxNodes;
+        if (mutator is IMaxSynapsesLimitedMutator maxSynapsesLimitedMutator)
+            maxSynapsesLimitedMutator.MaxSynapses = maxSynapses;
+        if (mutator is ITestCaseDependentMutator testCaseDependentMutator)
+        {
+            testCaseDependentMutator.Propagations = propagations;
+            testCaseDependentMutator.TestCaseList = testCaseList;
+        }
         if (mutator is RandomNumberOfTimesMutator<Network> rnt)
             UpdateParameters(rnt.Mutator, maxNodes, maxSynapses, propagations, testCaseList);
         // Note: MultipleTimesMutator references this NetworkMutators instance (parentMutators),

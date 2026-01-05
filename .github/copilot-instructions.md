@@ -20,6 +20,17 @@ Structure:
         ├── NeuralNetworkingUnitTesting/         # Network + test case integration
         └── NeuralNetworkingGeneticsUnitTesting/ # Network + genetics + test case integration
 ```
+
+### Key Classes in Model
+`RandomGenerator`
+ Utility class for random number generation. Supports seeding for reproducible results.
+`Log`
+ Thread-safe queue of messages.
+`DataDirectory`
+ Represents a directory for application data. 
+`CodedText`
+ Represents text that can be parsed.
+
 ### Key Classes/Interfaces in Genetics
 #### In Pawelsberg.GeneticNeuralNetwork.Model.Genetics
 `ISpecimen`
@@ -92,7 +103,16 @@ Backpropagation logic for neural networks to fulfill test cases.
 ##### In Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingUnitTesting.BackPropagating.Math
 Math for backpropagation.
 
-
+### Key Classes in NeuralNetworkingGeneticsUnitTesting
+Genetic algorithm logic for neural networks related to test cases.
+`NetworkSimulation`
+ Represents a simulation of neural networks being evolved to fulfill test cases.
+##### In Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.Mutating
+Code related to mutating neural networks with usage of test cases.
+##### In Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.Mutating.DiskStoring
+Code related to serialisation/deserialisation, saving/loading neural network mutators that use test cases to/from disk.
+##### In Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.QualityMeasuring
+Code related to measuring quality of neural networks with usage of test cases.
 
 
 
