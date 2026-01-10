@@ -7,13 +7,8 @@ namespace Pawelsberg.GeneticNeuralNetworkConsole.Model;
 public class HelpCommand : Command
 {
     public static string Name = "help";
-    private readonly CommandDispatcher _commandDispatcher;
     private string _commandName;
     private string _commandShortDescription;
-    public HelpCommand(CommandDispatcher commandDispatcher)
-    {
-        _commandDispatcher = commandDispatcher;
-    }
 
     public override void LoadParameters(CodedText text)
     {
@@ -21,10 +16,10 @@ public class HelpCommand : Command
         {
             string strText = text.ReadString();
 
-            if (_commandDispatcher.CommandNameCommands.ContainsKey(strText))
+            if (Commands.NameCommands.ContainsKey(strText))
             {
                 _commandName = strText;
-                Command command = _commandDispatcher.CommandNameCommands[strText]();
+                Command command = Commands.NameCommands[strText]();
                 _commandShortDescription = command.ShortDescription;
             }
             else
@@ -39,7 +34,7 @@ public class HelpCommand : Command
         if (_commandName == null)
         {
             StringBuilder helpStringBuilder = new StringBuilder();
-            foreach (KeyValuePair<string, Func<Command>> comandNameCommand in _commandDispatcher.CommandNameCommands.OrderBy(cnc => cnc.Key))
+            foreach (KeyValuePair<string, Func<Command>> comandNameCommand in Commands.NameCommands.OrderBy(cnc => cnc.Key))
             {
                 string commandName = comandNameCommand.Key;
                 string commandShortDescription = comandNameCommand.Value().ShortDescription;
@@ -55,4 +50,10 @@ public class HelpCommand : Command
         }
     }
     public override string ShortDescription { get { return "Show help"; } }
+    public override IEnumerable<string> GetParameterCompletions(string[] parameters)
+    {
+        if (parameters.Length <= 1)
+            return Commands.Names;
+        return Enumerable.Empty<string>();
+    }
 }

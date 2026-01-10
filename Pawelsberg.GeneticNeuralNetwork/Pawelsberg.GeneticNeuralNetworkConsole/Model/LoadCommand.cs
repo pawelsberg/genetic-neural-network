@@ -25,4 +25,10 @@ public class LoadCommand : Command
         simulation.Add(network);
     }
     public override string ShortDescription { get { return "Loads specific neural network as additional specimen in generation"; } }
+    public override IEnumerable<string> GetParameterCompletions(string[] parameters)
+    {
+        if (parameters.Length <= 1)
+            return NetworkList.GetNames();
+        return Enumerable.Empty<string>();
+    }
 }

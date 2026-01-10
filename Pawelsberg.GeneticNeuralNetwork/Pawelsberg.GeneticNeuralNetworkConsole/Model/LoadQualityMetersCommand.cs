@@ -28,4 +28,10 @@ public class LoadQualityMetersCommand : Command
     }
 
     public override string ShortDescription { get { return "Loads quality meters from file (e.g. 'loadqm Normal')"; } }
+    public override IEnumerable<string> GetParameterCompletions(string[] parameters)
+    {
+        if (parameters.Length <= 1)
+            return NetworkQualityMetersList.GetNames();
+        return Enumerable.Empty<string>();
+    }
 }

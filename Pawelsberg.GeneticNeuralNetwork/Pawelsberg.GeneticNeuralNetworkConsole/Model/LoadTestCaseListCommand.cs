@@ -24,4 +24,10 @@ public class LoadTestCaseListCommand : Command
         simulation.TestCaseList = testCaseList;
     }
     public override string ShortDescription { get { return "Loads a test case list"; } }
+    public override IEnumerable<string> GetParameterCompletions(string[] parameters)
+    {
+        if (parameters.Length <= 1)
+            return TestCaseLists.GetNames();
+        return Enumerable.Empty<string>();
+    }
 }

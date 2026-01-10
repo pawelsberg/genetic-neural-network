@@ -6,11 +6,12 @@ namespace Pawelsberg.GeneticNeuralNetworkConsole.Model;
 public class MainMenu
 {
     private NetworkSimulation _simulation;
-    private CommandDispatcher _commandDispatcher;
+    private ConsoleInputReader _inputReader;
+
     public MainMenu(NetworkSimulation simulation)
     {
         _simulation = simulation;
-        _commandDispatcher = new CommandDispatcher();
+        _inputReader = new ConsoleInputReader();
     }
     public void Run()
     {
@@ -19,7 +20,7 @@ public class MainMenu
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.Write(">");
-            string inputText = Console.ReadLine();
+            string inputText = _inputReader.ReadLine();
             if (inputText == null)
                 break;
             Console.ResetColor();
@@ -30,7 +31,7 @@ public class MainMenu
 
             try
             {
-                command = _commandDispatcher.GetCommand(commandName);
+                command = Commands.GetCommand(commandName);
                 codedText.SkipWhiteCharacters();
                 command.LoadParameters(codedText);
                 command.Run(_simulation);

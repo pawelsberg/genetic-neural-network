@@ -1,8 +1,17 @@
 ## General Guidelines
 Main idea: do not repeat yourself - unless it means making it much more complicated.
-Don't use "var" - specify explicit types for all variable declarations.
-Reduce dependency between classes as much as possible.
 Code should be self-explanatory; prefer clear naming and structure over comments.
+Follow ideas of Code Complete book by Steve McConnell where applicable.
+### C# Coding Conventions
+Don't use "var" - specify explicit types for all variable declarations.
+Don't use ref nor out parameters.
+Do not use regions.
+Do not use magic int values instead of using nullable ints representing lack of value.
+Do not use magic string value ("" for example) instead of using null to represent lack of value.
+Don't use curly braces for single-line if/else/for/while blocks.
+Reduce dependency between classes as much as possible.
+
+
 
 ## Pawelsberg.GeneticNeuralNetwork.Tests
 Use a test class per tested method.
@@ -114,6 +123,18 @@ Code related to serialisation/deserialisation, saving/loading neural network mut
 ##### In Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.QualityMeasuring
 Code related to measuring quality of neural networks with usage of test cases.
 
+
+## Pawelsberg.GeneticNeuralNetworkConsole application
+### In Pawelsberg.GeneticNeuralNetworkConsole.Model
+`Command`
+  Base class for a console command.
+`CommandDispatcher`
+  A collection of commands with their names.
+`MainMenu`
+  Represents application's main menu of the commands of the console application.
+`Variable`
+  Represents a variable that can be used in the application.
+  
 
 
  TODO: finish

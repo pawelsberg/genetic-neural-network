@@ -29,4 +29,10 @@ public class LoadMutatorsCommand : Command
     }
 
     public override string ShortDescription { get { return "Loads mutators from file (e.g. 'loadmutators Normal')"; } }
+    public override IEnumerable<string> GetParameterCompletions(string[] parameters)
+    {
+        if (parameters.Length <= 1)
+            return NetworkMutatorsList.GetNames();
+        return Enumerable.Empty<string>();
+    }
 }
