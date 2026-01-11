@@ -144,8 +144,8 @@ public class CommandInput
 
             if (_completions.CurrentCompletions.Count == 1)
             {
-                // Single completion - apply it directly
-                ApplyCompletion(_completions.CurrentCompletions[0]);
+                // Single completion - apply it directly with trailing space
+                ApplyCompletion(_completions.CurrentCompletions[0] + " ");
                 ResetCompletion();
                 return;
             }
