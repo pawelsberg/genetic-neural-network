@@ -16,8 +16,8 @@
     2. Sudoku
 8. Add top command - shows live simulation information.
 9. Running on GPU
-    Variable maxCpuSpecimens will control how many specimens will run on GPU. If 0 - no running on GPU.
-    Variable maxSpecimens will still control how many specimens will run on CPU. If both maxCpuSpecimens > 0 and maxSpecimens > 0 then simulation will run on both CPU and GPU.
+    Variable maxGpuSpecimens will control how many specimens will run on GPU. If 0 - no running on GPU.
+    Variable maxSpecimens will still control how many specimens will run on CPU. If both maxGpuSpecimens > 0 and maxSpecimens > 0 then simulation will run on both CPU and GPU.
     In each generation the following will be done on GPU:
         - quality measurement of neural networks which includes networks propagation.
     The rest will run on CPU. Including back propagation for now.

@@ -104,7 +104,7 @@ public class CodedText
 
         for (int i = 0; i < text.Length; i++)
         {
-            AdjustDepth(text[i], ref depth);
+            depth = AdjustDepth(text[i], depth);
 
             if (text[i] == separator && depth == 0)
             {
@@ -122,7 +122,7 @@ public class CodedText
 
         for (int i = openIndex; i < text.Length; i++)
         {
-            AdjustDepth(text[i], ref depth);
+            depth = AdjustDepth(text[i], depth);
 
             if (depth == 0)
                 return i;
@@ -131,11 +131,11 @@ public class CodedText
         throw new FormatException($"Missing closing ')' for '(' at position {openIndex}");
     }
 
-    // TODO - remove ref usage
-    private static void AdjustDepth(char character, ref int depth)
+    private static int AdjustDepth(char character, int depth)
     {
         if (character == '(') depth++;
         else if (character == ')') depth--;
+        return depth;
     }
 
     /// <summary>

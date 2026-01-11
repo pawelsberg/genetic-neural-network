@@ -1,22 +1,22 @@
 namespace Pawelsberg.GeneticNeuralNetworkConsole.Model;
 
-public class ConsoleInputReader
+public class CommandInput
 {
-    private readonly ConsoleInputCompletions _completions;
+    private readonly CommandInputCompletions _completions;
     private string? _inputBeforeCompletion;
 
-    private readonly ConsoleInputHistory _history;
+    private readonly CommandInputHistory _history;
     private string? _inputBeforeHistory;
 
     private List<char> _input;
     private int _cursorPosition;
 
-    public ConsoleInputReader()
+    public CommandInput()
     {
-        _completions = new ConsoleInputCompletions();
+        _completions = new CommandInputCompletions();
         _inputBeforeCompletion = null;
 
-        _history = new ConsoleInputHistory();
+        _history = new CommandInputHistory();
         _inputBeforeHistory = null;
 
         _input = new List<char>();

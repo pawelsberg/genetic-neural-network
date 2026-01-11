@@ -1,11 +1,11 @@
 namespace Pawelsberg.GeneticNeuralNetworkConsole.Model;
 
-public class ConsoleInputHistory
+public class CommandInputHistory
 {
     private readonly List<string> _history;
     private int? _historyIndex; // Current position in history during navigation; null when not navigating
 
-    public ConsoleInputHistory()
+    public CommandInputHistory()
     {
         _history = new List<string>();
         _historyIndex = null;

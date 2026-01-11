@@ -1,11 +1,11 @@
 namespace Pawelsberg.GeneticNeuralNetworkConsole.Model;
 
-public class ConsoleInputCompletions
+public class CommandInputCompletions
 {
     private List<string> _currentCompletions;
     private int? _completionIndex; // Current position in completions list during tab cycling; null when not cycling
 
-    public ConsoleInputCompletions()
+    public CommandInputCompletions()
     {
         _currentCompletions = new List<string>();
         _completionIndex = null;

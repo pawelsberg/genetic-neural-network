@@ -9,9 +9,11 @@ Do not use regions.
 Do not use magic int values instead of using nullable ints representing lack of value.
 Do not use magic string value ("" for example) instead of using null to represent lack of value.
 Don't use curly braces for single-line if/else/for/while blocks.
+Never re-assign parameter values.
+Do not re-assign variables - prefer new variables instead.
+Classes should represent a noun (thing) rather than a verb (action).
+Methods should represent a verb (action) rather than a noun (thing).
 Reduce dependency between classes as much as possible.
-
-
 
 ## Pawelsberg.GeneticNeuralNetwork.Tests
 Use a test class per tested method.
@@ -127,16 +129,20 @@ Code related to measuring quality of neural networks with usage of test cases.
 ## Pawelsberg.GeneticNeuralNetworkConsole application
 ### In Pawelsberg.GeneticNeuralNetworkConsole.Model
 `Command`
-  Base class for a console command.
-`CommandDispatcher`
-  A collection of commands with their names.
+ Base class for a console command.
+`Commands`
+ Static registry of all available commands.
 `MainMenu`
-  Represents application's main menu of the commands of the console application.
+ Represents application's main menu. Reads user input, dispatches commands, and runs the main loop.
 `Variable`
-  Represents a variable that can be used in the application.
-  
-
-
- TODO: finish
+ Represents a simulation variable to be used in console.
+`Variables`
+ Static registry of all simulation variables.
+`CommandInput`
+ Handles console input with support for tab completion and command history navigation.
+`CommandInputCompletions`
+ Manages tab-completion cycling through available completions for current input.
+`CommandInputHistory`
+ Manages command history navigation using up/down arrow keys.
 
 
