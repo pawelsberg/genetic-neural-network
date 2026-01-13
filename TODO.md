@@ -1,5 +1,6 @@
 # TODO
 1. Mutators:
+    1. add a meter type similar to sequential but scoring to solve first output in all tests first then second output then third and so on.
     2. allow modifying from console
     3. back propagation doing all weights changes in one go.
 2. Meter types:
@@ -21,3 +22,4 @@
     In each generation the following will be done on GPU:
         - quality measurement of neural networks which includes networks propagation.
     The rest will run on CPU. Including back propagation for now.
+10. fix bug when changing propagations parameter doesn't re-calculate quality 

@@ -59,6 +59,7 @@ public class Simulation<TSpecimen> where TSpecimen : ISpecimen
     /// <summary>
     /// Recalculates MaxPossibleQuality from the current GenerationMeter.
     /// Call this when the quality meter's children change dynamically (e.g., after updating TestCaseList).
+    /// Also triggers reevaluation of BestEver quality on next generation tick.
     /// </summary>
     public void RecalculateMaxPossibleQuality()
     {
@@ -67,6 +68,7 @@ public class Simulation<TSpecimen> where TSpecimen : ISpecimen
             if (_generationMeter != null)
             {
                 MaxPossibleQuality = _generationMeter.MaxQualityRecursive;
+                _reevaluateBest = true;
             }
         }
     }

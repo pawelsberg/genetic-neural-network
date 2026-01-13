@@ -13,6 +13,7 @@ Never re-assign parameter values.
 Do not re-assign variables - prefer new variables instead.
 Classes should represent a noun (thing) rather than a verb (action).
 Methods should represent a verb (action) rather than a noun (thing).
+Mark classes and methods as static if it doesn't access/have instance state.
 Reduce dependency between classes as much as possible.
 
 ## Pawelsberg.GeneticNeuralNetwork.Tests
