@@ -19,6 +19,14 @@ public class TestCaseGoodResultNetworkQualityMeter : QualityMeter<Network>, INet
 
     public string ToText() => $"{TextName}({QualityForGoodResult.ToString(CultureInfo.InvariantCulture)},{GoodDifference.ToString(CultureInfo.InvariantCulture)})";
 
+    public static TestCaseGoodResultNetworkQualityMeter Parse(string parameters, QualityMeter<Network> parent)
+    {
+        string[] parts = CodedText.SplitParams(parameters);
+        double qualityForGoodResult = double.Parse(parts[0], CultureInfo.InvariantCulture);
+        double goodDiff = double.Parse(parts[1], CultureInfo.InvariantCulture);
+        return new TestCaseGoodResultNetworkQualityMeter(parent, goodDiff, qualityForGoodResult);
+    }
+
     public override QualityMeasurement<Network> MeasureMeterQuality(Network network, QualityMeasurement<Network> parentQualityMeasurement)
     {
         QualityMeasurement<Network> result = new QualityMeasurement<Network>(this, parentQualityMeasurement);

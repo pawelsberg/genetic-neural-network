@@ -17,6 +17,12 @@ public class TotalSynapsesNetworkQualityMeter : QualityMeter<Network>, INetworkQ
 
     public string ToText() => $"{TextName}({QualityForOneSynapse.ToString(CultureInfo.InvariantCulture)})";
 
+    public static TotalSynapsesNetworkQualityMeter Parse(string parameters, QualityMeter<Network> parent)
+    {
+        double qualityForOneSynapse = double.Parse(parameters, CultureInfo.InvariantCulture);
+        return new TotalSynapsesNetworkQualityMeter(parent, qualityForOneSynapse);
+    }
+
     public override QualityMeasurement<Network> MeasureMeterQuality(Network network, QualityMeasurement<Network> parentQualityMeasurement)
     {
         QualityMeasurement<Network> result = new QualityMeasurement<Network>(this, parentQualityMeasurement);

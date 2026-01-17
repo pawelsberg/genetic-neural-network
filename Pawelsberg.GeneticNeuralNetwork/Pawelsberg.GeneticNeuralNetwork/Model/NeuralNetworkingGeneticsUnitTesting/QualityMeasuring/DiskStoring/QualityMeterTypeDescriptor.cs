@@ -69,124 +69,67 @@ public static class QualityMeterTypeRegistry
             // TestCaseList (Aggregate)
             new QualityMeterTypeDescriptor(
                 TestCaseListNetworkQualityMeter.TextName,
-                (inner, parent, propagations, testCaseList) =>
-                {
-                    int props = int.Parse(inner, CultureInfo.InvariantCulture);
-                    return new TestCaseListNetworkQualityMeter(parent, testCaseList, props);
-                }
+                (inner, parent, propagations, testCaseList) => TestCaseListNetworkQualityMeter.Parse(inner, parent, testCaseList)
             ),
 
             // IfAllGood
             new QualityMeterTypeDescriptor(
                 TestCasesIfAllGoodNetworkQualityMeter.TextName,
-                (inner, parent, propagations, testCaseList) =>
-                {
-                    double goodDiff = double.Parse(inner, CultureInfo.InvariantCulture);
-                    return new TestCasesIfAllGoodNetworkQualityMeter(parent, goodDiff);
-                }
+                (inner, parent, propagations, testCaseList) => TestCasesIfAllGoodNetworkQualityMeter.Parse(inner, parent)
             ),
 
             // Difference
             new QualityMeterTypeDescriptor(
                 TestCaseDifferenceNetworkQualityMeter.TextName,
-                (inner, parent, propagations, testCaseList) =>
-                {
-                    var parts = CodedText.SplitParams(inner);
-                    double qualityForOneDiff = double.Parse(parts[0], CultureInfo.InvariantCulture);
-                    double goodDiff = double.Parse(parts[1], CultureInfo.InvariantCulture);
-                    return new TestCaseDifferenceNetworkQualityMeter(parent, goodDiff, qualityForOneDiff);
-                }
+                (inner, parent, propagations, testCaseList) => TestCaseDifferenceNetworkQualityMeter.Parse(inner, parent)
             ),
 
             // GoodResult
             new QualityMeterTypeDescriptor(
                 TestCaseGoodResultNetworkQualityMeter.TextName,
-                (inner, parent, propagations, testCaseList) =>
-                {
-                    var parts = CodedText.SplitParams(inner);
-                    double qualityForGoodResult = double.Parse(parts[0], CultureInfo.InvariantCulture);
-                    double goodDiff = double.Parse(parts[1], CultureInfo.InvariantCulture);
-                    return new TestCaseGoodResultNetworkQualityMeter(parent, goodDiff, qualityForGoodResult);
-                }
+                (inner, parent, propagations, testCaseList) => TestCaseGoodResultNetworkQualityMeter.Parse(inner, parent)
             ),
 
             // SubstractErrorIfGood
             new QualityMeterTypeDescriptor(
                 TestCaseSubstractErrorIfGoodNetworkQualityMeter.TextName,
-                (inner, parent, propagations, testCaseList) =>
-                {
-                    var parts = CodedText.SplitParams(inner);
-                    double substractedQuality = double.Parse(parts[0], CultureInfo.InvariantCulture);
-                    double goodDiff = double.Parse(parts[1], CultureInfo.InvariantCulture);
-                    return new TestCaseSubstractErrorIfGoodNetworkQualityMeter(parent, goodDiff, substractedQuality);
-                }
+                (inner, parent, propagations, testCaseList) => TestCaseSubstractErrorIfGoodNetworkQualityMeter.Parse(inner, parent)
             ),
 
             // TotalTime
             new QualityMeterTypeDescriptor(
                 TestCasesTotalTimeNetworkQualityMeter.TextName,
-                (inner, parent, propagations, testCaseList) =>
-                {
-                    double qualityForOneMs = double.Parse(inner, CultureInfo.InvariantCulture);
-                    return new TestCasesTotalTimeNetworkQualityMeter(parent, qualityForOneMs);
-                }
+                (inner, parent, propagations, testCaseList) => TestCasesTotalTimeNetworkQualityMeter.Parse(inner, parent)
             ),
 
             // TotalNodes
             new QualityMeterTypeDescriptor(
                 TotalNodesNetworkQualityMeter.TextName,
-                (inner, parent, propagations, testCaseList) =>
-                {
-                    double qualityForOneNode = double.Parse(inner, CultureInfo.InvariantCulture);
-                    return new TotalNodesNetworkQualityMeter(parent, qualityForOneNode);
-                }
+                (inner, parent, propagations, testCaseList) => TotalNodesNetworkQualityMeter.Parse(inner, parent)
             ),
 
             // TotalSynapses
             new QualityMeterTypeDescriptor(
                 TotalSynapsesNetworkQualityMeter.TextName,
-                (inner, parent, propagations, testCaseList) =>
-                {
-                    double qualityForOneSynapse = double.Parse(inner, CultureInfo.InvariantCulture);
-                    return new TotalSynapsesNetworkQualityMeter(parent, qualityForOneSynapse);
-                }
+                (inner, parent, propagations, testCaseList) => TotalSynapsesNetworkQualityMeter.Parse(inner, parent)
             ),
 
             // MultiplierSum
             new QualityMeterTypeDescriptor(
                 MultiplierSumNetworkQualityMeter.TextName,
-                (inner, parent, propagations, testCaseList) =>
-                {
-                    double qualityForSumEqOne = double.Parse(inner, CultureInfo.InvariantCulture);
-                    return new MultiplierSumNetworkQualityMeter(parent, qualityForSumEqOne);
-                }
+                (inner, parent, propagations, testCaseList) => MultiplierSumNetworkQualityMeter.Parse(inner, parent)
             ),
 
             // NoLoops
             new QualityMeterTypeDescriptor(
                 NoLoopsNetworkQualityMeter.TextName,
-                (inner, parent, propagations, testCaseList) =>
-                {
-                    double qualityForZeroLoops = double.Parse(inner, CultureInfo.InvariantCulture);
-                    return new NoLoopsNetworkQualityMeter(parent, qualityForZeroLoops);
-                }
+                (inner, parent, propagations, testCaseList) => NoLoopsNetworkQualityMeter.Parse(inner, parent)
             ),
 
             // SequentialOutputTestCase
             new QualityMeterTypeDescriptor(
                 SequentialOutputTestCaseNetworkQualityMeter.TextName,
-                (inner, parent, propagations, testCaseList) =>
-                {
-                    var parts = CodedText.SplitParams(inner);
-                    double maxDifferencePerTestOutput = double.Parse(parts[0], CultureInfo.InvariantCulture);
-                    double maxQualityPerTestOutput = double.Parse(parts[1], CultureInfo.InvariantCulture);
-                    double maxQualityForExistingInputsOutputs = double.Parse(parts[2], CultureInfo.InvariantCulture);
-                    SequentialOutputTestCaseNetworkQualityMeter meter = new SequentialOutputTestCaseNetworkQualityMeter(
-                        parent, maxDifferencePerTestOutput, maxQualityPerTestOutput, maxQualityForExistingInputsOutputs);
-                    meter.TestCaseList = testCaseList;
-                    meter.Propagations = propagations;
-                    return meter;
-                }
+                (inner, parent, propagations, testCaseList) => SequentialOutputTestCaseNetworkQualityMeter.Parse(inner, parent, propagations, testCaseList)
             )
         };
 

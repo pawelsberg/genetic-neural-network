@@ -17,6 +17,12 @@ public class MultiplierSumNetworkQualityMeter : QualityMeter<Network>, INetworkQ
 
     public string ToText() => $"{TextName}({QualityForSumEqOne.ToString(CultureInfo.InvariantCulture)})";
 
+    public static MultiplierSumNetworkQualityMeter Parse(string parameters, QualityMeter<Network> parent)
+    {
+        double qualityForSumEqOne = double.Parse(parameters, CultureInfo.InvariantCulture);
+        return new MultiplierSumNetworkQualityMeter(parent, qualityForSumEqOne);
+    }
+
     public override QualityMeasurement<Network> MeasureMeterQuality(Network network, QualityMeasurement<Network> parentQualityMeasurement)
     {
         QualityMeasurement<Network> result = new QualityMeasurement<Network>(this, parentQualityMeasurement);

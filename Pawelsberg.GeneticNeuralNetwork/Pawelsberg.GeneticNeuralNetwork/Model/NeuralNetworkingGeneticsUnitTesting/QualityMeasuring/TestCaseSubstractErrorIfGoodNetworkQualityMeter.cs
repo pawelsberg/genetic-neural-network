@@ -19,6 +19,14 @@ public class TestCaseSubstractErrorIfGoodNetworkQualityMeter : QualityMeter<Netw
 
     public string ToText() => $"{TextName}({SubstractedQualityForOneDiff.ToString(CultureInfo.InvariantCulture)},{GoodDifference.ToString(CultureInfo.InvariantCulture)})";
 
+    public static TestCaseSubstractErrorIfGoodNetworkQualityMeter Parse(string parameters, QualityMeter<Network> parent)
+    {
+        string[] parts = CodedText.SplitParams(parameters);
+        double substractedQuality = double.Parse(parts[0], CultureInfo.InvariantCulture);
+        double goodDiff = double.Parse(parts[1], CultureInfo.InvariantCulture);
+        return new TestCaseSubstractErrorIfGoodNetworkQualityMeter(parent, goodDiff, substractedQuality);
+    }
+
     public override QualityMeasurement<Network> MeasureMeterQuality(Network network, QualityMeasurement<Network> parentQualityMeasurement)
     {
         QualityMeasurement<Network> result = new QualityMeasurement<Network>(this, parentQualityMeasurement);

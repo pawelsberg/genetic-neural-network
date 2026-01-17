@@ -17,6 +17,12 @@ public class NoLoopsNetworkQualityMeter : QualityMeter<Network>, INetworkQuality
 
     public string ToText() => $"{TextName}({QualityForZeroLoops.ToString(CultureInfo.InvariantCulture)})";
 
+    public static NoLoopsNetworkQualityMeter Parse(string parameters, QualityMeter<Network> parent)
+    {
+        double qualityForZeroLoops = double.Parse(parameters, CultureInfo.InvariantCulture);
+        return new NoLoopsNetworkQualityMeter(parent, qualityForZeroLoops);
+    }
+
     public override QualityMeasurement<Network> MeasureMeterQuality(Network network, QualityMeasurement<Network> parentQualityMeasurement)
     {
         QualityMeasurement<Network> result = new QualityMeasurement<Network>(this, parentQualityMeasurement);

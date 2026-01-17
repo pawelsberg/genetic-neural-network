@@ -21,6 +21,12 @@ public class TestCaseListNetworkQualityMeter : QualityMeter<Network>, INetworkQu
 
     public string ToText() => $"{TextName}({Propagations.ToString(CultureInfo.InvariantCulture)})";
 
+    public static TestCaseListNetworkQualityMeter Parse(string parameters, QualityMeter<Network> parent, TestCaseList testCaseList)
+    {
+        int props = int.Parse(parameters, CultureInfo.InvariantCulture);
+        return new TestCaseListNetworkQualityMeter(parent, testCaseList, props);
+    }
+
     public override QualityMeasurement<Network> MeasureMeterQuality(Network network, QualityMeasurement<Network> parentQualityMeasurement)
     {
         QualityMeasurement<Network> result = new QualityMeasurement<Network>(this, parentQualityMeasurement);

@@ -17,6 +17,12 @@ public class TotalNodesNetworkQualityMeter : QualityMeter<Network>, INetworkQual
 
     public string ToText() => $"{TextName}({QualityForOneNode.ToString(CultureInfo.InvariantCulture)})";
 
+    public static TotalNodesNetworkQualityMeter Parse(string parameters, QualityMeter<Network> parent)
+    {
+        double qualityForOneNode = double.Parse(parameters, CultureInfo.InvariantCulture);
+        return new TotalNodesNetworkQualityMeter(parent, qualityForOneNode);
+    }
+
     public override QualityMeasurement<Network> MeasureMeterQuality(Network network, QualityMeasurement<Network> parentQualityMeasurement)
     {
         QualityMeasurement<Network> result = new QualityMeasurement<Network>(this, parentQualityMeasurement);

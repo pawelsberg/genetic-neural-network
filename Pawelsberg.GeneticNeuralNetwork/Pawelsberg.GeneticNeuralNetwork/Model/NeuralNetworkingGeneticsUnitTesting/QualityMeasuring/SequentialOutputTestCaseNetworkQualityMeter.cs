@@ -29,6 +29,19 @@ public class SequentialOutputTestCaseNetworkQualityMeter : QualityMeter<Network>
 
     public string ToText() => $"{TextName}({MaxDifferencePerTestOutput.ToString(CultureInfo.InvariantCulture)},{MaxQualityPerTestOutput.ToString(CultureInfo.InvariantCulture)},{MaxQualityForExistingInputsOutputs.ToString(CultureInfo.InvariantCulture)})";
 
+    public static SequentialOutputTestCaseNetworkQualityMeter Parse(string parameters, QualityMeter<Network> parent, int propagations, TestCaseList testCaseList)
+    {
+        string[] parts = CodedText.SplitParams(parameters);
+        double maxDifferencePerTestOutput = double.Parse(parts[0], CultureInfo.InvariantCulture);
+        double maxQualityPerTestOutput = double.Parse(parts[1], CultureInfo.InvariantCulture);
+        double maxQualityForExistingInputsOutputs = double.Parse(parts[2], CultureInfo.InvariantCulture);
+        SequentialOutputTestCaseNetworkQualityMeter meter = new SequentialOutputTestCaseNetworkQualityMeter(
+            parent, maxDifferencePerTestOutput, maxQualityPerTestOutput, maxQualityForExistingInputsOutputs);
+        meter.TestCaseList = testCaseList;
+        meter.Propagations = propagations;
+        return meter;
+    }
+
     public override QualityMeasurement<Network> MeasureMeterQuality(Network network, QualityMeasurement<Network> parentQualityMeasurement)
     {
         if (TestCaseList == null || TestCaseList.TestCases.Count == 0)
