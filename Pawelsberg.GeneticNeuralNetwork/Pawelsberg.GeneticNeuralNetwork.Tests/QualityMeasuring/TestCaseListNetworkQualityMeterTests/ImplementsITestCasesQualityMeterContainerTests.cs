@@ -16,6 +16,6 @@ public class ImplementsITestCasesQualityMeterContainerTests
         TestCaseList testCaseList = new TestCaseList { TestCases = new List<TestCase>() };
         TestCaseListNetworkQualityMeter meter = new TestCaseListNetworkQualityMeter(parent, testCaseList, 10);
 
-        Assert.IsAssignableFrom<ITestCasesQualityMeterContainer>(meter);
+        Assert.IsAssignableFrom<INetworkQualityMeterWithTestCaseList>(meter);
     }
 }

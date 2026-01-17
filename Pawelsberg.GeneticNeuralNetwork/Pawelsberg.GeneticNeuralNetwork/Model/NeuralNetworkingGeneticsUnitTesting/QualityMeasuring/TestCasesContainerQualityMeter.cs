@@ -11,7 +11,7 @@ namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTest
 /// A quality meter container that creates child meters for each test case on the fly.
 /// Children are computed each time they are accessed based on current TestCaseList and Propagations.
 /// </summary>
-public class TestCasesContainerQualityMeter : QualityMeter<Network>, ITestCasesQualityMeterContainer, INetworkQualityMeterContainerTextConvertible
+public class TestCasesContainerQualityMeter : QualityMeter<Network>, INetworkQualityMeterWithTestCaseList, INetworkQualityMeterWithPropagations, INetworkQualityMeterContainerTextConvertible
 {
     private TestCaseList _testCaseList;
     private int _propagations;

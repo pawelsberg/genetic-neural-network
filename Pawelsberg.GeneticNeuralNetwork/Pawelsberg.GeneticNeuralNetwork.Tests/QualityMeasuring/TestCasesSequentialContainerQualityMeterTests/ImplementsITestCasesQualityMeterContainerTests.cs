@@ -12,6 +12,6 @@ public class ImplementsITestCasesQualityMeterContainerTests
         TestCaseList testCaseList = TestHelper.CreateTestCaseList();
         TestCasesSequentialContainerQualityMeter container = new TestCasesSequentialContainerQualityMeter(testCaseList, 10, 0.001, TestHelper.CreateFactory());
 
-        Assert.IsAssignableFrom<ITestCasesQualityMeterContainer>(container);
+        Assert.IsAssignableFrom<INetworkQualityMeterWithTestCaseList>(container);
     }
 }

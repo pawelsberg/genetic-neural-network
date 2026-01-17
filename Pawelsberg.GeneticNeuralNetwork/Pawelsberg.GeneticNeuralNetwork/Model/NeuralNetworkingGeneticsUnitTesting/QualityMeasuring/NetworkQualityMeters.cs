@@ -131,4 +131,16 @@ public class NetworkQualityMeters
         return rootMeter;
     }
 
+    public static QualityMeter<Network> CreateSequentialOutputTestCase(int propagations, TestCaseList testCaseList)
+    {
+        SequentialOutputTestCaseNetworkQualityMeter rootMeter = new SequentialOutputTestCaseNetworkQualityMeter(
+            null,
+            maxDifferencePerTestOutput: 0.0001,
+            maxQualityPerTestOutput: 10,
+            maxQualityForExistingInputsOutputs: 1);
+        rootMeter.TestCaseList = testCaseList;
+        rootMeter.Propagations = propagations;
+        return rootMeter;
+    }
+
 }

@@ -6,5 +6,5 @@ namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTest
 /// </summary>
 public interface INetworkQualityMeterWithPropagations
 {
-    int Propagations { get; }
+    int Propagations { get; set; }
 }

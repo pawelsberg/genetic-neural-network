@@ -1,6 +1,7 @@
 ## General Guidelines
 Main idea: do not repeat yourself - unless it means making it much more complicated.
 Code should be self-explanatory; prefer clear naming and structure over comments.
+Avoid unnecessary complexity and coupling.
 Follow ideas of Code Complete book by Steve McConnell where applicable.
 ### C# Coding Conventions
 Don't use "var" - specify explicit types for all variable declarations.
@@ -54,7 +55,7 @@ Structure:
 `MutationDescription`
  Describes a mutation that happened during mutation.
 `QualityMeter`
- Base class for a meter - meter is measuring quality of a specimen.
+ Base class for a meter - meter is measuring quality of a specimen. Even a tiny improvement should result in a better (higher) quality value. 
 `QualityMeasurement`
  Result of quality measurement by a `QualityMeter`. 
 `Generation`

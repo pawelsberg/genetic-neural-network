@@ -13,7 +13,7 @@ namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTest
 /// gates evaluation of subsequent test cases.
 /// Structure: Container -> [TestCase1, IfAllGood1 -> [TestCase2, IfAllGood2 -> [TestCase3, ...]]]
 /// </summary>
-public class TestCasesSequentialContainerQualityMeter : QualityMeter<Network>, ITestCasesQualityMeterContainer, INetworkQualityMeterContainerTextConvertible
+public class TestCasesSequentialContainerQualityMeter : QualityMeter<Network>, INetworkQualityMeterWithTestCaseList, INetworkQualityMeterWithPropagations, INetworkQualityMeterContainerTextConvertible
 {
     private TestCaseList _testCaseList;
     private int _propagations;

@@ -170,6 +170,23 @@ public static class QualityMeterTypeRegistry
                     double qualityForZeroLoops = double.Parse(inner, CultureInfo.InvariantCulture);
                     return new NoLoopsNetworkQualityMeter(parent, qualityForZeroLoops);
                 }
+            ),
+
+            // SequentialOutputTestCase
+            new QualityMeterTypeDescriptor(
+                SequentialOutputTestCaseNetworkQualityMeter.TextName,
+                (inner, parent, propagations, testCaseList) =>
+                {
+                    var parts = CodedText.SplitParams(inner);
+                    double maxDifferencePerTestOutput = double.Parse(parts[0], CultureInfo.InvariantCulture);
+                    double maxQualityPerTestOutput = double.Parse(parts[1], CultureInfo.InvariantCulture);
+                    double maxQualityForExistingInputsOutputs = double.Parse(parts[2], CultureInfo.InvariantCulture);
+                    SequentialOutputTestCaseNetworkQualityMeter meter = new SequentialOutputTestCaseNetworkQualityMeter(
+                        parent, maxDifferencePerTestOutput, maxQualityPerTestOutput, maxQualityForExistingInputsOutputs);
+                    meter.TestCaseList = testCaseList;
+                    meter.Propagations = propagations;
+                    return meter;
+                }
             )
         };
 

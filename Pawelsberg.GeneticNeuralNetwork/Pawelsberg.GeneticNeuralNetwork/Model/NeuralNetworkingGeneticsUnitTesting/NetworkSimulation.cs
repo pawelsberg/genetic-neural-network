@@ -138,7 +138,7 @@ public class NetworkSimulation : Simulation<Network>
 
     private void UpdateGenerationMeterPropagations()
     {
-        if (GenerationMeter is ITestCasesQualityMeterContainer container)
+        if (GenerationMeter is INetworkQualityMeterWithPropagations container)
         {
             container.Propagations = _propagations;
             RecalculateMaxPossibleQuality();
@@ -149,7 +149,7 @@ public class NetworkSimulation : Simulation<Network>
 
     private void UpdateGenerationMeterTestCaseList()
     {
-        if (GenerationMeter is ITestCasesQualityMeterContainer container)
+        if (GenerationMeter is INetworkQualityMeterWithTestCaseList container)
         {
             container.TestCaseList = _testCaseList;
             RecalculateMaxPossibleQuality();

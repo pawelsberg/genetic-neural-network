@@ -6,7 +6,7 @@ using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.QualityMeasuring;
 
-public class TestCaseListNetworkQualityMeter : QualityMeter<Network>, INetworkQualityMeterTextConvertible, ITestCasesQualityMeterContainer
+public class TestCaseListNetworkQualityMeter : QualityMeter<Network>, INetworkQualityMeterTextConvertible, INetworkQualityMeterWithPropagations, INetworkQualityMeterWithTestCaseList
 {
     public static string TextName = "TestCaseList";
     public TestCaseList TestCaseList { get; set; }
