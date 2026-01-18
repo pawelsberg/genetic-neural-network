@@ -50,7 +50,7 @@ public class Simulation<TSpecimen> where TSpecimen : ISpecimen
             lock (_parametersLock)
             {
                 _generationMeter = value;
-                MaxPossibleQuality = _generationMeter.MaxQualityRecursive;
+                MaxPossibleQuality = _generationMeter.MaxQualityRecursive ?? 0d;
                 _reevaluateBest = true;
             }
         }
@@ -67,7 +67,7 @@ public class Simulation<TSpecimen> where TSpecimen : ISpecimen
         {
             if (_generationMeter != null)
             {
-                MaxPossibleQuality = _generationMeter.MaxQualityRecursive;
+                MaxPossibleQuality = _generationMeter.MaxQualityRecursive ?? 0d;
                 _reevaluateBest = true;
             }
         }

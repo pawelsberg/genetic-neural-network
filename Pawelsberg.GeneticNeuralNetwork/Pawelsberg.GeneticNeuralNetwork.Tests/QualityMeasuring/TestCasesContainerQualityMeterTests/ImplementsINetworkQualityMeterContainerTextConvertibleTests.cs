@@ -9,8 +9,7 @@ public class ImplementsINetworkQualityMeterContainerTextConvertibleTests
     [Fact]
     public void IsAssignable()
     {
-        TestCaseList testCaseList = TestHelper.CreateTestCaseList();
-        TestCasesContainerQualityMeter container = new TestCasesContainerQualityMeter(testCaseList, 10, TestHelper.CreateFactory());
+        TestCasesContainerQualityMeter container = new TestCasesContainerQualityMeter(TestHelper.CreateFactory());
 
         Assert.IsAssignableFrom<INetworkQualityMeterContainerTextConvertible>(container);
     }

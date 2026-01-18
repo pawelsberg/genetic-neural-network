@@ -19,7 +19,7 @@ public class ToTextTests
 
         string text = meter.ToText();
 
-        Assert.Equal("TestCase(10)", text);
+        Assert.Equal("TestCase()", text);
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public class ToTextTests
 
             string text = meter.ToText();
 
-            Assert.Equal("TestCase(25)", text);
+            Assert.Equal("TestCase()", text);
         }
         finally
         {

@@ -1,3 +1,4 @@
+using System;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.QualityMeasuring;
 using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting;
 using Xunit;
@@ -7,56 +8,54 @@ namespace Pawelsberg.GeneticNeuralNetwork.Tests.QualityMeasuring.TestCasesContai
 public class ConstructorTests
 {
     [Fact]
-    public void SinglePropagation_SetsTestCaseList()
+    public void SetsTestCaseListViaProperty()
     {
         TestCaseList testCaseList = TestHelper.CreateTestCaseList();
-        int propagations = 10;
 
-        TestCasesContainerQualityMeter container = new TestCasesContainerQualityMeter(testCaseList, propagations, TestHelper.CreateFactory());
+        TestCasesContainerQualityMeter container = new TestCasesContainerQualityMeter(TestHelper.CreateFactory());
+        container.TestCaseList = testCaseList;
 
         Assert.Same(testCaseList, container.TestCaseList);
     }
 
     [Fact]
-    public void SinglePropagation_SetsPropagations()
+    public void SetsPropagationsViaProperty()
     {
-        TestCaseList testCaseList = TestHelper.CreateTestCaseList();
         int propagations = 10;
 
-        TestCasesContainerQualityMeter container = new TestCasesContainerQualityMeter(testCaseList, propagations, TestHelper.CreateFactory());
+        TestCasesContainerQualityMeter container = new TestCasesContainerQualityMeter(TestHelper.CreateFactory());
+        container.Propagations = propagations;
 
         Assert.Equal(propagations, container.Propagations);
     }
 
     [Fact]
-    public void PropagationRange_SetsTestCaseList()
+    public void WithAdditionalPropagations_SetsPropagationRange()
     {
         TestCaseList testCaseList = TestHelper.CreateTestCaseList();
 
-        TestCasesContainerQualityMeter container = new TestCasesContainerQualityMeter(testCaseList, 5, 15, TestHelper.CreateFactory());
+        TestCasesContainerQualityMeter container = new TestCasesContainerQualityMeter(TestHelper.CreateFactory(), 10);
+        container.TestCaseList = testCaseList;
+        container.Propagations = 5;
 
-        Assert.Same(testCaseList, container.TestCaseList);
-    }
-
-    [Fact]
-    public void PropagationRange_SetsPropagations()
-    {
-        TestCaseList testCaseList = TestHelper.CreateTestCaseList();
-
-        TestCasesContainerQualityMeter container = new TestCasesContainerQualityMeter(testCaseList, 5, 15, TestHelper.CreateFactory());
-
-        Assert.Equal(5, container.Propagations);
-    }
-
-    [Fact]
-    public void PropagationRange_SetsPropagationRange()
-    {
-        TestCaseList testCaseList = TestHelper.CreateTestCaseList();
-
-        TestCasesContainerQualityMeter container = new TestCasesContainerQualityMeter(testCaseList, 5, 15, TestHelper.CreateFactory());
-
-        (int from, int to) = container.GetPropagationRange();
+        (int from, int to) = container.GetPropagationRange()!.Value;
         Assert.Equal(5, from);
         Assert.Equal(15, to);
+    }
+
+    [Fact]
+    public void TestCaseListReturnsNullWhenNotSet()
+    {
+        TestCasesContainerQualityMeter container = new TestCasesContainerQualityMeter(TestHelper.CreateFactory());
+
+        Assert.Null(container.TestCaseList);
+    }
+
+    [Fact]
+    public void PropagationsReturnsNullWhenNotSet()
+    {
+        TestCasesContainerQualityMeter container = new TestCasesContainerQualityMeter(TestHelper.CreateFactory());
+
+        Assert.Null(container.Propagations);
     }
 }

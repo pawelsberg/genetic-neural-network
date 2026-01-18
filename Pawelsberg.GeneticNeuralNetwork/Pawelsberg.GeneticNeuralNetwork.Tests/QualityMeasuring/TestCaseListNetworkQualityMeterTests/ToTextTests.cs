@@ -14,12 +14,11 @@ public class ToTextTests
     public void FormatsCorrectly()
     {
         QualityMeter<Network> parent = new QualityMeter<Network>(null);
-        TestCaseList testCaseList = new TestCaseList { TestCases = new List<TestCase>() };
-        TestCaseListNetworkQualityMeter meter = new TestCaseListNetworkQualityMeter(parent, testCaseList, 10);
+        TestCaseListNetworkQualityMeter meter = new TestCaseListNetworkQualityMeter(parent);
 
         string text = meter.ToText();
 
-        Assert.Equal("TestCaseList(10)", text);
+        Assert.Equal("TestCaseList()", text);
     }
 
     [Fact]
@@ -30,12 +29,11 @@ public class ToTextTests
         {
             CultureInfo.CurrentCulture = new CultureInfo("de-DE");
             QualityMeter<Network> parent = new QualityMeter<Network>(null);
-            TestCaseList testCaseList = new TestCaseList { TestCases = new List<TestCase>() };
-            TestCaseListNetworkQualityMeter meter = new TestCaseListNetworkQualityMeter(parent, testCaseList, 25);
+            TestCaseListNetworkQualityMeter meter = new TestCaseListNetworkQualityMeter(parent);
 
             string text = meter.ToText();
 
-            Assert.Equal("TestCaseList(25)", text);
+            Assert.Equal("TestCaseList()", text);
         }
         finally
         {

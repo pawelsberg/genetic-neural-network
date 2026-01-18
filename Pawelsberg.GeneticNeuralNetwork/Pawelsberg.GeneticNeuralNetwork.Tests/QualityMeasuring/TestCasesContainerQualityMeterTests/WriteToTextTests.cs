@@ -11,12 +11,14 @@ public class WriteToTextTests
     public void WritesTestCasesHeader()
     {
         TestCaseList testCaseList = TestHelper.CreateTestCaseList();
-        TestCasesContainerQualityMeter container = new TestCasesContainerQualityMeter(testCaseList, 10, TestHelper.CreateFactory());
+        TestCasesContainerQualityMeter container = new TestCasesContainerQualityMeter(TestHelper.CreateFactory());
+        container.TestCaseList = testCaseList;
+        container.Propagations = 10;
         StringBuilder sb = new StringBuilder();
 
         container.WriteToText(sb);
 
         string text = sb.ToString();
-        Assert.StartsWith("TestCases(10)", text);
+        Assert.StartsWith("TestCases()", text);
     }
 }

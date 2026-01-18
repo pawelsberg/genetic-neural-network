@@ -27,9 +27,9 @@ public class NetworkQualityMetersList
         return files;
     }
 
-    public static QualityMeter<Network> LoadNetworkQualityMeters(string name, int propagations, TestCaseList testCaseList)
+    public static QualityMeter<Network> LoadNetworkQualityMeters(string name)
     {
-        return NetworkQualityMetersExtension.Load(Path.Combine(DataDirectory.FullPath, Subdirectory, name + "." + Extension), propagations, testCaseList);
+        return NetworkQualityMetersExtension.Load(Path.Combine(DataDirectory.FullPath, Subdirectory, name + "." + Extension));
     }
 
     public static void Save(QualityMeter<Network> meter, string name)

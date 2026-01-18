@@ -173,28 +173,7 @@ public class CodedText
         return text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
     }
 
-    /// <summary>
-    /// Splits a hyphen-separated range string into two integers.
-    /// Returns (value, value) if no hyphen is present.
-    /// </summary>
-    public static (int from, int to) SplitRange(string inner)
-    {
-        if (inner.Contains('-'))
-        {
-            int hyphenIndex = inner.IndexOf('-');
-            int from = int.Parse(inner.Substring(0, hyphenIndex).Trim(), System.Globalization.CultureInfo.InvariantCulture);
-            int to = int.Parse(inner.Substring(hyphenIndex + 1).Trim(), System.Globalization.CultureInfo.InvariantCulture);
-            return (from, to);
-        }
-        else
-        {
-            int value = int.Parse(inner.Trim(), System.Globalization.CultureInfo.InvariantCulture);
-            return (value, value);
-        }
-    }
-
-    /// <summary>
-    /// Splits a comma-separated parameter string into trimmed parts.
+    /// <summary>\n    /// Splits a comma-separated parameter string into trimmed parts.
     /// </summary>
     public static string[] SplitParams(string inner)
     {

@@ -9,8 +9,7 @@ public class ImplementsITestCasesQualityMeterContainerTests
     [Fact]
     public void IsAssignable()
     {
-        TestCaseList testCaseList = TestHelper.CreateTestCaseList();
-        TestCasesSequentialContainerQualityMeter container = new TestCasesSequentialContainerQualityMeter(testCaseList, 10, 0.001, TestHelper.CreateFactory());
+        TestCasesSequentialContainerQualityMeter container = new TestCasesSequentialContainerQualityMeter(0.001, TestHelper.CreateFactory());
 
         Assert.IsAssignableFrom<INetworkQualityMeterWithTestCaseList>(container);
     }

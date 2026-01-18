@@ -1,4 +1,4 @@
-TestCases(4)
+TestCases()
   Difference(0.01,0.001)
   GoodResult(10,0.001)
   SubstractErrorIfGood(1,0.001)

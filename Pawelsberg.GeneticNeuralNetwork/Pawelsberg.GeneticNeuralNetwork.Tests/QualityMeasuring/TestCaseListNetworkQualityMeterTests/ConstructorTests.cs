@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
@@ -10,25 +11,25 @@ namespace Pawelsberg.GeneticNeuralNetwork.Tests.QualityMeasuring.TestCaseListNet
 public class ConstructorTests
 {
     [Fact]
-    public void SetsTestCaseList()
+    public void SetsTestCaseListViaProperty()
     {
         QualityMeter<Network> parent = new QualityMeter<Network>(null);
         TestCaseList testCaseList = new TestCaseList { TestCases = new List<TestCase>() };
-        int propagations = 10;
 
-        TestCaseListNetworkQualityMeter meter = new TestCaseListNetworkQualityMeter(parent, testCaseList, propagations);
+        TestCaseListNetworkQualityMeter meter = new TestCaseListNetworkQualityMeter(parent);
+        meter.TestCaseList = testCaseList;
 
         Assert.Same(testCaseList, meter.TestCaseList);
     }
 
     [Fact]
-    public void SetsPropagations()
+    public void SetsPropagationsViaProperty()
     {
         QualityMeter<Network> parent = new QualityMeter<Network>(null);
-        TestCaseList testCaseList = new TestCaseList { TestCases = new List<TestCase>() };
         int propagations = 10;
 
-        TestCaseListNetworkQualityMeter meter = new TestCaseListNetworkQualityMeter(parent, testCaseList, propagations);
+        TestCaseListNetworkQualityMeter meter = new TestCaseListNetworkQualityMeter(parent);
+        meter.Propagations = propagations;
 
         Assert.Equal(propagations, meter.Propagations);
     }
@@ -37,11 +38,29 @@ public class ConstructorTests
     public void SetsParent()
     {
         QualityMeter<Network> parent = new QualityMeter<Network>(null);
-        TestCaseList testCaseList = new TestCaseList { TestCases = new List<TestCase>() };
-        int propagations = 10;
 
-        TestCaseListNetworkQualityMeter meter = new TestCaseListNetworkQualityMeter(parent, testCaseList, propagations);
+        TestCaseListNetworkQualityMeter meter = new TestCaseListNetworkQualityMeter(parent);
 
         Assert.Same(parent, meter.Parent);
+    }
+
+    [Fact]
+    public void TestCaseListReturnsNullWhenNotSet()
+    {
+        QualityMeter<Network> parent = new QualityMeter<Network>(null);
+
+        TestCaseListNetworkQualityMeter meter = new TestCaseListNetworkQualityMeter(parent);
+
+        Assert.Null(meter.TestCaseList);
+    }
+
+    [Fact]
+    public void PropagationsReturnsNullWhenNotSet()
+    {
+        QualityMeter<Network> parent = new QualityMeter<Network>(null);
+
+        TestCaseListNetworkQualityMeter meter = new TestCaseListNetworkQualityMeter(parent);
+
+        Assert.Null(meter.Propagations);
     }
 }

@@ -1,6 +1,10 @@
 using Pawelsberg.GeneticNeuralNetwork.Model;
+using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
+using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting;
+using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.QualityMeasuring;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.QualityMeasuring.DiskStoring;
+using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting;
 
 namespace Pawelsberg.GeneticNeuralNetworkConsole.Model;
 
@@ -22,7 +26,11 @@ public class LoadQualityMetersCommand : Command
     public override void Run(NetworkSimulation simulation)
     {
         simulation.QualityMeterFactory = (propagations, testCaseList) =>
-            NetworkQualityMetersList.LoadNetworkQualityMeters(_name, propagations, testCaseList);
+        {
+            QualityMeter<Network> meter = NetworkQualityMetersList.LoadNetworkQualityMeters(_name);
+            meter.Configure(propagations, testCaseList);
+            return meter;
+        };
         Console.ForegroundColor = ConsoleColor.Gray;
         Console.WriteLine($"Loaded quality meters from {_name}");
     }

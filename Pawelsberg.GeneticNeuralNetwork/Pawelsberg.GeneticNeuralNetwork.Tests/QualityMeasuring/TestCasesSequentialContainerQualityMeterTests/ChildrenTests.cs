@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
@@ -13,12 +14,21 @@ public class ChildrenTests
     public void CreatesSequentialStructure()
     {
         TestCaseList testCaseList = TestHelper.CreateTestCaseList();
-
-        TestCasesSequentialContainerQualityMeter container = new TestCasesSequentialContainerQualityMeter(testCaseList, 10, 0.001, TestHelper.CreateFactory());
+        TestCasesSequentialContainerQualityMeter container = new TestCasesSequentialContainerQualityMeter(0.001, TestHelper.CreateFactory());
+        container.TestCaseList = testCaseList;
+        container.Propagations = 10;
 
         List<QualityMeter<Network>> children = container.Children;
         Assert.Equal(2, children.Count);
         Assert.IsType<TestCaseNetworkQualityMeter>(children[0]);
         Assert.IsAssignableFrom<TestCasesIfAllGoodNetworkQualityMeter>(children[1]);
+    }
+
+    [Fact]
+    public void ReturnsNullWhenNotConfigured()
+    {
+        TestCasesSequentialContainerQualityMeter container = new TestCasesSequentialContainerQualityMeter(0.001, TestHelper.CreateFactory());
+
+        Assert.Null(container.Children);
     }
 }

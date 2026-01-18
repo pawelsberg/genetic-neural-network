@@ -3,7 +3,6 @@ using Pawelsberg.GeneticNeuralNetwork.Model.Genetics.QueuingParents;
 using Pawelsberg.GeneticNeuralNetwork.Model.Genetics.Simulating;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGenetics.QualityMeasuring;
-using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.Mutating;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.QualityMeasuring;
 using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting;
@@ -90,6 +89,7 @@ public class NetworkSimulation : Simulation<Network>
         _maxNodes = 10;
         _maxSynapses = 30;
         _propagations = 4;
+        _testCaseList = TestCaseList.GetSimpleSumTestCaseList();
         _parentQueuerType = ParentQueuerType.Normal;
         NetworkMutators = NetworkMutators.CreateNormal(_maxNodes, _maxSynapses);
 
@@ -98,7 +98,7 @@ public class NetworkSimulation : Simulation<Network>
         CreateSimulationMeter();
         UpdateMutators();
         UpdateParentQueuer();
-        Network network = Network.CreateSimplest(1, 1);
+        Network network = Network.CreateSimplest(2, 1);
         Add(network);
 
         NextGenerationCreated += OnNextGenerationCreated;

@@ -11,7 +11,9 @@ public class AddStaticChildTests
     public void AddsToStaticChildren()
     {
         TestCaseList testCaseList = TestHelper.CreateTestCaseList();
-        TestCasesContainerQualityMeter container = new TestCasesContainerQualityMeter(testCaseList, 10, TestHelper.CreateFactory());
+        TestCasesContainerQualityMeter container = new TestCasesContainerQualityMeter(TestHelper.CreateFactory());
+        container.TestCaseList = testCaseList;
+        container.Propagations = 10;
         TestCasesIfAllGoodNetworkQualityMeter staticChild = new TestCasesIfAllGoodNetworkQualityMeter(container, 0.001);
 
         container.AddStaticChild(staticChild);

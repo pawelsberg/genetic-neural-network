@@ -9,22 +9,20 @@ namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTest
 public class TestCaseListNetworkQualityMeter : QualityMeter<Network>, INetworkQualityMeterTextConvertible, INetworkQualityMeterWithPropagations, INetworkQualityMeterWithTestCaseList
 {
     public static string TextName = "TestCaseList";
-    public TestCaseList TestCaseList { get; set; }
-    public int Propagations { get; set; }
 
-    public TestCaseListNetworkQualityMeter(QualityMeter<Network> parent, TestCaseList testCaseList, int propagations)
+    public TestCaseList? TestCaseList { get; set; }
+    public int? Propagations { get; set; }
+
+    public TestCaseListNetworkQualityMeter(QualityMeter<Network> parent)
         : base(parent)
     {
-        TestCaseList = testCaseList;
-        Propagations = propagations;
     }
 
-    public string ToText() => $"{TextName}({Propagations.ToString(CultureInfo.InvariantCulture)})";
+    public string ToText() => $"{TextName}()";
 
-    public static TestCaseListNetworkQualityMeter Parse(string parameters, QualityMeter<Network> parent, TestCaseList testCaseList)
+    public static TestCaseListNetworkQualityMeter Parse(string parameters, QualityMeter<Network> parent)
     {
-        int props = int.Parse(parameters, CultureInfo.InvariantCulture);
-        return new TestCaseListNetworkQualityMeter(parent, testCaseList, props);
+        return new TestCaseListNetworkQualityMeter(parent);
     }
 
     public override QualityMeasurement<Network> MeasureMeterQuality(Network network, QualityMeasurement<Network> parentQualityMeasurement)
@@ -33,7 +31,7 @@ public class TestCaseListNetworkQualityMeter : QualityMeter<Network>, INetworkQu
 
         // simple validation - number of inputs and outputs
         // TODO - consider separating 
-        if (network.Inputs.Count < TestCaseList.TestCases.Max(tc => tc.Inputs.Count) || network.Outputs.Count < TestCaseList.TestCases.Max(tc => tc.Outputs.Count))
+        if (network.Inputs.Count < TestCaseList!.TestCases.Max(tc => tc.Inputs.Count) || network.Outputs.Count < TestCaseList.TestCases.Max(tc => tc.Outputs.Count))
         {
             result.Quality = network.Inputs.Count < TestCaseList.TestCases.Max(tc => tc.Inputs.Count) ? (double)network.Inputs.Count / (TestCaseList.TestCases.Max(tc => tc.Inputs.Count) + 1) : 1d;
             result.Quality += network.Outputs.Count < TestCaseList.TestCases.Max(tc => tc.Outputs.Count) ? (double)network.Outputs.Count / (TestCaseList.TestCases.Max(tc => tc.Outputs.Count) + 1) : 1d;
@@ -42,9 +40,9 @@ public class TestCaseListNetworkQualityMeter : QualityMeter<Network>, INetworkQu
 
         double outputValuesDifference = 0d;
 
-        foreach (TestCase testCase in TestCaseList.TestCases)
+        foreach (TestCase testCase in TestCaseList!.TestCases)
         {
-            RunningContext runningContext = network.SafeRun(testCase, Propagations);
+            RunningContext runningContext = network.SafeRun(testCase, Propagations!.Value);
             for (int outputIndex = 0; outputIndex < testCase.Outputs.Count; outputIndex++)
                 outputValuesDifference += Math.Abs(testCase.Outputs[outputIndex] - runningContext.GetPotential(network.Outputs[outputIndex]));
         }

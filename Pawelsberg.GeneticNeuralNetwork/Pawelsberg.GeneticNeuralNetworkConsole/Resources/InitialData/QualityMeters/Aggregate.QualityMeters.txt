@@ -1,1 +1,1 @@
-TestCaseList(4)
+TestCaseList()

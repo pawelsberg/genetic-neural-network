@@ -8,5 +8,5 @@ namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTest
 /// </summary>
 public interface INetworkQualityMeterWithTestCaseList
 {
-    TestCaseList TestCaseList { get; set; }
+    TestCaseList? TestCaseList { get; set; }
 }

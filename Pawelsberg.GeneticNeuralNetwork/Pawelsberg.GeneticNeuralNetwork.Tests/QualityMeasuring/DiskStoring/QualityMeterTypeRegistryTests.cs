@@ -36,14 +36,14 @@ public class QualityMeterTypeRegistryTests
     [Fact]
     public void TryParse_Difference_ParsesCorrectly()
     {
-        var parent = new QualityMeter<Network>(null);
+        QualityMeter<Network> parent = new QualityMeter<Network>(null);
         string parameters = "1.0,0.001";
 
-        var meter = QualityMeterTypeRegistry.TryParse("Difference", parameters, parent, 10, null);
+        QualityMeter<Network> meter = QualityMeterTypeRegistry.TryParse("Difference", parameters, parent);
 
         Assert.NotNull(meter);
         Assert.IsType<TestCaseDifferenceNetworkQualityMeter>(meter);
-        var diffMeter = (TestCaseDifferenceNetworkQualityMeter)meter;
+        TestCaseDifferenceNetworkQualityMeter diffMeter = (TestCaseDifferenceNetworkQualityMeter)meter;
         Assert.Equal(1.0, diffMeter.QualityForOneDiff);
         Assert.Equal(0.001, diffMeter.GoodDifference);
     }
@@ -51,14 +51,14 @@ public class QualityMeterTypeRegistryTests
     [Fact]
     public void TryParse_GoodResult_ParsesCorrectly()
     {
-        var parent = new QualityMeter<Network>(null);
+        QualityMeter<Network> parent = new QualityMeter<Network>(null);
         string parameters = "10.0,0.001";
 
-        var meter = QualityMeterTypeRegistry.TryParse("GoodResult", parameters, parent, 10, null);
+        QualityMeter<Network> meter = QualityMeterTypeRegistry.TryParse("GoodResult", parameters, parent);
 
         Assert.NotNull(meter);
         Assert.IsType<TestCaseGoodResultNetworkQualityMeter>(meter);
-        var goodMeter = (TestCaseGoodResultNetworkQualityMeter)meter;
+        TestCaseGoodResultNetworkQualityMeter goodMeter = (TestCaseGoodResultNetworkQualityMeter)meter;
         Assert.Equal(10.0, goodMeter.QualityForGoodResult);
         Assert.Equal(0.001, goodMeter.GoodDifference);
     }
@@ -66,94 +66,91 @@ public class QualityMeterTypeRegistryTests
     [Fact]
     public void TryParse_IfAllGood_ParsesCorrectly()
     {
-        var parent = new QualityMeter<Network>(null);
+        QualityMeter<Network> parent = new QualityMeter<Network>(null);
         string parameters = "0.001";
 
-        var meter = QualityMeterTypeRegistry.TryParse("IfAllGood", parameters, parent, 10, null);
+        QualityMeter<Network> meter = QualityMeterTypeRegistry.TryParse("IfAllGood", parameters, parent);
 
         Assert.NotNull(meter);
         Assert.IsType<TestCasesIfAllGoodNetworkQualityMeter>(meter);
-        var ifAllGood = (TestCasesIfAllGoodNetworkQualityMeter)meter;
+        TestCasesIfAllGoodNetworkQualityMeter ifAllGood = (TestCasesIfAllGoodNetworkQualityMeter)meter;
         Assert.Equal(0.001, ifAllGood.GoodDifference);
     }
 
     [Fact]
     public void TryParse_TotalNodes_ParsesCorrectly()
     {
-        var parent = new QualityMeter<Network>(null);
+        QualityMeter<Network> parent = new QualityMeter<Network>(null);
         string parameters = "10.0";
 
-        var meter = QualityMeterTypeRegistry.TryParse("TotalNodes", parameters, parent, 10, null);
+        QualityMeter<Network> meter = QualityMeterTypeRegistry.TryParse("TotalNodes", parameters, parent);
 
         Assert.NotNull(meter);
         Assert.IsType<TotalNodesNetworkQualityMeter>(meter);
-        var nodeMeter = (TotalNodesNetworkQualityMeter)meter;
+        TotalNodesNetworkQualityMeter nodeMeter = (TotalNodesNetworkQualityMeter)meter;
         Assert.Equal(10.0, nodeMeter.QualityForOneNode);
     }
 
     [Fact]
     public void TryParse_TotalSynapses_ParsesCorrectly()
     {
-        var parent = new QualityMeter<Network>(null);
+        QualityMeter<Network> parent = new QualityMeter<Network>(null);
         string parameters = "5.0";
 
-        var meter = QualityMeterTypeRegistry.TryParse("TotalSynapses", parameters, parent, 10, null);
+        QualityMeter<Network> meter = QualityMeterTypeRegistry.TryParse("TotalSynapses", parameters, parent);
 
         Assert.NotNull(meter);
         Assert.IsType<TotalSynapsesNetworkQualityMeter>(meter);
-        var synapseMeter = (TotalSynapsesNetworkQualityMeter)meter;
+        TotalSynapsesNetworkQualityMeter synapseMeter = (TotalSynapsesNetworkQualityMeter)meter;
         Assert.Equal(5.0, synapseMeter.QualityForOneSynapse);
     }
 
     [Fact]
     public void TryParse_MultiplierSum_ParsesCorrectly()
     {
-        var parent = new QualityMeter<Network>(null);
+        QualityMeter<Network> parent = new QualityMeter<Network>(null);
         string parameters = "20.0";
 
-        var meter = QualityMeterTypeRegistry.TryParse("MultiplierSum", parameters, parent, 10, null);
+        QualityMeter<Network> meter = QualityMeterTypeRegistry.TryParse("MultiplierSum", parameters, parent);
 
         Assert.NotNull(meter);
         Assert.IsType<MultiplierSumNetworkQualityMeter>(meter);
-        var multMeter = (MultiplierSumNetworkQualityMeter)meter;
+        MultiplierSumNetworkQualityMeter multMeter = (MultiplierSumNetworkQualityMeter)meter;
         Assert.Equal(20.0, multMeter.QualityForSumEqOne);
     }
 
     [Fact]
     public void TryParse_NoLoops_ParsesCorrectly()
     {
-        var parent = new QualityMeter<Network>(null);
+        QualityMeter<Network> parent = new QualityMeter<Network>(null);
         string parameters = "50.0";
 
-        var meter = QualityMeterTypeRegistry.TryParse("NoLoops", parameters, parent, 10, null);
+        QualityMeter<Network> meter = QualityMeterTypeRegistry.TryParse("NoLoops", parameters, parent);
 
         Assert.NotNull(meter);
         Assert.IsType<NoLoopsNetworkQualityMeter>(meter);
-        var loopMeter = (NoLoopsNetworkQualityMeter)meter;
+        NoLoopsNetworkQualityMeter loopMeter = (NoLoopsNetworkQualityMeter)meter;
         Assert.Equal(50.0, loopMeter.QualityForZeroLoops);
     }
 
     [Fact]
     public void TryParse_TestCaseList_ParsesCorrectly()
     {
-        var parent = new QualityMeter<Network>(null);
-        var testCaseList = CreateTestCaseList();
-        string parameters = "10";
+        QualityMeter<Network> parent = new QualityMeter<Network>(null);
+        string parameters = "";
 
-        var meter = QualityMeterTypeRegistry.TryParse("TestCaseList", parameters, parent, 10, testCaseList);
+        QualityMeter<Network> meter = QualityMeterTypeRegistry.TryParse("TestCaseList", parameters, parent);
 
         Assert.NotNull(meter);
         Assert.IsType<TestCaseListNetworkQualityMeter>(meter);
-        var tcListMeter = (TestCaseListNetworkQualityMeter)meter;
-        Assert.Equal(10, tcListMeter.Propagations);
     }
 
     [Fact]
     public void TryParse_UnknownType_ReturnsNull()
     {
-        var parent = new QualityMeter<Network>(null);
+        QualityMeter<Network> parent = new QualityMeter<Network>(null);
 
-        var meter = QualityMeterTypeRegistry.TryParse("UnknownType", "parameters", parent, 10, null);
+        QualityMeter<Network> meter = QualityMeterTypeRegistry.TryParse("UnknownType", "parameters", parent);
 
         Assert.Null(meter);
     }
@@ -163,7 +160,7 @@ public class QualityMeterTypeRegistryTests
     {
         string line = "TestCases(10)";
 
-        var descriptor = QualityMeterTypeRegistry.GetContainerDescriptorForLine(line);
+        ContainerQualityMeterTypeDescriptor descriptor = QualityMeterTypeRegistry.GetContainerDescriptorForLine(line);
 
         Assert.NotNull(descriptor);
         Assert.Equal("TestCases", descriptor.TextName);
@@ -174,7 +171,7 @@ public class QualityMeterTypeRegistryTests
     {
         string line = "TestCasesSequential(10)";
 
-        var descriptor = QualityMeterTypeRegistry.GetContainerDescriptorForLine(line);
+        ContainerQualityMeterTypeDescriptor descriptor = QualityMeterTypeRegistry.GetContainerDescriptorForLine(line);
 
         Assert.NotNull(descriptor);
         Assert.Equal("TestCasesSequential", descriptor.TextName);
@@ -185,55 +182,9 @@ public class QualityMeterTypeRegistryTests
     {
         string line = "Difference(1,0.001)";
 
-        var descriptor = QualityMeterTypeRegistry.GetContainerDescriptorForLine(line);
+        ContainerQualityMeterTypeDescriptor descriptor = QualityMeterTypeRegistry.GetContainerDescriptorForLine(line);
 
         Assert.Null(descriptor);
-    }
-
-    [Fact]
-    public void IsPlaceholderType_TestCases_ReturnsTrue()
-    {
-        Assert.True(QualityMeterTypeRegistry.IsPlaceholderType("TestCases"));
-    }
-
-    [Fact]
-    public void IsPlaceholderType_TestCasesSequential_ReturnsTrue()
-    {
-        Assert.True(QualityMeterTypeRegistry.IsPlaceholderType("TestCasesSequential"));
-    }
-
-    [Fact]
-    public void IsPlaceholderType_NonPlaceholder_ReturnsFalse()
-    {
-        Assert.False(QualityMeterTypeRegistry.IsPlaceholderType("Difference"));
-    }
-
-    [Fact]
-    public void TryParsePlaceholder_TestCases_ReturnsParsedData()
-    {
-        var placeholder = QualityMeterTypeRegistry.TryParsePlaceholder("TestCases", "10");
-
-        Assert.NotNull(placeholder);
-        Assert.Equal("TestCases", placeholder.TextName);
-        Assert.Equal(10, placeholder.PropagationsFrom);
-        Assert.Equal(10, placeholder.PropagationsTo);
-    }
-
-    [Fact]
-    public void TryParsePlaceholder_TestCasesWithRange_ReturnsParsedData()
-    {
-        var placeholder = QualityMeterTypeRegistry.TryParsePlaceholder("TestCases", "5-15");
-
-        Assert.NotNull(placeholder);
-        Assert.Equal("TestCases", placeholder.TextName);
-        Assert.Equal(5, placeholder.PropagationsFrom);
-        Assert.Equal(15, placeholder.PropagationsTo);
-    }
-
-    [Fact]
-    public void TestCasesPlaceholderTextName_IsTestCases()
-    {
-        Assert.Equal("TestCases", QualityMeterTypeRegistry.TestCasesPlaceholderTextName);
     }
 
     private static TestCaseList CreateTestCaseList()

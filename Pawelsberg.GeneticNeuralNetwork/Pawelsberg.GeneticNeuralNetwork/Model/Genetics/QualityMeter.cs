@@ -5,7 +5,7 @@ public class QualityMeter<TSpecimen> where TSpecimen : ISpecimen
     public QualityMeter<TSpecimen> Parent { get; private set; }
     
     private List<QualityMeter<TSpecimen>> _children;
-    public virtual List<QualityMeter<TSpecimen>> Children 
+    public virtual List<QualityMeter<TSpecimen>>? Children 
     { 
         get
         {
@@ -14,9 +14,24 @@ public class QualityMeter<TSpecimen> where TSpecimen : ISpecimen
     }
 
     protected virtual double MaxMeterQuality { get { return 0d; } }
-    public double MaxQualityRecursive
+    public double? MaxQualityRecursive
     {
-        get { return MaxMeterQuality + Children.Sum(qualMet => qualMet.MaxQualityRecursive); }
+        get
+        {
+            List<QualityMeter<TSpecimen>>? children = Children;
+            if (children == null)
+                return null;
+
+            double sum = MaxMeterQuality;
+            foreach (QualityMeter<TSpecimen> child in children)
+            {
+                double? childMax = child.MaxQualityRecursive;
+                if (childMax == null)
+                    return null;
+                sum += childMax.Value;
+            }
+            return sum;
+        }
     }
     public QualityMeter(QualityMeter<TSpecimen> parent)
     {
@@ -31,7 +46,10 @@ public class QualityMeter<TSpecimen> where TSpecimen : ISpecimen
     public virtual QualityMeasurement<TSpecimen> MeasureQualityRecursive(TSpecimen spec, QualityMeasurement<TSpecimen> parentQualityMeasurement)
     {
         QualityMeasurement<TSpecimen> qualityMeasurement = MeasureMeterQuality(spec, parentQualityMeasurement);
-        foreach (QualityMeter<TSpecimen> childMeter in Children)
+        List<QualityMeter<TSpecimen>>? children = Children;
+        if (children == null)
+            throw new InvalidOperationException("Cannot measure quality when Children is null - meter not fully configured.");
+        foreach (QualityMeter<TSpecimen> childMeter in children)
         {
             QualityMeasurement<TSpecimen> childQualityMeasurement = childMeter.MeasureQualityRecursive(spec, qualityMeasurement);
             qualityMeasurement.Children.Add(childQualityMeasurement);

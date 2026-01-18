@@ -29,7 +29,9 @@ public class NetworkQualityMeters
             return testCaseMeter;
         };
 
-        var testCasesContainer = new TestCasesContainerQualityMeter(testCaseList, propagations, factory);
+        var testCasesContainer = new TestCasesContainerQualityMeter(factory);
+        testCasesContainer.TestCaseList = testCaseList;
+        testCasesContainer.Propagations = propagations;
 
         QualityMeter<Network> ifAllGoodMeter = new TestCasesIfAllGoodNetworkQualityMeter(testCasesContainer, goodDifference);
         testCasesContainer.AddStaticChild(ifAllGoodMeter);
@@ -42,7 +44,7 @@ public class NetworkQualityMeters
         return testCasesContainer;
     }
 
-    public static QualityMeter<Network> CreatePropagationsAgnostic(int propagationsFrom, int propagationsTo, TestCaseList testCaseList)
+    public static QualityMeter<Network> CreatePropagationsAgnostic(int propagations, int additionalPropagations, TestCaseList testCaseList)
     {
         double goodDifference = 0.001d;
         double qualityForOneMs = 25d;
@@ -64,7 +66,9 @@ public class NetworkQualityMeters
             return testCaseMeter;
         };
 
-        var testCasesContainer = new TestCasesContainerQualityMeter(testCaseList, propagationsFrom, propagationsTo, factory);
+        var testCasesContainer = new TestCasesContainerQualityMeter(factory, additionalPropagations);
+        testCasesContainer.TestCaseList = testCaseList;
+        testCasesContainer.Propagations = propagations;
 
         testCasesContainer.AddStaticChild(new NoLoopsNetworkQualityMeter(testCasesContainer, qualityForZeroLoops));
         QualityMeter<Network> ifAllGoodMeter = new TestCasesIfAllGoodNetworkQualityMeter(testCasesContainer, goodDifference);
@@ -96,7 +100,9 @@ public class NetworkQualityMeters
             return testCaseMeter;
         };
 
-        var testCasesContainer = new TestCasesContainerQualityMeter(testCaseList, propagations, factory);
+        var testCasesContainer = new TestCasesContainerQualityMeter(factory);
+        testCasesContainer.TestCaseList = testCaseList;
+        testCasesContainer.Propagations = propagations;
 
         testCasesContainer.AddStaticChild(new MultiplierSumNetworkQualityMeter(testCasesContainer, qualityForMultipSumEqOne));
 
@@ -120,14 +126,18 @@ public class NetworkQualityMeters
             return testCaseMeter;
         };
 
-        var testCasesContainer = new TestCasesSequentialContainerQualityMeter(testCaseList, propagations, goodDifference, factory);
+        var testCasesContainer = new TestCasesSequentialContainerQualityMeter(goodDifference, factory);
+        testCasesContainer.TestCaseList = testCaseList;
+        testCasesContainer.Propagations = propagations;
 
         return testCasesContainer;
     }
 
     public static QualityMeter<Network> CreateAggregate(int propagations, TestCaseList testCaseList)
     {
-        QualityMeter<Network> rootMeter = new TestCaseListNetworkQualityMeter(null, testCaseList, propagations);
+        TestCaseListNetworkQualityMeter rootMeter = new TestCaseListNetworkQualityMeter(null);
+        rootMeter.TestCaseList = testCaseList;
+        rootMeter.Propagations = propagations;
         return rootMeter;
     }
 

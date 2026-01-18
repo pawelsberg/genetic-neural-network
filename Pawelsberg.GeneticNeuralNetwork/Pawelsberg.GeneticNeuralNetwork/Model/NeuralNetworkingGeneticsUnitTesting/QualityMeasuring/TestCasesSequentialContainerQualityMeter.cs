@@ -15,50 +15,33 @@ namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTest
 /// </summary>
 public class TestCasesSequentialContainerQualityMeter : QualityMeter<Network>, INetworkQualityMeterWithTestCaseList, INetworkQualityMeterWithPropagations, INetworkQualityMeterContainerTextConvertible
 {
-    private TestCaseList _testCaseList;
-    private int _propagations;
     private readonly double _goodDifference;
     private readonly Func<QualityMeter<Network>, TestCase, int, TestCaseNetworkQualityMeter> _testCaseMeterFactory;
 
-    public TestCaseList TestCaseList
-    {
-        get => _testCaseList;
-        set => _testCaseList = value;
-    }
-
-    public int Propagations
-    {
-        get => _propagations;
-        set => _propagations = value;
-    }
+    public TestCaseList? TestCaseList { get; set; }
+    public int? Propagations { get; set; }
 
     public TestCasesSequentialContainerQualityMeter(
-        TestCaseList testCaseList,
-        int propagations,
         double goodDifference,
         Func<QualityMeter<Network>, TestCase, int, TestCaseNetworkQualityMeter> testCaseMeterFactory)
         : base(null)
     {
-        _testCaseList = testCaseList;
-        _propagations = propagations;
         _goodDifference = goodDifference;
         _testCaseMeterFactory = testCaseMeterFactory;
     }
 
-    public override List<QualityMeter<Network>> Children
+    public override List<QualityMeter<Network>>? Children
     {
         get
         {
-            var children = new List<QualityMeter<Network>>();
+            if (TestCaseList == null || Propagations == null)
+                return null;
+
+            List<QualityMeter<Network>> children = new List<QualityMeter<Network>>();
             
-            if (_testCaseList != null && _testCaseList.TestCases.Any())
+            if (TestCaseList.TestCases.Any())
             {
-                var testCases = _testCaseList.TestCases.ToList();
-                
-                // Build nested structure recursively
-                // Container children: [TestCase1, IfAllGood1]
-                // IfAllGood1 children: [TestCase2, IfAllGood2]
-                // etc.
+                List<TestCase> testCases = TestCaseList.TestCases.ToList();
                 BuildSequentialChain(children, this, testCases, 0);
             }
             
@@ -72,34 +55,35 @@ public class TestCasesSequentialContainerQualityMeter : QualityMeter<Network>, I
             return;
 
         // Add test case meter for current index
-        var testCaseMeter = _testCaseMeterFactory(parent, testCases[index], _propagations);
+        TestCaseNetworkQualityMeter testCaseMeter = _testCaseMeterFactory(parent, testCases[index], Propagations!.Value);
         targetChildren.Add(testCaseMeter);
 
         // Add IfAllGood meter that will contain the rest of the chain
-        var ifAllGoodMeter = new SequentialIfAllGoodNetworkQualityMeter(
+        SequentialIfAllGoodNetworkQualityMeter ifAllGoodMeter = new SequentialIfAllGoodNetworkQualityMeter(
             parent, 
             _goodDifference, 
             testCases, 
             index + 1, 
-            _propagations, 
+            Propagations!.Value, 
             _testCaseMeterFactory);
         targetChildren.Add(ifAllGoodMeter);
     }
 
     public void WriteToText(StringBuilder sb)
     {
-        sb.AppendLine($"TestCasesSequential({_propagations.ToString(CultureInfo.InvariantCulture)})");
+        sb.AppendLine($"TestCasesSequential()");
         
-        // Write children template from first test case meter
-        var testCaseMeters = Children.Where(c => c is TestCaseNetworkQualityMeter).Cast<TestCaseNetworkQualityMeter>().ToList();
-        if (testCaseMeters.Any())
+        // Write children template from first test case meter - need to check if configured
+        if (TestCaseList != null && Propagations != null)
         {
-            var templateMeter = testCaseMeters.First();
-            foreach (var child in templateMeter.Children)
+            List<TestCaseNetworkQualityMeter> testCaseMeters = Children.Where(c => c is TestCaseNetworkQualityMeter).Cast<TestCaseNetworkQualityMeter>().ToList();
+            if (testCaseMeters.Any())
             {
-                if (child is INetworkQualityMeterTextConvertible convertible)
+                TestCaseNetworkQualityMeter templateMeter = testCaseMeters.First();
+                foreach (QualityMeter<Network> child in templateMeter.Children)
                 {
-                    sb.AppendLine($"  {convertible.ToText()}");
+                    if (child is INetworkQualityMeterTextConvertible convertible)
+                        sb.AppendLine($"  {convertible.ToText()}");
                 }
             }
         }
@@ -107,13 +91,12 @@ public class TestCasesSequentialContainerQualityMeter : QualityMeter<Network>, I
 
     public const string TextName = "TestCasesSequential";
 
-    public static TestCasesSequentialContainerQualityMeter Parse(CodedLines lines, TestCaseList testCaseList, Func<string, QualityMeter<Network>, int, TestCaseList, QualityMeter<Network>?> singleMeterParser)
+    public static TestCasesSequentialContainerQualityMeter Parse(CodedLines lines, Func<string, QualityMeter<Network>, QualityMeter<Network>?> singleMeterParser)
     {
         string firstLine = lines[0].Trim();
         CodedText codedText = new CodedText(firstLine);
         codedText.TrySkip(TextName);
-        string inner = codedText.ReadParenthesesContent();
-        int props = int.Parse(inner, CultureInfo.InvariantCulture);
+        codedText.ReadParenthesesContent(); // ignore content
         
         // Collect child meter specs
         int baseIndent = CodedText.GetIndentLevel(lines[0]);
@@ -124,21 +107,19 @@ public class TestCasesSequentialContainerQualityMeter : QualityMeter<Network>, I
         double goodDifference = 0.001d;
 
         // Build factory from child specs
-        Func<QualityMeter<Network>, TestCase, int, TestCaseNetworkQualityMeter> factory = (parent, testCase, propagations) =>
+        Func<QualityMeter<Network>, TestCase, int, TestCaseNetworkQualityMeter> factory = (parent, testCase, props) =>
         {
-            var tcMeter = new TestCaseNetworkQualityMeter(parent, testCase, propagations);
+            var tcMeter = new TestCaseNetworkQualityMeter(parent, testCase, props);
             foreach (string spec in childSpecs)
             {
-                var childMeter = singleMeterParser(spec, tcMeter, propagations, null);
+                var childMeter = singleMeterParser(spec, tcMeter);
                 if (childMeter != null)
-                {
                     tcMeter.Children.Add(childMeter);
-                }
             }
             return tcMeter;
         };
 
-        return new TestCasesSequentialContainerQualityMeter(testCaseList, props, goodDifference, factory);
+        return new TestCasesSequentialContainerQualityMeter(goodDifference, factory);
     }
 }
 

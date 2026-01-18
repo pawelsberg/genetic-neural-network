@@ -10,7 +10,7 @@ public class TestCaseNetworkQualityMeter : QualityMeter<Network>, INetworkQualit
 {
     public static string TextName = "TestCase";
     public TestCase TestCase { get; set; }
-    public int Propagations { get; set; }
+    public int? Propagations { get; set; }
 
     public TestCaseNetworkQualityMeter(QualityMeter<Network> parent, TestCase testCase, int propagations) : base(parent)
     {
@@ -18,7 +18,7 @@ public class TestCaseNetworkQualityMeter : QualityMeter<Network>, INetworkQualit
         Propagations = propagations;
     }
 
-    public string ToText() => $"{TextName}({Propagations.ToString(CultureInfo.InvariantCulture)})";
+    public string ToText() => $"{TextName}()";
 
     public override QualityMeasurement<Network> MeasureMeterQuality(Network network, QualityMeasurement<Network> parentQualityMeasurement)
     {
@@ -36,7 +36,7 @@ public class TestCaseNetworkQualityMeter : QualityMeter<Network>, INetworkQualit
         }
 
         DateTime start = DateTime.Now;
-        RunningContext runningContext = network.SafeRun(TestCase, Propagations);
+        RunningContext runningContext = network.SafeRun(TestCase, Propagations!.Value);
         DateTime stop = DateTime.Now;
         result.RunningTime = stop.Subtract(start);
 

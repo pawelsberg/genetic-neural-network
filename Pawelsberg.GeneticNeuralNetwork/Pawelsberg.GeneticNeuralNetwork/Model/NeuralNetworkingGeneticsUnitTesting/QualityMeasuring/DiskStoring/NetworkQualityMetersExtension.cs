@@ -17,13 +17,13 @@ public static class NetworkQualityMetersExtension
         }
     }
 
-    public static QualityMeter<Network> Load(string fileName, int propagations, TestCaseList testCaseList)
+    public static QualityMeter<Network> Load(string fileName)
     {
         using (FileStream fileStream = File.Open(fileName, FileMode.Open))
         using (StreamReader streamReader = new StreamReader(fileStream))
         {
             string text = streamReader.ReadToEnd();
-            return NetworkQualityMetersTextExtension.Parse(text, propagations, testCaseList);
+            return NetworkQualityMetersTextExtension.Parse(text);
         }
     }
 }

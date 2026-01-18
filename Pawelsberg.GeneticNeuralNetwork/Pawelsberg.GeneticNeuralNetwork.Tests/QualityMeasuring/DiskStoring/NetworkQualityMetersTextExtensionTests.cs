@@ -14,34 +14,29 @@ public class NetworkQualityMetersTextExtensionTests
     [Fact]
     public void ToText_TestCaseList_FormatsCorrectly()
     {
-        var testCaseList = CreateTestCaseList();
-        var meter = new TestCaseListNetworkQualityMeter(null, testCaseList, 10);
+        TestCaseListNetworkQualityMeter meter = new TestCaseListNetworkQualityMeter(null);
 
         string text = meter.ToText();
 
-        Assert.Contains("TestCaseList(10)", text);
+        Assert.Contains("TestCaseList()", text);
     }
 
     [Fact]
     public void Parse_TestCaseList_ParsesCorrectly()
     {
-        var testCaseList = CreateTestCaseList();
-        string text = "TestCaseList(10)";
+        string text = "TestCaseList()";
 
-        var meter = NetworkQualityMetersTextExtension.Parse(text, 10, testCaseList);
+        QualityMeter<Network> meter = NetworkQualityMetersTextExtension.Parse(text);
 
         Assert.IsType<TestCaseListNetworkQualityMeter>(meter);
-        var tcMeter = (TestCaseListNetworkQualityMeter)meter;
-        Assert.Equal(10, tcMeter.Propagations);
     }
 
     [Fact]
     public void Parse_TestCases_ParsesCorrectly()
     {
-        var testCaseList = CreateTestCaseList();
-        string text = "TestCases(10)\n  Difference(1,0.001)";
+        string text = "TestCases()\n  Difference(1,0.001)";
 
-        var meter = NetworkQualityMetersTextExtension.Parse(text, 10, testCaseList);
+        QualityMeter<Network> meter = NetworkQualityMetersTextExtension.Parse(text);
 
         Assert.IsType<TestCasesContainerQualityMeter>(meter);
     }
@@ -49,36 +44,36 @@ public class NetworkQualityMetersTextExtensionTests
     [Fact]
     public void Parse_TestCasesSequential_ParsesCorrectly()
     {
-        var testCaseList = CreateTestCaseList();
-        string text = "TestCasesSequential(10)\n  Difference(1,0.001)";
+        string text = "TestCasesSequential()\n  Difference(1,0.001)";
 
-        var meter = NetworkQualityMetersTextExtension.Parse(text, 10, testCaseList);
+        QualityMeter<Network> meter = NetworkQualityMetersTextExtension.Parse(text);
 
         Assert.IsType<TestCasesSequentialContainerQualityMeter>(meter);
     }
 
     [Fact]
-    public void Parse_TestCasesWithRange_ParsesCorrectly()
+    public void Parse_TestCasesWithAdditionalPropagations_ParsesCorrectly()
     {
-        var testCaseList = CreateTestCaseList();
-        string text = "TestCases(5-10)\n  Difference(1,0.001)";
+        TestCaseList testCaseList = CreateTestCaseList();
+        string text = "TestCases(5)\n  Difference(1,0.001)";
 
-        var meter = NetworkQualityMetersTextExtension.Parse(text, 10, testCaseList);
+        QualityMeter<Network> meter = NetworkQualityMetersTextExtension.Parse(text);
 
         Assert.IsType<TestCasesContainerQualityMeter>(meter);
-        var container = (TestCasesContainerQualityMeter)meter;
-        var (from, to) = container.GetPropagationRange();
-        Assert.Equal(5, from);
-        Assert.Equal(10, to);
+        TestCasesContainerQualityMeter container = (TestCasesContainerQualityMeter)meter;
+        container.TestCaseList = testCaseList;
+        container.Propagations = 10;
+        (int from, int to) = container.GetPropagationRange()!.Value;
+        Assert.Equal(10, from);
+        Assert.Equal(15, to);
     }
 
     [Fact]
     public void Parse_EmptyText_ReturnsEmptyMeter()
     {
-        var testCaseList = CreateTestCaseList();
         string text = "";
 
-        var meter = NetworkQualityMetersTextExtension.Parse(text, 10, testCaseList);
+        QualityMeter<Network> meter = NetworkQualityMetersTextExtension.Parse(text);
 
         Assert.NotNull(meter);
         Assert.Empty(meter.Children);
@@ -87,37 +82,43 @@ public class NetworkQualityMetersTextExtensionTests
     [Fact]
     public void ToText_AndParse_RoundTrip_TestCases()
     {
-        var testCaseList = CreateTestCaseList();
+        TestCaseList testCaseList = CreateTestCaseList();
         Func<QualityMeter<Network>, TestCase, int, TestCaseNetworkQualityMeter> factory = (parent, tc, props) =>
         {
-            var tcMeter = new TestCaseNetworkQualityMeter(parent, tc, props);
+            TestCaseNetworkQualityMeter tcMeter = new TestCaseNetworkQualityMeter(parent, tc, props);
             tcMeter.Children.Add(new TestCaseDifferenceNetworkQualityMeter(tcMeter, 0.001, 1.0));
             return tcMeter;
         };
-        var original = new TestCasesContainerQualityMeter(testCaseList, 10, factory);
+        TestCasesContainerQualityMeter original = new TestCasesContainerQualityMeter(factory);
+        original.TestCaseList = testCaseList;
+        original.Propagations = 10;
 
         string text = original.ToText();
-        var parsed = NetworkQualityMetersTextExtension.Parse(text, 10, testCaseList);
+        QualityMeter<Network> parsed = NetworkQualityMetersTextExtension.Parse(text);
 
         Assert.IsType<TestCasesContainerQualityMeter>(parsed);
-        var parsedContainer = (TestCasesContainerQualityMeter)parsed;
+        TestCasesContainerQualityMeter parsedContainer = (TestCasesContainerQualityMeter)parsed;
+        parsedContainer.TestCaseList = testCaseList;
+        parsedContainer.Propagations = 10;
         Assert.NotEmpty(parsedContainer.Children);
     }
 
     [Fact]
     public void ToText_AndParse_RoundTrip_TestCasesSequential()
     {
-        var testCaseList = CreateTestCaseList();
+        TestCaseList testCaseList = CreateTestCaseList();
         Func<QualityMeter<Network>, TestCase, int, TestCaseNetworkQualityMeter> factory = (parent, tc, props) =>
         {
-            var tcMeter = new TestCaseNetworkQualityMeter(parent, tc, props);
+            TestCaseNetworkQualityMeter tcMeter = new TestCaseNetworkQualityMeter(parent, tc, props);
             tcMeter.Children.Add(new TestCaseDifferenceNetworkQualityMeter(tcMeter, 0.001, 1.0));
             return tcMeter;
         };
-        var original = new TestCasesSequentialContainerQualityMeter(testCaseList, 10, 0.001, factory);
+        TestCasesSequentialContainerQualityMeter original = new TestCasesSequentialContainerQualityMeter(0.001, factory);
+        original.TestCaseList = testCaseList;
+        original.Propagations = 10;
 
         string text = original.ToText();
-        var parsed = NetworkQualityMetersTextExtension.Parse(text, 10, testCaseList);
+        QualityMeter<Network> parsed = NetworkQualityMetersTextExtension.Parse(text);
 
         Assert.IsType<TestCasesSequentialContainerQualityMeter>(parsed);
     }

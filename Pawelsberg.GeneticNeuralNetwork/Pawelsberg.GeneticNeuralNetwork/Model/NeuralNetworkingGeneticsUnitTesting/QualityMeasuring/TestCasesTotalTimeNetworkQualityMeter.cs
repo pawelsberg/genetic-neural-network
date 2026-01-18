@@ -26,7 +26,7 @@ public class TestCasesTotalTimeNetworkQualityMeter : QualityMeter<Network>, INet
     {
         QualityMeasurement<Network> result = new QualityMeasurement<Network>(this, parentQualityMeasurement);
 
-        IEnumerable<TestCaseQualityMeasurement> qualityMeasurements = parentQualityMeasurement.Children.Cast<TestCaseQualityMeasurement>();
+        IEnumerable<TestCaseQualityMeasurement> qualityMeasurements = parentQualityMeasurement.Children.Where(qm => qm is TestCaseQualityMeasurement).Cast<TestCaseQualityMeasurement>();
 
         TimeSpan timeSpan = TimeSpan.Zero;
 
