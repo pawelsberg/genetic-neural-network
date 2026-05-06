@@ -1,3 +1,5 @@
+using Pawelsberg.GeneticNeuralNetworkConsole.Model.Top;
+
 namespace Pawelsberg.GeneticNeuralNetworkConsole.Model;
 
 public static class Commands
@@ -24,7 +26,8 @@ public static class Commands
         { LoadMutatorsCommand.Name, () => new LoadMutatorsCommand() },
         { SaveMutatorsCommand.Name, () => new SaveMutatorsCommand() },
         { LoadQualityMetersCommand.Name, () => new LoadQualityMetersCommand() },
-        { SaveQualityMetersCommand.Name, () => new SaveQualityMetersCommand() }
+        { SaveQualityMetersCommand.Name, () => new SaveQualityMetersCommand() },
+        { TopCommand.Name, () => new TopCommand() }
     };
 
     public static IEnumerable<string> Names => NameCommands.Keys;

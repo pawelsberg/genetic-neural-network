@@ -4,7 +4,7 @@ using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.QualityMeasuring;
 
-public class TestCasesIfAllGoodNetworkQualityMeter : QualityMeter<Network>, INetworkQualityMeterTextConvertible
+public class TestCasesIfAllGoodNetworkQualityMeter : QualityMeter<Network>, INetworkQualityMeterTextConvertible, IFromTestCasesNetworkQualityMeter, IFromNetworkNetworkQualityMeter
 {
     public static string TextName = "IfAllGood";
     public double GoodDifference { get; set; }

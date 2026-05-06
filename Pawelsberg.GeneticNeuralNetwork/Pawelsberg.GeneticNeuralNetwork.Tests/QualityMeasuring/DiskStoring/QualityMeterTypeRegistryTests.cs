@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
@@ -185,6 +186,100 @@ public class QualityMeterTypeRegistryTests
         ContainerQualityMeterTypeDescriptor descriptor = QualityMeterTypeRegistry.GetContainerDescriptorForLine(line);
 
         Assert.Null(descriptor);
+    }
+
+    [Fact]
+    public void PerTestCaseMeters_ImplementPerTestCaseInterface()
+    {
+        QualityMeter<Network> parent = new QualityMeter<Network>(null);
+        Assert.IsAssignableFrom<IPerTestCaseNetworkQualityMeter>(QualityMeterTypeRegistry.TryParse("Difference", "1,0.001", parent));
+        Assert.IsAssignableFrom<IPerTestCaseNetworkQualityMeter>(QualityMeterTypeRegistry.TryParse("GoodResult", "10,0.001", parent));
+        Assert.IsAssignableFrom<IPerTestCaseNetworkQualityMeter>(QualityMeterTypeRegistry.TryParse("SubstractErrorIfGood", "1,0.001", parent));
+    }
+
+    [Fact]
+    public void FromTestCasesMeters_ImplementFromTestCasesInterface()
+    {
+        QualityMeter<Network> parent = new QualityMeter<Network>(null);
+        Assert.IsAssignableFrom<IFromTestCasesNetworkQualityMeter>(QualityMeterTypeRegistry.TryParse("TotalTime", "25", parent));
+        // IfAllGood appears in both FromTestCases and FromNetwork sections.
+        Assert.IsAssignableFrom<IFromTestCasesNetworkQualityMeter>(QualityMeterTypeRegistry.TryParse("IfAllGood", "0.001", parent));
+        Assert.IsAssignableFrom<IFromNetworkNetworkQualityMeter>(QualityMeterTypeRegistry.TryParse("IfAllGood", "0.001", parent));
+    }
+
+    [Fact]
+    public void FromNetworkMeters_ImplementFromNetworkInterface()
+    {
+        QualityMeter<Network> parent = new QualityMeter<Network>(null);
+        Assert.IsAssignableFrom<IFromNetworkNetworkQualityMeter>(QualityMeterTypeRegistry.TryParse("TotalNodes", "10", parent));
+        Assert.IsAssignableFrom<IFromNetworkNetworkQualityMeter>(QualityMeterTypeRegistry.TryParse("TotalSynapses", "5", parent));
+        Assert.IsAssignableFrom<IFromNetworkNetworkQualityMeter>(QualityMeterTypeRegistry.TryParse("MultiplierSum", "20", parent));
+        Assert.IsAssignableFrom<IFromNetworkNetworkQualityMeter>(QualityMeterTypeRegistry.TryParse("NoLoops", "50", parent));
+    }
+
+    [Fact]
+    public void GetSectionHeader_PerTestCaseMeter_ReturnsPerTestCase()
+    {
+        QualityMeter<Network> parent = new QualityMeter<Network>(null);
+        QualityMeter<Network> meter = QualityMeterTypeRegistry.TryParse("Difference", "1,0.001", parent);
+
+        Assert.Equal(NetworkQualityMeterSectionExtensions.PerTestCaseSection, meter.GetSectionHeader());
+    }
+
+    [Fact]
+    public void GetSectionHeader_FromTestCasesMeter_ReturnsFromTestCases()
+    {
+        QualityMeter<Network> parent = new QualityMeter<Network>(null);
+        QualityMeter<Network> meter = QualityMeterTypeRegistry.TryParse("TotalTime", "25", parent);
+
+        Assert.Equal(NetworkQualityMeterSectionExtensions.FromTestCasesSection, meter.GetSectionHeader());
+    }
+
+    [Fact]
+    public void GetSectionHeader_IfAllGood_ReturnsFromTestCasesAsPrimary()
+    {
+        // IfAllGood implements both IFromTestCases and IFromNetwork; primary is FromTestCases.
+        QualityMeter<Network> parent = new QualityMeter<Network>(null);
+        QualityMeter<Network> meter = QualityMeterTypeRegistry.TryParse("IfAllGood", "0.001", parent);
+
+        Assert.Equal(NetworkQualityMeterSectionExtensions.FromTestCasesSection, meter.GetSectionHeader());
+    }
+
+    [Fact]
+    public void GetSectionHeader_FromNetworkMeter_ReturnsFromNetwork()
+    {
+        QualityMeter<Network> parent = new QualityMeter<Network>(null);
+        QualityMeter<Network> meter = QualityMeterTypeRegistry.TryParse("TotalNodes", "10", parent);
+
+        Assert.Equal(NetworkQualityMeterSectionExtensions.FromNetworkSection, meter.GetSectionHeader());
+    }
+
+    [Fact]
+    public void ValidateInSection_CorrectSection_DoesNotThrow()
+    {
+        QualityMeter<Network> parent = new QualityMeter<Network>(null);
+        QualityMeterTypeRegistry.TryParse("Difference", "1,0.001", parent).ValidateInSection(NetworkQualityMeterSectionExtensions.PerTestCaseSection);
+        QualityMeterTypeRegistry.TryParse("IfAllGood", "0.001", parent).ValidateInSection(NetworkQualityMeterSectionExtensions.FromTestCasesSection);
+        QualityMeterTypeRegistry.TryParse("TotalNodes", "10", parent).ValidateInSection(NetworkQualityMeterSectionExtensions.FromNetworkSection);
+    }
+
+    [Fact]
+    public void ValidateInSection_IfAllGoodInFromNetwork_DoesNotThrow()
+    {
+        QualityMeter<Network> parent = new QualityMeter<Network>(null);
+        QualityMeterTypeRegistry.TryParse("IfAllGood", "0.001", parent).ValidateInSection(NetworkQualityMeterSectionExtensions.FromNetworkSection);
+    }
+
+    [Fact]
+    public void ValidateInSection_WrongSection_ThrowsInvalidOperationException()
+    {
+        QualityMeter<Network> parent = new QualityMeter<Network>(null);
+        QualityMeter<Network> meter = QualityMeterTypeRegistry.TryParse("Difference", "1,0.001", parent);
+
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
+            meter.ValidateInSection(NetworkQualityMeterSectionExtensions.FromNetworkSection));
+
+        Assert.Contains("FromNetwork", exception.Message);
     }
 
     private static TestCaseList CreateTestCaseList()

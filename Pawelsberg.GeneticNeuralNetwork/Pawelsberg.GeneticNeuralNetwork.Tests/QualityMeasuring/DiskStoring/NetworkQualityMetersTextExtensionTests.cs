@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Pawelsberg.GeneticNeuralNetwork.Model.Genetics;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
+using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGenetics.QualityMeasuring;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.QualityMeasuring;
 using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.QualityMeasuring.DiskStoring;
 using Pawelsberg.GeneticNeuralNetwork.Model.UnitTesting;
@@ -34,7 +36,9 @@ public class NetworkQualityMetersTextExtensionTests
     [Fact]
     public void Parse_TestCases_ParsesCorrectly()
     {
-        string text = "TestCases()\n  Difference(1,0.001)";
+        string text = @"TestCases()
+  PerTestCase:
+    Difference(1,0.001)";
 
         QualityMeter<Network> meter = NetworkQualityMetersTextExtension.Parse(text);
 
@@ -44,28 +48,13 @@ public class NetworkQualityMetersTextExtensionTests
     [Fact]
     public void Parse_TestCasesSequential_ParsesCorrectly()
     {
-        string text = "TestCasesSequential()\n  Difference(1,0.001)";
+        string text = @"TestCasesSequential()
+  PerTestCase:
+    Difference(1,0.001)";
 
         QualityMeter<Network> meter = NetworkQualityMetersTextExtension.Parse(text);
 
         Assert.IsType<TestCasesSequentialContainerQualityMeter>(meter);
-    }
-
-    [Fact]
-    public void Parse_TestCasesWithAdditionalPropagations_ParsesCorrectly()
-    {
-        TestCaseList testCaseList = CreateTestCaseList();
-        string text = "TestCases(5)\n  Difference(1,0.001)";
-
-        QualityMeter<Network> meter = NetworkQualityMetersTextExtension.Parse(text);
-
-        Assert.IsType<TestCasesContainerQualityMeter>(meter);
-        TestCasesContainerQualityMeter container = (TestCasesContainerQualityMeter)meter;
-        container.TestCaseList = testCaseList;
-        container.Propagations = 10;
-        (int from, int to) = container.GetPropagationRange()!.Value;
-        Assert.Equal(10, from);
-        Assert.Equal(15, to);
     }
 
     [Fact]
@@ -123,6 +112,22 @@ public class NetworkQualityMetersTextExtensionTests
         Assert.IsType<TestCasesSequentialContainerQualityMeter>(parsed);
     }
 
+    [Fact]
+    public void Parse_TestCases_LegacyFormat_ThrowsException()
+    {
+        string text = "TestCases()\n  Difference(1,0.001)";
+
+        Assert.Throws<InvalidOperationException>(() => NetworkQualityMetersTextExtension.Parse(text));
+    }
+
+    [Fact]
+    public void Parse_TestCasesSequential_LegacyFormat_ThrowsException()
+    {
+        string text = "TestCasesSequential()\n  Difference(1,0.001)";
+
+        Assert.Throws<InvalidOperationException>(() => NetworkQualityMetersTextExtension.Parse(text));
+    }
+
     private static TestCaseList CreateTestCaseList()
     {
         return new TestCaseList
@@ -133,5 +138,55 @@ public class NetworkQualityMetersTextExtensionTests
                 new TestCase { Inputs = new List<int> { 1 }, Outputs = new List<int> { 1 } }
             }
         };
+    }
+
+    [Fact]
+    public void Parse_NewFormat_WithPerTestCaseSection_ParsesCorrectly()
+    {
+        string text = @"TestCases()
+  PerTestCase:
+    Difference(1,0.001)
+    GoodResult(10,0.001)";
+
+        QualityMeter<Network> meter = NetworkQualityMetersTextExtension.Parse(text);
+
+        Assert.IsType<TestCasesContainerQualityMeter>(meter);
+        TestCasesContainerQualityMeter container = (TestCasesContainerQualityMeter)meter;
+        container.TestCaseList = CreateTestCaseList();
+        container.Propagations = 10;
+        Assert.NotEmpty(container.Children);
+    }
+
+    [Fact]
+    public void Parse_NewFormat_WrongMeterInPerTestCaseSection_ThrowsException()
+    {
+        string text = @"TestCases()
+  PerTestCase:
+    TotalNodes(5)";
+
+        Assert.Throws<InvalidOperationException>(() => NetworkQualityMetersTextExtension.Parse(text));
+    }
+
+    [Fact]
+    public void Parse_TestCasesSequential_WithAfterAllTestCasesSection_ParsesCorrectly()
+    {
+        TestCaseList testCaseList = CreateTestCaseList();
+        string text = @"TestCasesSequential()
+  PerTestCase:
+    Difference(1,0.001)
+  AfterAllTestCases:
+    FromNetwork:
+      MultiplierSum(10)";
+
+        QualityMeter<Network> meter = NetworkQualityMetersTextExtension.Parse(text);
+
+        Assert.IsType<TestCasesSequentialContainerQualityMeter>(meter);
+        TestCasesSequentialContainerQualityMeter container = (TestCasesSequentialContainerQualityMeter)meter;
+        container.TestCaseList = testCaseList;
+        container.Propagations = 10;
+        
+        // Check static children exist
+        IEnumerable<QualityMeter<Network>> staticChildren = container.GetStaticChildren();
+        Assert.Single(staticChildren);
     }
 }

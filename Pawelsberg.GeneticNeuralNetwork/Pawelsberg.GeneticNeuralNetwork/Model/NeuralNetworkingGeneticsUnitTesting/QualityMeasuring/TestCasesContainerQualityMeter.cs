@@ -43,20 +43,20 @@ public class TestCasesContainerQualityMeter : QualityMeter<Network>, INetworkQua
                 return null;
 
             List<QualityMeter<Network>> children = new List<QualityMeter<Network>>();
-            
+
             int from = Propagations.Value;
             int to = Propagations.Value + _additionalPropagations;
-            
+
             foreach (int props in Enumerable.Range(from, to - from + 1))
             {
                 foreach (TestCase testCase in TestCaseList.TestCases)
                     children.Add(_testCaseMeterFactory(this, testCase, props));
             }
-            
+
             // Add static children (IfAllGood, etc.)
             foreach (var staticChild in _staticChildren)
                 children.Add(staticChild);
-            
+
             return children;
         }
     }
@@ -68,21 +68,6 @@ public class TestCasesContainerQualityMeter : QualityMeter<Network>, INetworkQua
     {
         _staticChildren.Add(child);
     }
-
-    /// <summary>
-    /// Gets the propagation range for this container.
-    /// </summary>
-    public (int From, int To)? GetPropagationRange()
-    {
-        if (Propagations == null)
-            return null;
-        return (Propagations.Value, Propagations.Value + _additionalPropagations);
-    }
-
-    /// <summary>
-    /// Gets the static children (non-test-case meters).
-    /// </summary>
-    public IEnumerable<QualityMeter<Network>> GetStaticChildren() => _staticChildren;
 
     /// <summary>
     /// Gets a template test case meter for serialization.
@@ -99,61 +84,105 @@ public class TestCasesContainerQualityMeter : QualityMeter<Network>, INetworkQua
             sb.AppendLine($"TestCases()");
         else
             sb.AppendLine($"TestCases({_additionalPropagations.ToString(CultureInfo.InvariantCulture)})");
-        
-        // Write children template from first test case meter
-        var templateMeter = GetTemplateMeter();
-        if (templateMeter != null)
+
+        // Write PerTestCase section with children template from first test case meter
+        TestCaseNetworkQualityMeter? templateMeter = GetTemplateMeter();
+        if (templateMeter != null && templateMeter.Children.Any())
         {
-            foreach (var child in templateMeter.Children)
+            sb.AppendLine($"  {NetworkQualityMeterSectionExtensions.PerTestCaseSection}");
+            foreach (QualityMeter<Network> child in templateMeter.Children)
             {
                 if (child is INetworkQualityMeterTextConvertible convertible)
-                    sb.AppendLine($"  {convertible.ToText()}");
+                    sb.AppendLine($"    {convertible.ToText()}");
             }
         }
-        
-        // Write static children
-        foreach (var child in _staticChildren)
-            WriteStaticChild(sb, child, 0);
+
+        // Write AfterAllTestCases section with static children
+        if (_staticChildren.Any())
+        {
+            sb.AppendLine($"  {AfterAllTestCasesSection}");
+            foreach (QualityMeter<Network> staticChild in _staticChildren)
+                WriteStaticChild(sb, staticChild, 2);
+        }
     }
 
     private static void WriteStaticChild(StringBuilder sb, QualityMeter<Network> meter, int indentLevel)
     {
         string indent = new string(' ', indentLevel * 2);
-        
+        string? sectionHeader = meter.GetSectionHeader();
+
+        if (sectionHeader != null)
+            sb.AppendLine($"{indent}{sectionHeader}");
+
+        // Write the meter itself
         if (meter is INetworkQualityMeterTextConvertible convertible)
+            sb.AppendLine($"{indent}  {convertible.ToText()}");
+
+        // Group children by primary section header (matches GetSectionHeader priority order:
+        // an IfAllGood child counted as FromTestCases, never doubled in FromNetwork).
+        List<QualityMeter<Network>> fromTestCasesChildren = meter.Children
+            .Where(c => c.GetSectionHeader() == NetworkQualityMeterSectionExtensions.FromTestCasesSection)
+            .ToList();
+        List<QualityMeter<Network>> fromNetworkChildren = meter.Children
+            .Where(c => c.GetSectionHeader() == NetworkQualityMeterSectionExtensions.FromNetworkSection)
+            .ToList();
+
+        if (fromTestCasesChildren.Any())
         {
-            sb.AppendLine($"{indent}{convertible.ToText()}");
+            sb.AppendLine($"{indent}    {NetworkQualityMeterSectionExtensions.FromTestCasesSection}");
+            foreach (QualityMeter<Network> child in fromTestCasesChildren)
+            {
+                if (child is INetworkQualityMeterTextConvertible childConvertible)
+                    sb.AppendLine($"{indent}      {childConvertible.ToText()}");
+            }
         }
-        
-        foreach (var child in meter.Children)
+
+        if (fromNetworkChildren.Any())
         {
-            WriteStaticChild(sb, child, indentLevel + 1);
+            sb.AppendLine($"{indent}    {NetworkQualityMeterSectionExtensions.FromNetworkSection}");
+            foreach (QualityMeter<Network> child in fromNetworkChildren)
+            {
+                if (child is INetworkQualityMeterTextConvertible childConvertible)
+                    sb.AppendLine($"{indent}      {childConvertible.ToText()}");
+            }
         }
     }
 
     public const string TextName = "TestCases";
+    private const string AfterAllTestCasesSection = "AfterAllTestCases:";
 
-    public static TestCasesContainerQualityMeter Parse(CodedLines lines, Func<string, QualityMeter<Network>, QualityMeter<Network>?> singleMeterParser)
+    public static TestCasesContainerQualityMeter Parse(CodedText text, Func<string, QualityMeter<Network>, QualityMeter<Network>?> singleMeterParser)
     {
-        string firstLine = lines[0].Trim();
-        CodedText codedText = new CodedText(firstLine);
-        codedText.TrySkip(TextName);
-        string inner = codedText.ReadParenthesesContent();
-        
+        int baseIndent = text.CurrentIndent;
+        text.TrySkip(TextName);
+        string inner = text.ReadParenthesesContent();
         int additionalPropagations = string.IsNullOrWhiteSpace(inner) ? 0 : int.Parse(inner.Trim(), CultureInfo.InvariantCulture);
+        text.AdvanceLine();
 
-        // Collect child meter specs (indented lines after TestCases)
-        int baseIndent = CodedText.GetIndentLevel(lines[0]);
-        lines.Index = 1;
-        var childSpecs = lines.CollectIndentedContent(baseIndent);
+        // Collect child meter specs from PerTestCase section - REQUIRED
+        if (text.EOT || text.CurrentLineContent != NetworkQualityMeterSectionExtensions.PerTestCaseSection)
+            throw new InvalidOperationException($"Expected '{NetworkQualityMeterSectionExtensions.PerTestCaseSection}' section after TestCases(). Format requires explicit sections.");
+
+        text.AdvanceLine();
+        int sectionIndent = baseIndent + 1;
+        List<string> perTestCaseSpecs = CollectSectionContent(text, sectionIndent);
+
+        // Validate PerTestCase meters by parsing a probe and checking the interface.
+        foreach (string spec in perTestCaseSpecs)
+        {
+            QualityMeter<Network>? probe = singleMeterParser(spec, new QualityMeter<Network>(null));
+            if (probe == null)
+                throw new InvalidOperationException($"Unknown meter type in spec: {spec}");
+            probe.ValidateInSection(NetworkQualityMeterSectionExtensions.PerTestCaseSection);
+        }
 
         // Build factory from child specs
         Func<QualityMeter<Network>, TestCase, int, TestCaseNetworkQualityMeter> factory = (parent, testCase, props) =>
         {
-            var tcMeter = new TestCaseNetworkQualityMeter(parent, testCase, props);
-            foreach (string spec in childSpecs)
+            TestCaseNetworkQualityMeter tcMeter = new TestCaseNetworkQualityMeter(parent, testCase, props);
+            foreach (string spec in perTestCaseSpecs)
             {
-                var childMeter = singleMeterParser(spec, tcMeter);
+                QualityMeter<Network>? childMeter = singleMeterParser(spec, tcMeter);
                 if (childMeter != null)
                     tcMeter.Children.Add(childMeter);
             }
@@ -162,43 +191,174 @@ public class TestCasesContainerQualityMeter : QualityMeter<Network>, INetworkQua
 
         TestCasesContainerQualityMeter container = new TestCasesContainerQualityMeter(factory, additionalPropagations);
 
-        // Parse static children (meters at same indent as TestCases, after child specs)
-        while (!lines.EndOfLines)
+        // Parse AfterAllTestCases section - OPTIONAL but if present must use correct format
+        if (!text.EOT && text.CurrentLineContent == AfterAllTestCasesSection)
         {
-            string? content = lines.CurrentContent;
-            
-            if (string.IsNullOrEmpty(content))
-            {
-                lines.Advance();
-                continue;
-            }
-
-            var staticMeter = singleMeterParser(content, container);
-            if (staticMeter != null)
-            {
-                container.AddStaticChild(staticMeter);
-                lines.Advance();
-                
-                // Parse children of static meter
-                int staticMeterIndent = lines.CurrentIndent;
-                while (!lines.EndOfLines)
-                {
-                    int childIndent = lines.CurrentIndent;
-                    if (childIndent <= staticMeterIndent)
-                        break;
-                    
-                    var childMeter = singleMeterParser(lines.CurrentContent!, staticMeter);
-                    if (childMeter != null)
-                        staticMeter.Children.Add(childMeter);
-                    lines.Advance();
-                }
-            }
-            else
-            {
-                lines.Advance();
-            }
+            text.AdvanceLine();
+            ParseAfterAllTestCasesSection(text, container, singleMeterParser, baseIndent + 1);
+        }
+        else if (!text.EOT && !string.IsNullOrWhiteSpace(text.CurrentLineContent))
+        {
+            // There's content but it's not AfterAllTestCases: section
+            throw new InvalidOperationException($"Expected '{AfterAllTestCasesSection}' section or end of file. Found: '{text.CurrentLineContent}'. Format requires explicit sections.");
         }
 
         return container;
+    }
+
+    private static List<string> CollectSectionContent(CodedText text, int sectionIndent)
+    {
+        List<string> specs = new();
+        while (!text.EOT)
+        {
+            int currentIndent = text.CurrentIndent;
+            if (currentIndent <= sectionIndent)
+                break;
+
+            string? content = text.CurrentLineContent;
+            if (!string.IsNullOrWhiteSpace(content) && !content.EndsWith(":"))
+                specs.Add(content);
+
+            text.AdvanceLine();
+        }
+        return specs;
+    }
+
+    private static void ParseAfterAllTestCasesSection(
+        CodedText text,
+        TestCasesContainerQualityMeter container,
+        Func<string, QualityMeter<Network>, QualityMeter<Network>?> singleMeterParser,
+        int sectionIndent)
+    {
+        while (!text.EOT)
+        {
+            int currentIndent = text.CurrentIndent;
+            if (currentIndent <= sectionIndent)
+                break;
+
+            string? content = text.CurrentLineContent;
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                text.AdvanceLine();
+                continue;
+            }
+
+            if (content == NetworkQualityMeterSectionExtensions.FromTestCasesSection || content == NetworkQualityMeterSectionExtensions.FromNetworkSection)
+            {
+                string sectionHeader = content;
+                text.AdvanceLine();
+                ParseDataSourceSection(text, container, singleMeterParser, currentIndent, sectionHeader);
+            }
+            else
+            {
+                throw new InvalidOperationException($"Expected '{NetworkQualityMeterSectionExtensions.FromTestCasesSection}' or '{NetworkQualityMeterSectionExtensions.FromNetworkSection}' section inside AfterAllTestCases. Found: '{content}'. Format requires explicit data source sections.");
+            }
+        }
+    }
+
+    private static void ParseDataSourceSection(
+        CodedText text,
+        TestCasesContainerQualityMeter container,
+        Func<string, QualityMeter<Network>, QualityMeter<Network>?> singleMeterParser,
+        int sectionIndent,
+        string expectedSectionHeader)
+    {
+        while (!text.EOT)
+        {
+            int currentIndent = text.CurrentIndent;
+            if (currentIndent <= sectionIndent)
+                break;
+
+            string? content = text.CurrentLineContent;
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                text.AdvanceLine();
+                continue;
+            }
+
+            if (content == NetworkQualityMeterSectionExtensions.FromTestCasesSection || content == NetworkQualityMeterSectionExtensions.FromNetworkSection)
+                break;
+
+            QualityMeter<Network>? meter = singleMeterParser(content, container);
+            if (meter != null)
+            {
+                meter.ValidateInSection(expectedSectionHeader);
+                container.AddStaticChild(meter);
+                text.AdvanceLine();
+
+                // Parse children of static meter (nested sections)
+                ParseStaticChildChildren(text, meter, singleMeterParser, currentIndent);
+            }
+            else
+            {
+                text.AdvanceLine();
+            }
+        }
+    }
+
+    private static void ParseStaticChildChildren(
+        CodedText text,
+        QualityMeter<Network> parent,
+        Func<string, QualityMeter<Network>, QualityMeter<Network>?> singleMeterParser,
+        int parentIndent)
+    {
+        while (!text.EOT)
+        {
+            int currentIndent = text.CurrentIndent;
+            if (currentIndent <= parentIndent)
+                break;
+
+            string? content = text.CurrentLineContent;
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                text.AdvanceLine();
+                continue;
+            }
+
+            if (content == NetworkQualityMeterSectionExtensions.FromTestCasesSection || content == NetworkQualityMeterSectionExtensions.FromNetworkSection)
+            {
+                string sectionHeader = content;
+                text.AdvanceLine();
+                ParseChildMetersInSection(text, parent, singleMeterParser, currentIndent, sectionHeader);
+            }
+            else
+            {
+                throw new InvalidOperationException($"Expected '{NetworkQualityMeterSectionExtensions.FromTestCasesSection}' or '{NetworkQualityMeterSectionExtensions.FromNetworkSection}' section for child meters. Found: '{content}'. Format requires explicit data source sections.");
+            }
+        }
+    }
+
+    private static void ParseChildMetersInSection(
+        CodedText text,
+        QualityMeter<Network> parent,
+        Func<string, QualityMeter<Network>, QualityMeter<Network>?> singleMeterParser,
+        int sectionIndent,
+        string expectedSectionHeader)
+    {
+        while (!text.EOT)
+        {
+            int currentIndent = text.CurrentIndent;
+            if (currentIndent <= sectionIndent)
+                break;
+
+            string? content = text.CurrentLineContent;
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                text.AdvanceLine();
+                continue;
+            }
+
+            if (content == NetworkQualityMeterSectionExtensions.FromTestCasesSection || content == NetworkQualityMeterSectionExtensions.FromNetworkSection)
+                break;
+
+            QualityMeter<Network>? childMeter = singleMeterParser(content, parent);
+            if (childMeter != null)
+            {
+                childMeter.ValidateInSection(expectedSectionHeader);
+                parent.Children.Add(childMeter);
+            }
+
+            text.AdvanceLine();
+        }
     }
 }

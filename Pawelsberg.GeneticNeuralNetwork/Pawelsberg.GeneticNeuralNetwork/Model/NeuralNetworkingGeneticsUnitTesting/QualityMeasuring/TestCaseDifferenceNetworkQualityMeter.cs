@@ -4,7 +4,7 @@ using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.QualityMeasuring;
 
-public class TestCaseDifferenceNetworkQualityMeter : QualityMeter<Network>, INetworkQualityMeterTextConvertible
+public class TestCaseDifferenceNetworkQualityMeter : QualityMeter<Network>, INetworkQualityMeterTextConvertible, IPerTestCaseNetworkQualityMeter
 {
     public static string TextName = "Difference";
     public TestCaseNetworkQualityMeter TestCaseParent { get { return (TestCaseNetworkQualityMeter)Parent; } }

@@ -4,6 +4,7 @@ Code should be self-explanatory; prefer clear naming and structure over comments
 Avoid unnecessary complexity and coupling.
 Follow ideas of Code Complete book by Steve McConnell where applicable.
 Any change should be analysed solution-wise, every other code that needs to be changed should be changed as well to keep consistency.
+Do not change the code to make it testable.
 ### C# Coding Conventions
 Don't use "var" - specify explicit types for all variable declarations.
 Don't use ref nor out parameters.

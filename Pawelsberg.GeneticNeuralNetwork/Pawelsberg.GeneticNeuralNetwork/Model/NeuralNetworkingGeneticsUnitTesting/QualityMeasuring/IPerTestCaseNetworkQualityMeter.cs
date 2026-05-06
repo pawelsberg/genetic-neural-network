@@ -1,0 +1,5 @@
+namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.QualityMeasuring;
+
+public interface IPerTestCaseNetworkQualityMeter
+{
+}

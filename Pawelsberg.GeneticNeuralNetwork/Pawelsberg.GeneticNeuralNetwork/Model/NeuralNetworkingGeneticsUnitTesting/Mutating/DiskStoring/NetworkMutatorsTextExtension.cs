@@ -77,7 +77,7 @@ public static class NetworkMutatorsTextExtension
         if (codedText.TrySkip("RandomNumberOfTimes"))
         {
             string inner = codedText.ReadParenthesesContent();
-            var parts = codedText.SplitTopLevel(inner);
+            var parts = CodedText.SplitTopLevel(inner);
             int min = int.Parse(parts[0], CultureInfo.InvariantCulture);
             int max = int.Parse(parts[1], CultureInfo.InvariantCulture);
             CodedText innerCodedText = new CodedText(parts[2]);
@@ -87,7 +87,7 @@ public static class NetworkMutatorsTextExtension
         if (codedText.TrySkip("MultipleTimes"))
         {
             string inner = codedText.ReadParenthesesContent();
-            var parts = codedText.SplitTopLevel(inner);
+            var parts = CodedText.SplitTopLevel(inner);
             int count = int.Parse(parts[0], CultureInfo.InvariantCulture);
             return new MultipleTimesMutator<Network>(parentMutators, count);
         }
@@ -103,6 +103,7 @@ public static class NetworkMutatorsTextExtension
 
     private static Mutator<Network>? TryParseConvertibleMutator(CodedText codedText, int maxNodes, int maxSynapses, int propagations, TestCaseList testCaseList)
     {
+        // TODO: WTF is this? Why to instantiate all mutators just to check if the text matches?
         var mutators = GetMutators(maxNodes, maxSynapses, propagations, testCaseList);
 
         foreach (var (name, mutator) in mutators)

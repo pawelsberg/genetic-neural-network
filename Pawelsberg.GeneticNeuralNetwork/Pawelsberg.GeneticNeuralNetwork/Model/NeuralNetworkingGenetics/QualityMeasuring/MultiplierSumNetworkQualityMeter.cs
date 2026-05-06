@@ -5,7 +5,7 @@ using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGenetics.QualityMeasuring;
 
-public class MultiplierSumNetworkQualityMeter : QualityMeter<Network>, INetworkQualityMeterTextConvertible
+public class MultiplierSumNetworkQualityMeter : QualityMeter<Network>, INetworkQualityMeterTextConvertible, IFromNetworkNetworkQualityMeter
 {
     public static string TextName = "MultiplierSum";
     public double QualityForSumEqOne { get; set; }

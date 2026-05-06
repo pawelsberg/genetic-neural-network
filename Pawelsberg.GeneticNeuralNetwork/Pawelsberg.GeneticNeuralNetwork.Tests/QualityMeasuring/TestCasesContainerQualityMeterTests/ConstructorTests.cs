@@ -30,20 +30,6 @@ public class ConstructorTests
     }
 
     [Fact]
-    public void WithAdditionalPropagations_SetsPropagationRange()
-    {
-        TestCaseList testCaseList = TestHelper.CreateTestCaseList();
-
-        TestCasesContainerQualityMeter container = new TestCasesContainerQualityMeter(TestHelper.CreateFactory(), 10);
-        container.TestCaseList = testCaseList;
-        container.Propagations = 5;
-
-        (int from, int to) = container.GetPropagationRange()!.Value;
-        Assert.Equal(5, from);
-        Assert.Equal(15, to);
-    }
-
-    [Fact]
     public void TestCaseListReturnsNullWhenNotSet()
     {
         TestCasesContainerQualityMeter container = new TestCasesContainerQualityMeter(TestHelper.CreateFactory());

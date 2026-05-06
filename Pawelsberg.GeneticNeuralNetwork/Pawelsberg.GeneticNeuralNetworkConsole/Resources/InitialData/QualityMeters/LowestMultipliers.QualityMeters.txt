@@ -1,5 +1,8 @@
 TestCases()
-  Difference(0.01,0.001)
-  GoodResult(10,0.001)
-  SubstractErrorIfGood(1,0.001)
-MultiplierSum(10)
+  PerTestCase:
+    Difference(0.01,0.001)
+    GoodResult(10,0.001)
+    SubstractErrorIfGood(1,0.001)
+  AfterAllTestCases:
+    FromNetwork:
+      MultiplierSum(10)

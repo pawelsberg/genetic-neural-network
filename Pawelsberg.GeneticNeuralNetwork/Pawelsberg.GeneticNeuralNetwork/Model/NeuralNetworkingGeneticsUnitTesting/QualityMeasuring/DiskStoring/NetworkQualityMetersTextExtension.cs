@@ -41,27 +41,26 @@ public static class NetworkQualityMetersTextExtension
 
     public static QualityMeter<Network> Parse(string text)
     {
-        CodedLines lines = new CodedLines(text);
-        
-        if (lines.Count == 0)
+        CodedText codedText = new CodedText(text);
+
+        if (codedText.EOT)
             return new QualityMeter<Network>(null);
 
         // Check if first line is a container type
-        string firstLine = lines[0].Trim();
-        
+        string firstLine = codedText.CurrentLineContent!;
+
         // Try container types first (TestCasesSequential, TestCases)
-        var containerDescriptor = QualityMeterTypeRegistry.GetContainerDescriptorForLine(firstLine);
+        ContainerQualityMeterTypeDescriptor? containerDescriptor = QualityMeterTypeRegistry.GetContainerDescriptorForLine(firstLine);
         if (containerDescriptor != null)
-            return containerDescriptor.ContainerParser(lines, ParseSingleMeter);
-        
+            return containerDescriptor.ContainerParser(codedText, ParseSingleMeter);
+
         // Try single-line meter types that can be root (e.g., TestCaseList/Aggregate, SequentialOutputTestCase)
         string textName = CodedText.ExtractTextName(firstLine);
         if (!string.IsNullOrEmpty(textName) && QualityMeterTypeRegistry.ByTextName.ContainsKey(textName))
         {
-            CodedText codedText = new CodedText(firstLine);
             codedText.TrySkip(textName);
             string inner = codedText.ReadParenthesesContent();
-            var rootMeter = QualityMeterTypeRegistry.TryParse(textName, inner, null);
+            QualityMeter<Network>? rootMeter = QualityMeterTypeRegistry.TryParse(textName, inner, null);
             if (rootMeter != null)
                 return rootMeter;
         }

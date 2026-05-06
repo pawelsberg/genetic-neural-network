@@ -5,7 +5,7 @@ using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGenetics.QualityMeasuring;
 
-public class NoLoopsNetworkQualityMeter : QualityMeter<Network>, INetworkQualityMeterTextConvertible
+public class NoLoopsNetworkQualityMeter : QualityMeter<Network>, INetworkQualityMeterTextConvertible, IFromNetworkNetworkQualityMeter
 {
     public static string TextName = "NoLoops";
     public double QualityForZeroLoops { get; set; }

@@ -22,3 +22,13 @@
         - quality measurement of neural networks which includes networks propagation.
     The rest will run on CPU. Including back propagation for now.
 10. Change test cases to use decimal instead of integer
+11. Additional refactorings:
+    1. Meters that have children. Consider a separate class/interface for those. This is to avoid hiding Children for some containers.
+    2. Interfaces/names/parameters of INetworkQualityMeterContainerTextConvertible and INetworkQualityMeterTextConvertible need to be clearer. Need to digg deeper to understand the difference.
+    3. Investigate AI's code
+    4. RandomNumberOfTimes, MultipleTimes and NothingDoer
+        can parsing be placed for each of those mutators in dedicated location?
+    5. List all the methods that just are used in tests and delete them - together with those tests.
+12. AI reported bugs - investigate:
+    1. TestCasesSequentialContainerQualityMeter does not serialize _goodDifference. TestCasesSequentialContainerQualityMeter.cs:92 writes TestCasesSequential() with empty parens; the parser at line 213 hardcodes 0.001d. Save→load is lossy for any non-default value.
+

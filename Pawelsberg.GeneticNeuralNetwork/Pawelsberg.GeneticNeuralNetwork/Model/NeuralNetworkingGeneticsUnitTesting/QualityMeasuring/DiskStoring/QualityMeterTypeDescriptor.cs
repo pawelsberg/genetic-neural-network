@@ -6,7 +6,8 @@ namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTest
 
 /// <summary>
 /// Describes a quality meter type for serialization/deserialization.
-/// Contains the text name and parser function for each meter type.
+/// Section membership is carried by the meter type itself via IPerTestCase/IFromTestCases/IFromNetwork
+/// interfaces — see NetworkQualityMeterSectionExtensions.
 /// </summary>
 public record QualityMeterTypeDescriptor(
     string TextName,
@@ -18,7 +19,7 @@ public record QualityMeterTypeDescriptor(
 /// </summary>
 public record ContainerQualityMeterTypeDescriptor(
     string TextName,
-    Func<CodedLines, Func<string, QualityMeter<Network>, QualityMeter<Network>?>, QualityMeter<Network>> ContainerParser
+    Func<CodedText, Func<string, QualityMeter<Network>, QualityMeter<Network>?>, QualityMeter<Network>> ContainerParser
 );
 
 /// <summary>
@@ -40,67 +41,46 @@ public static class QualityMeterTypeRegistry
     {
         _descriptors = new List<QualityMeterTypeDescriptor>
         {
-            // TestCaseList (Aggregate)
             new QualityMeterTypeDescriptor(
                 TestCaseListNetworkQualityMeter.TextName,
                 (innerText, parent) => TestCaseListNetworkQualityMeter.Parse(innerText, parent)
             ),
-
-            // IfAllGood
             new QualityMeterTypeDescriptor(
                 TestCasesIfAllGoodNetworkQualityMeter.TextName,
                 (innerText, parent) => TestCasesIfAllGoodNetworkQualityMeter.Parse(innerText, parent)
             ),
-
-            // Difference
             new QualityMeterTypeDescriptor(
                 TestCaseDifferenceNetworkQualityMeter.TextName,
                 (innerText, parent) => TestCaseDifferenceNetworkQualityMeter.Parse(innerText, parent)
             ),
-
-            // GoodResult
             new QualityMeterTypeDescriptor(
                 TestCaseGoodResultNetworkQualityMeter.TextName,
                 (innerText, parent) => TestCaseGoodResultNetworkQualityMeter.Parse(innerText, parent)
             ),
-
-            // SubstractErrorIfGood
             new QualityMeterTypeDescriptor(
                 TestCaseSubstractErrorIfGoodNetworkQualityMeter.TextName,
                 (innerText, parent) => TestCaseSubstractErrorIfGoodNetworkQualityMeter.Parse(innerText, parent)
             ),
-
-            // TotalTime
             new QualityMeterTypeDescriptor(
                 TestCasesTotalTimeNetworkQualityMeter.TextName,
                 (innerText, parent) => TestCasesTotalTimeNetworkQualityMeter.Parse(innerText, parent)
             ),
-
-            // TotalNodes
             new QualityMeterTypeDescriptor(
                 TotalNodesNetworkQualityMeter.TextName,
                 (innerText, parent) => TotalNodesNetworkQualityMeter.Parse(innerText, parent)
             ),
-
-            // TotalSynapses
             new QualityMeterTypeDescriptor(
                 TotalSynapsesNetworkQualityMeter.TextName,
                 (innerText, parent) => TotalSynapsesNetworkQualityMeter.Parse(innerText, parent)
             ),
-
-            // MultiplierSum
             new QualityMeterTypeDescriptor(
                 MultiplierSumNetworkQualityMeter.TextName,
                 (innerText, parent) => MultiplierSumNetworkQualityMeter.Parse(innerText, parent)
             ),
-
-            // NoLoops
             new QualityMeterTypeDescriptor(
                 NoLoopsNetworkQualityMeter.TextName,
                 (innerText, parent) => NoLoopsNetworkQualityMeter.Parse(innerText, parent)
             ),
-
-            // SequentialOutputTestCase
             new QualityMeterTypeDescriptor(
                 SequentialOutputTestCaseNetworkQualityMeter.TextName,
                 (innerText, parent) => SequentialOutputTestCaseNetworkQualityMeter.Parse(innerText, parent)
@@ -109,7 +89,6 @@ public static class QualityMeterTypeRegistry
 
         _byTextName = _descriptors.ToDictionary(d => d.TextName);
 
-        // Container types require multi-line parsing
         _containerDescriptors = new List<ContainerQualityMeterTypeDescriptor>
         {
             new ContainerQualityMeterTypeDescriptor(
@@ -133,7 +112,7 @@ public static class QualityMeterTypeRegistry
         string parameters,
         QualityMeter<Network> parent)
     {
-        if (_byTextName.TryGetValue(textName, out var descriptor))
+        if (_byTextName.TryGetValue(textName, out QualityMeterTypeDescriptor descriptor))
             return descriptor.Parser(parameters, parent);
         return null;
     }
@@ -143,11 +122,11 @@ public static class QualityMeterTypeRegistry
     /// </summary>
     public static QualityMeter<Network>? TryParseContainer(
         string textName,
-        CodedLines lines,
+        CodedText text,
         Func<string, QualityMeter<Network>, QualityMeter<Network>?> singleMeterParser)
     {
-        if (_containerByTextName.TryGetValue(textName, out var descriptor))
-            return descriptor.ContainerParser(lines, singleMeterParser);
+        if (_containerByTextName.TryGetValue(textName, out ContainerQualityMeterTypeDescriptor descriptor))
+            return descriptor.ContainerParser(text, singleMeterParser);
         return null;
     }
 
@@ -156,7 +135,7 @@ public static class QualityMeterTypeRegistry
     /// </summary>
     public static ContainerQualityMeterTypeDescriptor? GetContainerDescriptorForLine(string firstLine)
     {
-        foreach (var descriptor in _containerDescriptors)
+        foreach (ContainerQualityMeterTypeDescriptor descriptor in _containerDescriptors)
         {
             // TestCasesSequential must be checked before TestCases since it starts with "TestCases"
             if (firstLine.StartsWith($"{descriptor.TextName}("))

@@ -5,7 +5,7 @@ using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGenetics.QualityMeasuring;
 
-public class TotalSynapsesNetworkQualityMeter : QualityMeter<Network>, INetworkQualityMeterTextConvertible
+public class TotalSynapsesNetworkQualityMeter : QualityMeter<Network>, INetworkQualityMeterTextConvertible, IFromNetworkNetworkQualityMeter
 {
     public static string TextName = "TotalSynapses";
     public double QualityForOneSynapse { get; set; }

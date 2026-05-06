@@ -5,7 +5,7 @@ using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGenetics.QualityMeasuring;
 
-public class TotalNodesNetworkQualityMeter : QualityMeter<Network>, INetworkQualityMeterTextConvertible
+public class TotalNodesNetworkQualityMeter : QualityMeter<Network>, INetworkQualityMeterTextConvertible, IFromNetworkNetworkQualityMeter
 {
     public static string TextName = "TotalNodes";
     public double QualityForOneNode { get; set; }

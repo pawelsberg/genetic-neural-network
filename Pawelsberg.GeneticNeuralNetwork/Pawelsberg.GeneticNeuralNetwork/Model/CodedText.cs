@@ -1,4 +1,4 @@
-﻿namespace Pawelsberg.GeneticNeuralNetwork.Model;
+namespace Pawelsberg.GeneticNeuralNetwork.Model;
 
 public class CodedText
 {
@@ -6,7 +6,11 @@ public class CodedText
     private string Text { get; set; }
     public int Index { get; set; }
     public bool EOT { get { return Index >= Text.Length; } }
-    public CodedText(string text) { Text = text; }
+    public CodedText(string text)
+    {
+        Text = text;
+        SkipBlankLines();
+    }
     public void SkipWhiteCharacters()
     {
         while (Index < Text.Length && WiteChars.Contains(Text[Index])) Index++;
@@ -76,7 +80,7 @@ public class CodedText
         return content;
     }
 
-    public List<string> SplitTopLevel(string text)
+    public static List<string> SplitTopLevel(string text)
     {
         List<string> parts = new List<string>();
         foreach ((int start, int length) in EnumerateTopLevelSegments(text, ','))
@@ -84,6 +88,50 @@ public class CodedText
             parts.Add(text.Substring(start, length));
         }
         return parts;
+    }
+
+    /// <summary>
+    /// Trimmed content of the line containing Index — from Index forward to the next newline.
+    /// Null if at end. Intended to be called when Index sits at the start of a line.
+    /// </summary>
+    public string? CurrentLineContent
+    {
+        get
+        {
+            if (EOT) return null;
+            int end = Index;
+            while (end < Text.Length && Text[end] != '\r' && Text[end] != '\n') end++;
+            return Text.Substring(Index, end - Index).Trim();
+        }
+    }
+
+    /// <summary>
+    /// Indent level (leading-spaces / 2) measured from Index forward.
+    /// Caller must be at line start for this to reflect the line's indent.
+    /// </summary>
+    public int CurrentIndent
+    {
+        get
+        {
+            int spaces = 0;
+            while (Index + spaces < Text.Length && Text[Index + spaces] == ' ') spaces++;
+            return spaces / 2;
+        }
+    }
+
+    /// <summary>
+    /// Advances Index past the rest of the current line and any trailing blank lines.
+    /// After this call Index is at the start of the next non-blank line, or at end-of-text.
+    /// </summary>
+    public void AdvanceLine()
+    {
+        while (Index < Text.Length && Text[Index] != '\r' && Text[Index] != '\n') Index++;
+        SkipBlankLines();
+    }
+
+    private void SkipBlankLines()
+    {
+        while (Index < Text.Length && (Text[Index] == '\r' || Text[Index] == '\n')) Index++;
     }
 
     private int NonWhiteCharacterFieldLength()
@@ -166,111 +214,10 @@ public class CodedText
     }
 
     /// <summary>
-    /// Splits a text into lines, removing empty entries.
-    /// </summary>
-    public static string[] SplitIntoLines(string text)
-    {
-        return text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-    }
-
-    /// <summary>\n    /// Splits a comma-separated parameter string into trimmed parts.
+    /// Splits a comma-separated parameter string into trimmed parts.
     /// </summary>
     public static string[] SplitParams(string inner)
     {
         return inner.Split(',').Select(s => s.Trim()).ToArray();
     }
-}
-
-/// <summary>
-/// A wrapper for parsing multi-line text with indentation support.
-/// </summary>
-public class CodedLines
-{
-    private readonly string[] _lines;
-    public int Index { get; set; }
-    public int Count => _lines.Length;
-    public bool EndOfLines => Index >= _lines.Length;
-
-    public CodedLines(string text)
-    {
-        _lines = CodedText.SplitIntoLines(text);
-    }
-
-    public CodedLines(string[] lines)
-    {
-        _lines = lines;
-    }
-
-    /// <summary>
-    /// Gets a line by absolute index without changing the current index.
-    /// </summary>
-    public string this[int index] => _lines[index];
-
-    /// <summary>
-    /// Gets the current line or null if at end.
-    /// </summary>
-    public string? CurrentLine => Index < _lines.Length ? _lines[Index] : null;
-
-    /// <summary>
-    /// Gets the current line's trimmed content or null if at end.
-    /// </summary>
-    public string? CurrentContent => CurrentLine?.Trim();
-
-    /// <summary>
-    /// Gets the current line's indent level.
-    /// </summary>
-    public int CurrentIndent => CurrentLine != null ? CodedText.GetIndentLevel(CurrentLine) : 0;
-
-    /// <summary>
-    /// Advances to the next line.
-    /// </summary>
-    public void Advance() => Index++;
-
-    /// <summary>
-    /// Reads and advances the current line if it exists.
-    /// </summary>
-    public string? ReadLine()
-    {
-        if (EndOfLines) return null;
-        return _lines[Index++];
-    }
-
-    /// <summary>
-    /// Gets the indent level at a specific index.
-    /// </summary>
-    public int GetIndentAt(int index) => index < _lines.Length ? CodedText.GetIndentLevel(_lines[index]) : 0;
-
-    /// <summary>
-    /// Collects all lines at a deeper indent than the base indent, advancing the index.
-    /// Returns the trimmed content of each collected line.
-    /// </summary>
-    public List<string> CollectIndentedContent(int baseIndent)
-    {
-        var specs = new List<string>();
-        while (!EndOfLines)
-        {
-            int indent = CurrentIndent;
-            if (indent <= baseIndent)
-                break;
-            specs.Add(CurrentContent!);
-            Advance();
-        }
-        return specs;
-    }
-
-    /// <summary>
-    /// Skips empty lines (blank or whitespace-only).
-    /// </summary>
-    public void SkipEmptyLines()
-    {
-        while (!EndOfLines && string.IsNullOrWhiteSpace(CurrentLine))
-        {
-            Advance();
-        }
-    }
-
-    /// <summary>
-    /// Gets the underlying lines array (for interop with legacy code).
-    /// </summary>
-    public string[] ToArray() => _lines;
 }

@@ -4,7 +4,7 @@ using Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking;
 
 namespace Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworkingGeneticsUnitTesting.QualityMeasuring;
 
-public class TestCasesTotalTimeNetworkQualityMeter : QualityMeter<Network>, INetworkQualityMeterTextConvertible
+public class TestCasesTotalTimeNetworkQualityMeter : QualityMeter<Network>, INetworkQualityMeterTextConvertible, IFromTestCasesNetworkQualityMeter
 {
     public static string TextName = "TotalTime";
     public double QualityForOneMs { get; set; }

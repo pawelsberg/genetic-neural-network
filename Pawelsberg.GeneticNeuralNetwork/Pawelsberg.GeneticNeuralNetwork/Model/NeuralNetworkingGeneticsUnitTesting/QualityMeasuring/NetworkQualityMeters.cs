@@ -11,11 +11,6 @@ public class NetworkQualityMeters
     public static QualityMeter<Network> CreateNormal(int propagations, TestCaseList testCaseList)
     {
         double goodDifference = 0.001d;
-        double qualityForOneMs = 25d;
-        double qualityForOneNode = 5d;
-        double qualityForOneSynapse = 5d;
-        double qualityForMultipSumEqOne = 0.0001d;
-
         Func<QualityMeter<Network>, TestCase, int, TestCaseNetworkQualityMeter> factory = (parent, testCase, props) =>
         {
             double qualityForOneDiff = 0.01d;
@@ -36,6 +31,10 @@ public class NetworkQualityMeters
         QualityMeter<Network> ifAllGoodMeter = new TestCasesIfAllGoodNetworkQualityMeter(testCasesContainer, goodDifference);
         testCasesContainer.AddStaticChild(ifAllGoodMeter);
 
+        double qualityForOneMs = 25d;
+        double qualityForOneNode = 5d;
+        double qualityForOneSynapse = 5d;
+        double qualityForMultipSumEqOne = 0.0001d;
         ifAllGoodMeter.Children.Add(new TestCasesTotalTimeNetworkQualityMeter(ifAllGoodMeter, qualityForOneMs));
         ifAllGoodMeter.Children.Add(new TotalNodesNetworkQualityMeter(ifAllGoodMeter, qualityForOneNode));
         ifAllGoodMeter.Children.Add(new TotalSynapsesNetworkQualityMeter(ifAllGoodMeter, qualityForOneSynapse));
