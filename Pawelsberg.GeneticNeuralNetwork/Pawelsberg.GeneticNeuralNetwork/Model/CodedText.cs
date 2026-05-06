@@ -187,20 +187,6 @@ public class CodedText
     }
 
     /// <summary>
-    /// Gets the indentation level of a line (number of leading spaces divided by 2).
-    /// </summary>
-    public static int GetIndentLevel(string line)
-    {
-        int spaces = 0;
-        foreach (char c in line)
-        {
-            if (c == ' ') spaces++;
-            else break;
-        }
-        return spaces / 2;
-    }
-
-    /// <summary>
     /// Extracts the text name (identifier) before the first parenthesis.
     /// </summary>
     public static string ExtractTextName(string content)
