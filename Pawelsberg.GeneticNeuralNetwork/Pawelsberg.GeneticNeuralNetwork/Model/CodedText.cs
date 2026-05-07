@@ -187,16 +187,25 @@ public class CodedText
     }
 
     /// <summary>
-    /// Extracts the text name (identifier) before the first parenthesis.
+    /// Reads an identifier (letters, digits, underscore) and advances Index past it.
+    /// Returns false (without moving Index) if no name character is present at the current position.
+    /// Stops at the first non-name character without caring what it is — caller decides what
+    /// must follow. Caller must skip leading whitespace first, matching TrySkip/Skip conventions.
     /// </summary>
-    public static string ExtractTextName(string content)
+    public bool TryReadName(out string name)
     {
-        int parenIndex = content.IndexOf('(');
-        if (parenIndex > 0)
+        int start = Index;
+        int i = start;
+        while (i < Text.Length && (char.IsLetterOrDigit(Text[i]) || Text[i] == '_'))
+            i++;
+        if (i == start)
         {
-            return content.Substring(0, parenIndex).Trim();
+            name = string.Empty;
+            return false;
         }
-        return content.Trim();
+        name = Text.Substring(start, i - start);
+        Index = i;
+        return true;
     }
 
     /// <summary>

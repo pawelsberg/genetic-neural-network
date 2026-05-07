@@ -55,10 +55,9 @@ public static class NetworkQualityMetersTextExtension
             return containerDescriptor.ContainerParser(codedText, ParseSingleMeter);
 
         // Try single-line meter types that can be root (e.g., TestCaseList/Aggregate, SequentialOutputTestCase)
-        string textName = CodedText.ExtractTextName(firstLine);
-        if (!string.IsNullOrEmpty(textName) && QualityMeterTypeRegistry.ByTextName.ContainsKey(textName))
+        codedText.SkipWhiteCharacters();
+        if (codedText.TryReadName(out string textName))
         {
-            codedText.TrySkip(textName);
             string inner = codedText.ReadParenthesesContent();
             QualityMeter<Network>? rootMeter = QualityMeterTypeRegistry.TryParse(textName, inner, null);
             if (rootMeter != null)
@@ -73,17 +72,10 @@ public static class NetworkQualityMetersTextExtension
         CodedText codedText = new CodedText(content);
         codedText.SkipWhiteCharacters();
 
-        // Try to parse using the registry for all meter types
-        string textName = CodedText.ExtractTextName(content);
-        if (!string.IsNullOrEmpty(textName))
-        {
-            codedText.TrySkip(textName);
-            string parameters = codedText.ReadParenthesesContent();
-            var meter = QualityMeterTypeRegistry.TryParse(textName, parameters, parent);
-            if (meter != null)
-                return meter;
-        }
+        if (!codedText.TryReadName(out string textName))
+            return null;
 
-        return null;
+        string parameters = codedText.ReadParenthesesContent();
+        return QualityMeterTypeRegistry.TryParse(textName, parameters, parent);
     }
 }
