@@ -1,0 +1,78 @@
+layout(local_size_x = 64) in;
+
+// Per-specimen aggregator.
+// Children of TestCases() container:
+//   Sum of TestCase scores (already in perTestScores)
+//   IfAllGood(GoodDifference) gate, with these children if all good:
+//     TotalTime(QualityForOneMs)              -- mirrors CPU bug: always returns max
+//     TotalNodes(QualityForOneNode)           -- QualityForOneNode / nodeCount
+//     TotalSynapses(QualityForOneSynapse)     -- QualityForOneSynapse / synapseCount
+//     MultiplierSum(QualityForMultiplierSumEqOne) -- Q / (1 + sum |mult|)
+
+float scoreTotalNodes(int nodeCount) {
+    if (nodeCount <= 0) return 0.0;
+    return QUALITY_FOR_ONE_NODE / float(nodeCount);
+}
+
+float scoreTotalSynapses(int synapseCount) {
+    if (synapseCount <= 0) return 0.0;
+    return QUALITY_FOR_ONE_SYNAPSE / float(synapseCount);
+}
+
+float scoreMultiplierSum(float multSum) {
+    return QUALITY_FOR_MULTIPLIER_SUM_EQ_ONE / (1.0 + multSum);
+}
+
+float scoreTotalTime() {
+    // CPU's TestCasesTotalTimeNetworkQualityMeter has timeSpan.Add(...) result discarded,
+    // so timeSpan stays Zero and result is QualityForOneMs / (0 + 1) = QualityForOneMs.
+    return QUALITY_FOR_ONE_MS;
+}
+
+int countActiveSynapses(uint s) {
+    int count = 0;
+    for (int i = 0; i < MAX_SYNAPSES; ++i)
+        if (synapseActive(s, i) != 0) count++;
+    return count;
+}
+
+float computeMultiplierSum(uint s) {
+    int aN = activeNodes(s);
+    float total = 0.0;
+    for (int n = 0; n < aN; ++n) {
+        if (nodeType(s, n) != NODE_TYPE_NEURON) continue;
+        int inCount = nodeInputCount(s, n);
+        for (int i = 0; i < inCount; ++i)
+            total += abs(nodeInputMultiplier(s, n, i));
+    }
+    return total;
+}
+
+void main() {
+    uint specIdx = gl_GlobalInvocationID.x;
+    if (specIdx >= uint(POPULATION_SIZE)) return;
+
+    float testSum = 0.0;
+    int allGood = 1;
+    for (int t = 0; t < TEST_CASE_COUNT; ++t) {
+        int idx = int(specIdx) * TEST_CASE_COUNT + t;
+        testSum += perTestScores[idx];
+        if (perTestAllGood[idx] == 0) allGood = 0;
+    }
+
+    float total = testSum;
+
+    if (allGood == 1) {
+        int nodeCount = activeNodes(specIdx);
+        int synCount = countActiveSynapses(specIdx);
+        float multSum = computeMultiplierSum(specIdx);
+        total += scoreTotalTime();
+        total += scoreTotalNodes(nodeCount);
+        total += scoreTotalSynapses(synCount);
+        total += scoreMultiplierSum(multSum);
+    }
+
+    if (isnan(total) || isinf(total)) total = -1e30;
+
+    fitness[specIdx] = total;
+}

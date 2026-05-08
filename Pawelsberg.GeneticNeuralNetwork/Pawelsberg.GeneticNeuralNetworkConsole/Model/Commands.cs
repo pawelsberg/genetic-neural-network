@@ -27,7 +27,8 @@ public static class Commands
         { SaveMutatorsCommand.Name, () => new SaveMutatorsCommand() },
         { LoadQualityMetersCommand.Name, () => new LoadQualityMetersCommand() },
         { SaveQualityMetersCommand.Name, () => new SaveQualityMetersCommand() },
-        { TopCommand.Name, () => new TopCommand() }
+        { TopCommand.Name, () => new TopCommand() },
+        { GpuRunCommand.Name, () => new GpuRunCommand() }
     };
 
     public static IEnumerable<string> Names => NameCommands.Keys;

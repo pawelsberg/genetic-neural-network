@@ -1,0 +1,41 @@
+layout(local_size_x = 64) in;
+
+// Per-child thread:
+//   childIdx == 0       -> unmutated clone of rank-0 parent (the "best clone")
+//   childIdx >= 1       -> clone of parents[(childIdx-1)/2] then ONE weighted-random mutator.
+// Mirrors the SimpleParentQueuer + Generation.CreateNextGeneration pairing on CPU.
+
+void main() {
+    uint childIdx = gl_GlobalInvocationID.x;
+    if (childIdx >= uint(POPULATION_SIZE)) return;
+
+    uint parentRank;
+    bool applyMutation;
+    if (childIdx == 0u) {
+        parentRank = 0u;
+        applyMutation = false;
+    } else {
+        parentRank = (childIdx - 1u) / 2u;
+        applyMutation = true;
+    }
+    if (parentRank >= uint(POPULATION_SIZE)) parentRank = uint(POPULATION_SIZE) - 1u;
+
+    int parentIdx = parentByRank[parentRank];
+    cloneParentIntoChild(childIdx, uint(parentIdx));
+
+    if (!applyMutation) return;
+
+    uint rng = rngStates[childIdx] ^ (generationIndex * 0x9E3779B9u + childIdx * 0x85EBCA6Bu);
+    rngNext(rng);
+
+    int w = rngInt(rng, TOTAL_MUTATOR_WEIGHT);
+    if (w < CUM_NEURON_MODIFIER) mutateNeuronModifier(childIdx, rng);
+    else if (w < CUM_SYNAPSE_ADDER) mutateSynapseAdder(childIdx, rng);
+    else if (w < CUM_SYNAPSE_REMOVER) mutateSynapseRemover(childIdx, rng);
+    else if (w < CUM_ACTIVATION_FLIPPER) mutateActivationFunctionFlipper(childIdx, rng);
+    else if (w < CUM_BIAS_ADDER) mutateBiasAdder(childIdx, rng);
+    else if (w < CUM_NEURON_ADDER) mutateNeuronAdder(childIdx, rng);
+    else mutateNodeRemover(childIdx, rng);
+
+    rngStates[childIdx] = rng;
+}

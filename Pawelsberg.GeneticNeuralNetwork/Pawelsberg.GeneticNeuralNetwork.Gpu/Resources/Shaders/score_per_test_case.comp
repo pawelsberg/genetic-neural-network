@@ -1,0 +1,59 @@
+layout(local_size_x = 16, local_size_y = 4, local_size_z = 1) in;
+
+// Per-test-case quality components from Normal:
+//   Difference(QualityForOneDiff, GoodDifference)
+//     diff < good : Q = QualityForOneDiff / GoodDifference
+//     else        : Q = QualityForOneDiff / diff
+//   GoodResult(QualityForGoodResult, GoodDifference)
+//     diff < good : Q = QualityForGoodResult, else 0
+//   SubstractErrorIfGood(SubstractedQualityForOneDiff, GoodDifference)
+//     diff < good : Q = -SubstractedQualityForOneDiff * diff, else 0
+// Plus the TestCaseNetworkQualityMeter base contribution: 2.0 normally, or
+// (input penalty) + (output penalty) when network has fewer inputs/outputs than
+// the test case requires (mirrors CPU's TestCaseNetworkQualityMeter.MeasureMeterQuality).
+
+float scoreDifference(float diff) {
+    if (diff < GOOD_DIFFERENCE) return QUALITY_FOR_ONE_DIFF / GOOD_DIFFERENCE;
+    return QUALITY_FOR_ONE_DIFF / diff;
+}
+
+float scoreGoodResult(float diff) {
+    if (diff < GOOD_DIFFERENCE) return QUALITY_FOR_GOOD_RESULT;
+    return 0.0;
+}
+
+float scoreSubstractErrorIfGood(float diff) {
+    if (diff < GOOD_DIFFERENCE) return -SUBSTRACTED_QUALITY_FOR_ONE_DIFF * diff;
+    return 0.0;
+}
+
+void main() {
+    uint specIdx = gl_GlobalInvocationID.x;
+    uint tcIdx = gl_GlobalInvocationID.y;
+    if (specIdx >= uint(POPULATION_SIZE) || tcIdx >= uint(TEST_CASE_COUNT)) return;
+
+    int idx = int(specIdx) * TEST_CASE_COUNT + int(tcIdx);
+    float diff = outputDiffs[idx];
+
+    int netInCount = networkInputCount(specIdx);
+    int netOutCount = networkOutputCount(specIdx);
+    int tcInCount = testCaseInputCount[tcIdx];
+    int tcOutCount = testCaseOutputCount[tcIdx];
+
+    float baseScore;
+    if (netInCount < tcInCount || netOutCount < tcOutCount) {
+        // CPU penalty:
+        //   inputs  contribution = networkInputs / (tcInputs + 1) if too few, else 1.0
+        //   outputs contribution = networkOutputs / (tcOutputs + 1) if too few, else 1.0
+        float inputBase = (netInCount < tcInCount) ? float(netInCount) / float(tcInCount + 1) : 1.0;
+        float outputBase = (netOutCount < tcOutCount) ? float(netOutCount) / float(tcOutCount + 1) : 1.0;
+        baseScore = inputBase + outputBase;
+    } else {
+        baseScore = 2.0;
+    }
+
+    float total = baseScore + scoreDifference(diff) + scoreGoodResult(diff) + scoreSubstractErrorIfGood(diff);
+
+    perTestScores[idx] = total;
+    perTestAllGood[idx] = (diff < GOOD_DIFFERENCE) ? 1 : 0;
+}

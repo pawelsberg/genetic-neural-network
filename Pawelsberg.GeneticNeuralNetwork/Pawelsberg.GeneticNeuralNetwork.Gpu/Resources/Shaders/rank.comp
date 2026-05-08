@@ -1,0 +1,23 @@
+layout(local_size_x = 64) in;
+
+// Per-specimen rank: number of specimens with strictly higher fitness, plus tiebreak
+// by specimen index. Then write inverse: parentByRank[rank] = specimen.
+// O(N^2) total work. For N=1000 it's fine on GPU.
+
+void main() {
+    uint specIdx = gl_GlobalInvocationID.x;
+    if (specIdx >= uint(POPULATION_SIZE)) return;
+
+    float myFitness = fitness[specIdx];
+    int rankCount = 0;
+    for (int other = 0; other < POPULATION_SIZE; ++other) {
+        float oF = fitness[other];
+        if (oF > myFitness) {
+            rankCount++;
+        } else if (oF == myFitness && uint(other) < specIdx) {
+            rankCount++;
+        }
+    }
+    specRank[specIdx] = rankCount;
+    parentByRank[rankCount] = int(specIdx);
+}

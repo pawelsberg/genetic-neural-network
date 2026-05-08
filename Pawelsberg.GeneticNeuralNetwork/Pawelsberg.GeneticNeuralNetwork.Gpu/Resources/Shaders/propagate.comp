@@ -1,0 +1,77 @@
+layout(local_size_x = 16, local_size_y = 4, local_size_z = 1) in;
+
+void main() {
+    uint specIdx = gl_GlobalInvocationID.x;
+    uint tcIdx = gl_GlobalInvocationID.y;
+    if (specIdx >= uint(POPULATION_SIZE) || tcIdx >= uint(TEST_CASE_COUNT)) return;
+
+    int diffIdx = int(specIdx) * TEST_CASE_COUNT + int(tcIdx);
+    int netInCount = networkInputCount(specIdx);
+    int netOutCount = networkOutputCount(specIdx);
+    int tcInCount = testCaseInputCount[tcIdx];
+    int tcOutCount = testCaseOutputCount[tcIdx];
+
+    // Penalty branch (mirrors CPU TestCaseNetworkQualityMeter early return):
+    // network has fewer inputs/outputs than this test case requires.
+    // Skip propagation; score_per_test_case will compute the I/O-deficit base score
+    // using net*Count vs tc*Count and treat diff as effectively infinite.
+    if (netInCount < tcInCount || netOutCount < tcOutCount) {
+        outputDiffs[diffIdx] = 1e30;
+        return;
+    }
+
+    int potBase = potOffset(specIdx, tcIdx);
+
+    for (int s = 0; s < MAX_SYNAPSES; ++s)
+        synapsePotentials[potBase + s] = 0.0lf;
+
+    // CPU sets the first tc.Inputs.Count network inputs (any extra network inputs stay 0).
+    for (int i = 0; i < tcInCount; ++i) {
+        int synIdx = networkInputSynapse(specIdx, i);
+        if (synIdx >= 0 && synIdx < MAX_SYNAPSES)
+            synapsePotentials[potBase + synIdx] = double(testCaseInputs[int(tcIdx) * MAX_TEST_CASE_INPUTS + i]);
+    }
+
+    int aN = activeNodes(specIdx);
+
+    for (int prop = 0; prop < PROPAGATIONS; ++prop) {
+        for (int n = 0; n < aN; ++n) {
+            int nt = nodeType(specIdx, n);
+            if (nt == NODE_TYPE_INACTIVE) continue;
+
+            double outputPotential = 0.0lf;
+            if (nt == NODE_TYPE_BIAS) {
+                outputPotential = 1.0lf;
+            } else {
+                int inCount = nodeInputCount(specIdx, n);
+                for (int i = 0; i < inCount; ++i) {
+                    int synIdx = nodeInputSynapse(specIdx, n, i);
+                    if (synIdx < 0 || synIdx >= MAX_SYNAPSES) continue;
+                    double multiplier = double(nodeInputMultiplier(specIdx, n, i));
+                    outputPotential += synapsePotentials[potBase + synIdx] * multiplier;
+                }
+                outputPotential = applyActivationD(nodeActivation(specIdx, n), outputPotential);
+            }
+
+            int outCount = nodeOutputCount(specIdx, n);
+            for (int o = 0; o < outCount; ++o) {
+                int synIdx = nodeOutputSynapse(specIdx, n, o);
+                if (synIdx >= 0 && synIdx < MAX_SYNAPSES)
+                    synapsePotentials[potBase + synIdx] = outputPotential;
+            }
+        }
+    }
+
+    // Diff over tc.Outputs.Count (CPU only checks the first tcOutCount network outputs).
+    double diff = 0.0lf;
+    for (int i = 0; i < tcOutCount; ++i) {
+        int synIdx = networkOutputSynapse(specIdx, i);
+        double expected = double(testCaseOutputs[int(tcIdx) * MAX_TEST_CASE_OUTPUTS + i]);
+        double actual = (synIdx >= 0 && synIdx < MAX_SYNAPSES) ? synapsePotentials[potBase + synIdx] : 0.0lf;
+        if (isnan(actual) || isinf(actual)) actual = 1e30lf;
+        diff += abs(expected - actual);
+    }
+    if (isnan(diff) || isinf(diff)) diff = 1e30lf;
+
+    outputDiffs[diffIdx] = float(diff);
+}

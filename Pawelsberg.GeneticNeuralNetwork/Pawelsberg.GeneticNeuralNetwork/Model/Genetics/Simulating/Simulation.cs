@@ -155,6 +155,25 @@ public class Simulation<TSpecimen> where TSpecimen : ISpecimen
             _specsToAdd.Add(specimen);
         }
     }
+
+    /// <summary>
+    /// Snapshot of current generation specimens + queued additions + BestEver, deduplicated by reference.
+    /// Used to seed external evaluators (e.g. GPU runner) from the simulation's current state.
+    /// </summary>
+    public List<TSpecimen> CollectSeedSpecimens()
+    {
+        List<TSpecimen> result = new List<TSpecimen>();
+        lock (_parametersLock)
+        {
+            foreach (TSpecimen s in _specsToAdd)
+                if (s != null) result.Add(s);
+            foreach (TSpecimen s in _generation.Specimens)
+                if (s != null && !result.Contains(s)) result.Add(s);
+        }
+        if (BestEver != null && !result.Contains(BestEver))
+            result.Add(BestEver);
+        return result;
+    }
     public void Replace(TSpecimen spec)
     {
         lock (_parametersLock)
