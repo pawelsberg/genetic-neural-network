@@ -56,7 +56,7 @@ internal sealed class ShaderBuilder
         sb.AppendLine($"#define MUTATOR_MAX_NODES {Layout.MutatorMaxNodes}");
         sb.AppendLine($"#define MUTATOR_MAX_SYNAPSES {Layout.MutatorMaxSynapses}");
         sb.AppendLine($"#define INT_STRIDE {Layout.IntStridePerSpecimen}");
-        sb.AppendLine($"#define FLOAT_STRIDE {Layout.FloatStridePerSpecimen}");
+        sb.AppendLine($"#define MULT_STRIDE {Layout.MultiplierStridePerSpecimen}");
 
         sb.AppendLine($"#define OFF_ACTIVE_NODES {Layout.OffActiveNodes}");
         sb.AppendLine($"#define OFF_NETWORK_INPUT_COUNT {Layout.OffNetworkInputCount}");

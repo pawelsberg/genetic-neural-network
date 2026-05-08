@@ -40,7 +40,7 @@ public sealed class GpuLayout
     public int OffNetworkOutputSynapse => OffNetworkInputSynapse + MaxNetworkInputs;
     public int OffSynapseActive => OffNetworkOutputSynapse + MaxNetworkOutputs;
     public int IntStridePerSpecimen => OffSynapseActive + MaxSynapses;
-    public int FloatStridePerSpecimen => MaxNodes * MaxInputsPerNode;
+    public int MultiplierStridePerSpecimen => MaxNodes * MaxInputsPerNode;
 
     public GpuLayout(
         int populationSize,

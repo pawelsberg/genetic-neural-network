@@ -37,6 +37,13 @@ public sealed class GpuBuffer : IDisposable
         GL.BindBuffer(BufferTarget.ShaderStorageBuffer, 0);
     }
 
+    public void UploadDoubles(double[] data)
+    {
+        GL.BindBuffer(BufferTarget.ShaderStorageBuffer, Handle);
+        GL.BufferSubData(BufferTarget.ShaderStorageBuffer, IntPtr.Zero, data.Length * sizeof(double), data);
+        GL.BindBuffer(BufferTarget.ShaderStorageBuffer, 0);
+    }
+
     public int[] DownloadInts(int count)
     {
         int[] data = new int[count];
@@ -51,6 +58,15 @@ public sealed class GpuBuffer : IDisposable
         float[] data = new float[count];
         GL.BindBuffer(BufferTarget.ShaderStorageBuffer, Handle);
         GL.GetBufferSubData(BufferTarget.ShaderStorageBuffer, IntPtr.Zero, count * sizeof(float), data);
+        GL.BindBuffer(BufferTarget.ShaderStorageBuffer, 0);
+        return data;
+    }
+
+    public double[] DownloadDoubles(int count)
+    {
+        double[] data = new double[count];
+        GL.BindBuffer(BufferTarget.ShaderStorageBuffer, Handle);
+        GL.GetBufferSubData(BufferTarget.ShaderStorageBuffer, IntPtr.Zero, count * sizeof(double), data);
         GL.BindBuffer(BufferTarget.ShaderStorageBuffer, 0);
         return data;
     }

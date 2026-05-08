@@ -17,8 +17,8 @@ int nextNodeInputSynapse(uint s, int n, int i) { return nextGenomeI[specOffsetI(
 void setNextNodeInputSynapse(uint s, int n, int i, int v) { nextGenomeI[specOffsetI(s) + OFF_NODE_INPUT_SYNAPSE + n * MAX_INPUTS_PER_NODE + i] = v; }
 int nextNodeOutputSynapse(uint s, int n, int o) { return nextGenomeI[specOffsetI(s) + OFF_NODE_OUTPUT_SYNAPSE + n * MAX_OUTPUTS_PER_NODE + o]; }
 void setNextNodeOutputSynapse(uint s, int n, int o, int v) { nextGenomeI[specOffsetI(s) + OFF_NODE_OUTPUT_SYNAPSE + n * MAX_OUTPUTS_PER_NODE + o] = v; }
-float nextNodeInputMultiplier(uint s, int n, int i) { return nextGenomeF[specOffsetF(s) + n * MAX_INPUTS_PER_NODE + i]; }
-void setNextNodeInputMultiplier(uint s, int n, int i, float v) { nextGenomeF[specOffsetF(s) + n * MAX_INPUTS_PER_NODE + i] = v; }
+double nextNodeInputMultiplier(uint s, int n, int i) { return nextGenomeM[specOffsetM(s) + n * MAX_INPUTS_PER_NODE + i]; }
+void setNextNodeInputMultiplier(uint s, int n, int i, double v) { nextGenomeM[specOffsetM(s) + n * MAX_INPUTS_PER_NODE + i] = v; }
 int nextNetworkInputSynapse(uint s, int i) { return nextGenomeI[specOffsetI(s) + OFF_NETWORK_INPUT_SYNAPSE + i]; }
 int nextNetworkOutputSynapse(uint s, int i) { return nextGenomeI[specOffsetI(s) + OFF_NETWORK_OUTPUT_SYNAPSE + i]; }
 int nextSynapseActive(uint s, int idx) { return nextGenomeI[specOffsetI(s) + OFF_SYNAPSE_ACTIVE + idx]; }
@@ -29,10 +29,10 @@ void cloneParentIntoChild(uint childIdx, uint parentIdx) {
     int dstI = specOffsetI(childIdx);
     for (int i = 0; i < INT_STRIDE; ++i)
         nextGenomeI[dstI + i] = genomeI[srcI + i];
-    int srcF = specOffsetF(parentIdx);
-    int dstF = specOffsetF(childIdx);
-    for (int i = 0; i < FLOAT_STRIDE; ++i)
-        nextGenomeF[dstF + i] = genomeF[srcF + i];
+    int srcM = specOffsetM(parentIdx);
+    int dstM = specOffsetM(childIdx);
+    for (int i = 0; i < MULT_STRIDE; ++i)
+        nextGenomeM[dstM + i] = genomeM[srcM + i];
 }
 
 int findFreeSynapseSlot(uint s) {
@@ -70,7 +70,7 @@ void removeSynapseFromNode(uint s, int n, int synIdx) {
         for (int i = 0; i < inCount; ++i) {
             int existing = nextNodeInputSynapse(s, n, i);
             if (existing != synIdx) {
-                float mult = nextNodeInputMultiplier(s, n, i);
+                double mult = nextNodeInputMultiplier(s, n, i);
                 setNextNodeInputSynapse(s, n, newCount, existing);
                 setNextNodeInputMultiplier(s, n, newCount, mult);
                 newCount++;

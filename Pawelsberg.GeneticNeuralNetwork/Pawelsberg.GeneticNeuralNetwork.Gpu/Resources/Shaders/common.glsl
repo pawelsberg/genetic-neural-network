@@ -3,9 +3,9 @@
 #extension GL_ARB_gpu_shader_fp64 : require
 
 layout(std430, binding = 0) buffer GenomeIntsBuf { int genomeI[]; };
-layout(std430, binding = 1) buffer GenomeFloatsBuf { float genomeF[]; };
+layout(std430, binding = 1) buffer GenomeMultsBuf { double genomeM[]; };
 layout(std430, binding = 2) buffer NextGenomeIntsBuf { int nextGenomeI[]; };
-layout(std430, binding = 3) buffer NextGenomeFloatsBuf { float nextGenomeF[]; };
+layout(std430, binding = 3) buffer NextGenomeMultsBuf { double nextGenomeM[]; };
 layout(std430, binding = 4) buffer SynapsePotentialsBuf { double synapsePotentials[]; };
 layout(std430, binding = 5) buffer OutputDiffBuf { float outputDiffs[]; };
 layout(std430, binding = 6) buffer PerTestScoreBuf { float perTestScores[]; };
@@ -22,7 +22,7 @@ layout(std430, binding = 15) buffer TestCaseOutputCountBuf { int testCaseOutputC
 uniform uint generationIndex;
 
 int specOffsetI(uint s) { return int(s) * INT_STRIDE; }
-int specOffsetF(uint s) { return int(s) * FLOAT_STRIDE; }
+int specOffsetM(uint s) { return int(s) * MULT_STRIDE; }
 
 int activeNodes(uint s) { return genomeI[specOffsetI(s) + OFF_ACTIVE_NODES]; }
 int networkInputCount(uint s) { return genomeI[specOffsetI(s) + OFF_NETWORK_INPUT_COUNT]; }
@@ -33,7 +33,7 @@ int nodeInputCount(uint s, int n) { return genomeI[specOffsetI(s) + OFF_NODE_INP
 int nodeOutputCount(uint s, int n) { return genomeI[specOffsetI(s) + OFF_NODE_OUTPUT_COUNT + n]; }
 int nodeInputSynapse(uint s, int n, int i) { return genomeI[specOffsetI(s) + OFF_NODE_INPUT_SYNAPSE + n * MAX_INPUTS_PER_NODE + i]; }
 int nodeOutputSynapse(uint s, int n, int o) { return genomeI[specOffsetI(s) + OFF_NODE_OUTPUT_SYNAPSE + n * MAX_OUTPUTS_PER_NODE + o]; }
-float nodeInputMultiplier(uint s, int n, int i) { return genomeF[specOffsetF(s) + n * MAX_INPUTS_PER_NODE + i]; }
+double nodeInputMultiplier(uint s, int n, int i) { return genomeM[specOffsetM(s) + n * MAX_INPUTS_PER_NODE + i]; }
 int networkInputSynapse(uint s, int i) { return genomeI[specOffsetI(s) + OFF_NETWORK_INPUT_SYNAPSE + i]; }
 int networkOutputSynapse(uint s, int i) { return genomeI[specOffsetI(s) + OFF_NETWORK_OUTPUT_SYNAPSE + i]; }
 int synapseActive(uint s, int idx) { return genomeI[specOffsetI(s) + OFF_SYNAPSE_ACTIVE + idx]; }

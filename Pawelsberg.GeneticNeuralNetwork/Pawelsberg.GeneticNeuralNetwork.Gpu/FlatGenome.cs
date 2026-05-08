@@ -5,19 +5,19 @@ namespace Pawelsberg.GeneticNeuralNetwork.Gpu;
 public sealed class FlatGenome
 {
     public int[] Ints { get; }
-    public float[] Floats { get; }
+    public double[] Multipliers { get; }
 
-    private FlatGenome(int intStride, int floatStride, int maxNodes, int offNodeType)
+    private FlatGenome(int intStride, int multStride, int maxNodes, int offNodeType)
     {
         Ints = new int[intStride];
-        Floats = new float[floatStride];
+        Multipliers = new double[multStride];
         for (int n = 0; n < maxNodes; n++)
             Ints[offNodeType + n] = GpuConstants.NodeTypeInactive;
     }
 
     public static FlatGenome Encode(Network network, GpuLayout layout)
     {
-        FlatGenome g = new FlatGenome(layout.IntStridePerSpecimen, layout.FloatStridePerSpecimen, layout.MaxNodes, layout.OffNodeType);
+        FlatGenome g = new FlatGenome(layout.IntStridePerSpecimen, layout.MultiplierStridePerSpecimen, layout.MaxNodes, layout.OffNodeType);
 
         List<Synapse> synapses = network.GetAllSynapses().ToList();
         if (synapses.Count > layout.MaxSynapses)
@@ -53,7 +53,7 @@ public sealed class FlatGenome
                 for (int i = 0; i < neuron.Inputs.Count; i++)
                 {
                     g.Ints[layout.OffNodeInputSynapse + n * layout.MaxInputsPerNode + i] = synapses.IndexOf(neuron.Inputs[i]);
-                    g.Floats[n * layout.MaxInputsPerNode + i] = (float)neuron.InputMultiplier[i];
+                    g.Multipliers[n * layout.MaxInputsPerNode + i] = neuron.InputMultiplier[i];
                 }
             }
             else if (node is Bias)
@@ -78,7 +78,7 @@ public sealed class FlatGenome
         return g;
     }
 
-    public static Network Decode(int[] ints, float[] floats, GpuLayout layout)
+    public static Network Decode(int[] ints, double[] multipliers, GpuLayout layout)
     {
         Network network = new Network();
 
@@ -108,7 +108,7 @@ public sealed class FlatGenome
                     Synapse? syn = synapseTable[synIdx];
                     if (syn == null)
                         throw new Exception($"Decode: neuron {n} references inactive synapse {synIdx}");
-                    double multiplier = floats[n * layout.MaxInputsPerNode + i];
+                    double multiplier = multipliers[n * layout.MaxInputsPerNode + i];
                     neuron.AddInput(syn, multiplier);
                 }
                 resultNode = neuron;

@@ -19,7 +19,7 @@ void mutateSynapseAdder(uint s, inout uint rng) {
     int inCount = nextNodeInputCount(s, endIdx);
     if (inCount >= MAX_INPUTS_PER_NODE) return;
 
-    float multiplier = integerVariant ? float(rngRandomInteger(rng)) : rngRandomize(rng, 0.0);
+    double multiplier = integerVariant ? double(rngRandomInteger(rng)) : double(rngRandomize(rng, 0.0));
 
     setNextSynapseActive(s, newSyn, 1);
     setNextNodeOutputSynapse(s, startIdx, outCount, newSyn);

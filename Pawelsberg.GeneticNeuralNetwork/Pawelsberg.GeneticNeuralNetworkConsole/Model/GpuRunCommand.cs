@@ -75,6 +75,20 @@ public class GpuRunCommand : Command
             Console.WriteLine("(No mismatched-shape seed available; penalty path not tested here.)");
         }
 
+        if (simulation.BestEver != null)
+        {
+            Console.WriteLine();
+            Console.WriteLine($"BestEver staleness check (cached BestEverQuality recorded at last CPU tick may be from a different propagations / TestCaseList / meter setup):");
+            Console.WriteLine($"  Cached BestEverQuality:  {simulation.BestEverQuality:F6}");
+            QualityMeter<Network> cpuMeter = NetworkQualityMeters.CreateNormal(propagations, tcl);
+            QualityMeasurement<Network> cpuNow = cpuMeter.MeasureQualityRecursive(simulation.BestEver, null);
+            GpuEvaluation gpuNow = runner.Evaluate(simulation.BestEver);
+            Console.WriteLine($"  CPU re-eval (current):   {cpuNow.Quality:F6}");
+            Console.WriteLine($"  GPU eval (current):      {gpuNow.Fitness:F6}");
+            Console.WriteLine($"  Cached - CPU current:    {simulation.BestEverQuality - cpuNow.Quality:F6}  (large value = stale cached quality)");
+            Console.WriteLine($"  CPU current - GPU:       {cpuNow.Quality - gpuNow.Fitness:F6}  (large value = alignment gap)");
+        }
+
         simulation.Add((Network)best.DeepClone());
     }
 

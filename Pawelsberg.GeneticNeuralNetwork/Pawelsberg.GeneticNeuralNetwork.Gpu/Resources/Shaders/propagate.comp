@@ -47,7 +47,7 @@ void main() {
                 for (int i = 0; i < inCount; ++i) {
                     int synIdx = nodeInputSynapse(specIdx, n, i);
                     if (synIdx < 0 || synIdx >= MAX_SYNAPSES) continue;
-                    double multiplier = double(nodeInputMultiplier(specIdx, n, i));
+                    double multiplier = nodeInputMultiplier(specIdx, n, i);
                     outputPotential += synapsePotentials[potBase + synIdx] * multiplier;
                 }
                 outputPotential = applyActivationD(nodeActivation(specIdx, n), outputPotential);

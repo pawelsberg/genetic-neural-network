@@ -14,9 +14,9 @@ public sealed class GpuRunner : IDisposable
     private readonly ComputeProgram _mutate;
 
     private readonly GpuBuffer _genomeI;
-    private readonly GpuBuffer _genomeF;
+    private readonly GpuBuffer _genomeM;
     private readonly GpuBuffer _nextGenomeI;
-    private readonly GpuBuffer _nextGenomeF;
+    private readonly GpuBuffer _nextGenomeM;
     private readonly GpuBuffer _potentials;
     private readonly GpuBuffer _outputDiffs;
     private readonly GpuBuffer _perTestScores;
@@ -54,11 +54,11 @@ public sealed class GpuRunner : IDisposable
 
         int popSize = layout.PopulationSize;
         int genomeIBytes = popSize * layout.IntStridePerSpecimen * sizeof(int);
-        int genomeFBytes = popSize * layout.FloatStridePerSpecimen * sizeof(float);
+        int genomeMBytes = popSize * layout.MultiplierStridePerSpecimen * sizeof(double);
         _genomeI = new GpuBuffer("genomeI", genomeIBytes);
-        _genomeF = new GpuBuffer("genomeF", genomeFBytes);
+        _genomeM = new GpuBuffer("genomeM", genomeMBytes);
         _nextGenomeI = new GpuBuffer("nextGenomeI", genomeIBytes);
-        _nextGenomeF = new GpuBuffer("nextGenomeF", genomeFBytes);
+        _nextGenomeM = new GpuBuffer("nextGenomeM", genomeMBytes);
 
         _potentials = new GpuBuffer("potentials", popSize * layout.TestCaseCount * layout.MaxSynapses * sizeof(double));
         _outputDiffs = new GpuBuffer("outputDiffs", popSize * layout.TestCaseCount * sizeof(float));
@@ -88,18 +88,18 @@ public sealed class GpuRunner : IDisposable
 
         int popSize = _layout.PopulationSize;
         int intStride = _layout.IntStridePerSpecimen;
-        int floatStride = _layout.FloatStridePerSpecimen;
+        int multStride = _layout.MultiplierStridePerSpecimen;
 
         int[] allInts = new int[popSize * intStride];
-        float[] allFloats = new float[popSize * floatStride];
+        double[] allMults = new double[popSize * multStride];
         for (int s = 0; s < popSize; s++)
         {
             FlatGenome g = encoded[s % encoded.Length];
             Array.Copy(g.Ints, 0, allInts, s * intStride, intStride);
-            Array.Copy(g.Floats, 0, allFloats, s * floatStride, floatStride);
+            Array.Copy(g.Multipliers, 0, allMults, s * multStride, multStride);
         }
         _genomeI.UploadInts(allInts);
-        _genomeF.UploadFloats(allFloats);
+        _genomeM.UploadDoubles(allMults);
     }
 
     private void UploadTestCases(TestCaseList testCaseList)
@@ -154,7 +154,8 @@ public sealed class GpuRunner : IDisposable
             BindBuffers(genomeIsCurrent);
             DispatchEvaluate(specGroups, tcGroups, popGroups, gen);
 
-            if (onProgress != null && progressInterval > 0 && (gen + 1) % progressInterval == 0)
+            if (onProgress != null && progressInterval > 0 &&
+                (gen == 0 || (gen + 1) % progressInterval == 0))
             {
                 int bestSpec = _parentByRank.DownloadInts(1)[0];
                 float[] fits = _fitness.DownloadFloats(_layout.PopulationSize);
@@ -175,16 +176,16 @@ public sealed class GpuRunner : IDisposable
         int bestSpecimen = _parentByRank.DownloadInts(1)[0];
 
         GpuBuffer currentI = genomeIsCurrent ? _genomeI : _nextGenomeI;
-        GpuBuffer currentF = genomeIsCurrent ? _genomeF : _nextGenomeF;
+        GpuBuffer currentM = genomeIsCurrent ? _genomeM : _nextGenomeM;
         int[] allInts = currentI.DownloadInts(_layout.PopulationSize * _layout.IntStridePerSpecimen);
-        float[] allFloats = currentF.DownloadFloats(_layout.PopulationSize * _layout.FloatStridePerSpecimen);
+        double[] allMults = currentM.DownloadDoubles(_layout.PopulationSize * _layout.MultiplierStridePerSpecimen);
 
         int[] specInts = new int[_layout.IntStridePerSpecimen];
-        float[] specFloats = new float[_layout.FloatStridePerSpecimen];
+        double[] specMults = new double[_layout.MultiplierStridePerSpecimen];
         Array.Copy(allInts, bestSpecimen * _layout.IntStridePerSpecimen, specInts, 0, _layout.IntStridePerSpecimen);
-        Array.Copy(allFloats, bestSpecimen * _layout.FloatStridePerSpecimen, specFloats, 0, _layout.FloatStridePerSpecimen);
+        Array.Copy(allMults, bestSpecimen * _layout.MultiplierStridePerSpecimen, specMults, 0, _layout.MultiplierStridePerSpecimen);
 
-        return FlatGenome.Decode(specInts, specFloats, _layout);
+        return FlatGenome.Decode(specInts, specMults, _layout);
     }
 
     public float ReadBestFitness()
@@ -204,14 +205,14 @@ public sealed class GpuRunner : IDisposable
         FlatGenome g = FlatGenome.Encode(network, _layout);
         int popSize = _layout.PopulationSize;
         int intStride = _layout.IntStridePerSpecimen;
-        int floatStride = _layout.FloatStridePerSpecimen;
+        int multStride = _layout.MultiplierStridePerSpecimen;
 
         int[] allInts = new int[popSize * intStride];
-        float[] allFloats = new float[popSize * floatStride];
+        double[] allMults = new double[popSize * multStride];
         Array.Copy(g.Ints, 0, allInts, 0, intStride);
-        Array.Copy(g.Floats, 0, allFloats, 0, floatStride);
+        Array.Copy(g.Multipliers, 0, allMults, 0, multStride);
         _genomeI.UploadInts(allInts);
-        _genomeF.UploadFloats(allFloats);
+        _genomeM.UploadDoubles(allMults);
 
         int popGroups = (popSize + 63) / 64;
         int specGroups = (popSize + 15) / 16;
@@ -264,13 +265,13 @@ public sealed class GpuRunner : IDisposable
     {
         if (genomeIsCurrent)
         {
-            _genomeI.Bind(0); _genomeF.Bind(1);
-            _nextGenomeI.Bind(2); _nextGenomeF.Bind(3);
+            _genomeI.Bind(0); _genomeM.Bind(1);
+            _nextGenomeI.Bind(2); _nextGenomeM.Bind(3);
         }
         else
         {
-            _nextGenomeI.Bind(0); _nextGenomeF.Bind(1);
-            _genomeI.Bind(2); _genomeF.Bind(3);
+            _nextGenomeI.Bind(0); _nextGenomeM.Bind(1);
+            _genomeI.Bind(2); _genomeM.Bind(3);
         }
         _potentials.Bind(4);
         _outputDiffs.Bind(5);
@@ -294,9 +295,9 @@ public sealed class GpuRunner : IDisposable
         _rank.Dispose();
         _mutate.Dispose();
         _genomeI.Dispose();
-        _genomeF.Dispose();
+        _genomeM.Dispose();
         _nextGenomeI.Dispose();
-        _nextGenomeF.Dispose();
+        _nextGenomeM.Dispose();
         _potentials.Dispose();
         _outputDiffs.Dispose();
         _perTestScores.Dispose();
