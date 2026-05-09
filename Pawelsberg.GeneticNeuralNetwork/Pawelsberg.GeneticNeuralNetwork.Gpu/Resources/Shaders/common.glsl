@@ -18,6 +18,10 @@ layout(std430, binding = 12) buffer TestCaseOutputsBuf { float testCaseOutputs[]
 layout(std430, binding = 13) buffer RngStateBuf { uint rngStates[]; };
 layout(std430, binding = 14) buffer TestCaseInputCountBuf { int testCaseInputCount[]; };
 layout(std430, binding = 15) buffer TestCaseOutputCountBuf { int testCaseOutputCount[]; };
+// Bindings 16-18 (bestEverI, bestEverM, bestEverScalars) are declared only inside
+// update_best_ever.comp — keeping them out of common.glsl keeps the per-shader
+// SSBO declaration count under GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS on drivers
+// (NVIDIA) that count declared blocks, not only statically-used ones.
 
 uniform uint generationIndex;
 

@@ -157,6 +157,46 @@ public class Simulation<TSpecimen> where TSpecimen : ISpecimen
     }
 
     /// <summary>
+    /// Like Add() but additionally re-evaluates the candidate against current GenerationMeter
+    /// and updates BestEver synchronously if it's better (with SimulationMeter tiebreak on
+    /// equal fitness, matching the per-tick logic). Use when an external evaluator (the GPU
+    /// runner) hands a specimen to the CPU sim and the user expects `show` to reflect it
+    /// immediately, without first running a CPU tick. Quality measurement happens outside
+    /// the lock so a slow meter doesn't stall a concurrent CPU tick; the BestEver update
+    /// re-checks under the lock to avoid clobbering a concurrent improvement.
+    /// </summary>
+    public void AddAndRefreshBestEver(TSpecimen specimen)
+    {
+        QualityMeter<TSpecimen> meter;
+        QualityMeter<TSpecimen> simMeter;
+        lock (_parametersLock)
+        {
+            _specsToAdd.Add(specimen);
+            meter = GenerationMeter;
+            simMeter = SimulationMeter;
+        }
+        if (meter == null) return;
+
+        double newQuality = meter.MeasureQualityRecursive(specimen, null).Quality;
+        double? newSimQuality = simMeter?.MeasureQualityRecursive(specimen, null).Quality;
+
+        lock (_parametersLock)
+        {
+            bool better = BestEver == null || BestEverQuality < newQuality;
+            if (!better && BestEver != null && BestEverQuality == newQuality && simMeter != null && newSimQuality.HasValue)
+            {
+                double oldSimQuality = simMeter.MeasureQualityRecursive(BestEver, null).Quality;
+                better = oldSimQuality < newSimQuality.Value;
+            }
+            if (better)
+            {
+                BestEver = specimen;
+                BestEverQuality = newQuality;
+            }
+        }
+    }
+
+    /// <summary>
     /// Snapshot of current generation specimens + queued additions + BestEver, deduplicated by reference.
     /// Used to seed external evaluators (e.g. GPU runner) from the simulation's current state.
     /// </summary>

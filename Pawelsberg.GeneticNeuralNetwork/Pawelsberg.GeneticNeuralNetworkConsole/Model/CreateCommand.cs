@@ -14,4 +14,5 @@ public class CreateCommand : Command
         simulation.Add(network);
     }
     public override string ShortDescription { get { return "Creates a neural network that fits test case list"; } }
+    public override bool InvalidatesGpuSimulation => true;
 }

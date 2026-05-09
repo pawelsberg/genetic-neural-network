@@ -27,4 +27,5 @@ public class LoadAllCommand : Command
         }
     }
     public override string ShortDescription { get { return "Loads all neural networks as additional specimens"; } }
+    public override bool InvalidatesGpuSimulation => true;
 }

@@ -15,6 +15,10 @@ public static class Variables
         new Variable { Name = "propagations", Getter = (sim) => sim.Propagations, Setter = (sim, val) => sim.Propagations = (int)val, Parse = ParseInt },
         new Variable { Name = "successfulMutationsLength", Getter = (sim) => sim.Log.MaxLength, Setter = (sim, val) => sim.Log.MaxLength = (int)val, Parse = ParseInt },
         new Variable { Name = "maxSpecimens", Getter = (sim) => sim.MaxSpecimens, Setter = (sim, val) => sim.MaxSpecimens = (int)val, Parse = ParseInt },
+        // GPU population size is held on GpuSimulationProvider (NetworkSimulation lives in
+        // the core lib that doesn't reference the GPU project). Changing this triggers the
+        // standard reload-on-set path so the next gpu* command picks up the new size.
+        new Variable { Name = "maxGpuSpecimens", Getter = (_) => GpuSimulationProvider.MaxGpuSpecimens, Setter = (_, val) => GpuSimulationProvider.MaxGpuSpecimens = (int)val, Parse = ParseInt },
         new Variable { Name = "delayTimeMs", Getter = (sim) => sim.SimulationTimer.DelayTimeMs, Setter = (sim, val) => sim.SimulationTimer.DelayTimeMs = (int)val, Parse = ParseInt },
         new Variable { Name = "generationMultiplier", Getter = (sim) => sim.GenerationMultiplier, Setter = (sim, val) => sim.GenerationMultiplier = (int)val, Parse = ParseInt },
         new Variable { Name = "parentQueuer", Getter = (sim) => sim.ParentQueuerType, Setter = (sim, val) => sim.ParentQueuerType = (ParentQueuerType)val, Parse = ParseParentQueuerType },

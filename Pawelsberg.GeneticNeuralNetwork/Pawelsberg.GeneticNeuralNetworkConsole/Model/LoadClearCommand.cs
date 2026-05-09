@@ -25,4 +25,5 @@ public class LoadClearCommand : Command
         simulation.Replace(network);
     }
     public override string ShortDescription { get { return "Loads specific neural network as the only specimen in generation. Use 'pass' network as a parameter to load the simplest network (and restart algorithm)."; } }
+    public override bool InvalidatesGpuSimulation => true;
 }

@@ -24,4 +24,5 @@ public class LoadPpmTestCaseListCommand : Command
         simulation.TestCaseList = testCaseList;
     }
     public override string ShortDescription { get { return "Loads a test case list in ppm format"; } }
+    public override bool InvalidatesGpuSimulation => true;
 }

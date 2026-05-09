@@ -11,6 +11,7 @@ public sealed class GpuRunner : IDisposable
     private ComputeProgram? _score;
     private ComputeProgram? _aggregate;
     private ComputeProgram? _rank;
+    private ComputeProgram? _updateBestEver;
     private ComputeProgram? _mutate;
 
     private GpuBuffer? _genomeI;
@@ -29,8 +30,14 @@ public sealed class GpuRunner : IDisposable
     private GpuBuffer? _testInputCount;
     private GpuBuffer? _testOutputCount;
     private GpuBuffer? _rngStates;
+    private GpuBuffer? _bestEverI;
+    private GpuBuffer? _bestEverM;
+    private GpuBuffer? _bestEverScalars;
 
     private bool _disposed;
+    private bool _bootstrapped;
+    private bool _genomeIsCurrent = true;
+    private bool _ownsContext;
 
     private readonly GpuLayout _layout;
 
@@ -38,6 +45,16 @@ public sealed class GpuRunner : IDisposable
     public GpuLayout Layout => _layout;
 
     public GpuRunner(IList<Network> seeds, TestCaseList testCaseList, GpuLayout layout)
+        : this(seeds, testCaseList, layout, externalContext: null) { }
+
+    /// <summary>
+    /// <paramref name="externalContext"/>: pass an already-created GlContext that is current
+    /// on the calling thread (typical for off-main-thread GpuSimulation use, where the main
+    /// thread builds the context and the worker MakeCurrents it). Pass null to let the
+    /// constructor create a context bound to the calling thread (synchronous --gpurun path).
+    /// The runner only disposes the context if it created it.
+    /// </summary>
+    public GpuRunner(IList<Network> seeds, TestCaseList testCaseList, GpuLayout layout, GlContext? externalContext)
     {
         if (seeds == null || seeds.Count == 0)
             throw new ArgumentException("At least one seed network is required", nameof(seeds));
@@ -51,13 +68,23 @@ public sealed class GpuRunner : IDisposable
         // until process exit.
         try
         {
-            _context = new GlContext();
+            if (externalContext == null)
+            {
+                _context = new GlContext();
+                _ownsContext = true;
+            }
+            else
+            {
+                _context = externalContext;
+                _ownsContext = false;
+            }
 
             ShaderBuilder builder = new ShaderBuilder(layout);
             _propagate = new ComputeProgram(builder.BuildKernel("propagate.comp", false), "propagate");
             _score = new ComputeProgram(builder.BuildKernel("score_per_test_case.comp", false), "score");
             _aggregate = new ComputeProgram(builder.BuildKernel("aggregate_fitness.comp", false), "aggregate");
             _rank = new ComputeProgram(builder.BuildKernel("rank.comp", false), "rank");
+            _updateBestEver = new ComputeProgram(builder.BuildKernel("update_best_ever.comp", false), "update_best_ever");
             _mutate = new ComputeProgram(builder.BuildKernel("mutate.comp", true), "mutate");
 
             int popSize = layout.PopulationSize;
@@ -83,9 +110,15 @@ public sealed class GpuRunner : IDisposable
             _testOutputCount = new GpuBuffer("testOutputCount", layout.TestCaseCount * sizeof(int));
             _rngStates = new GpuBuffer("rngStates", popSize * sizeof(uint));
 
+            _bestEverI = new GpuBuffer("bestEverI", layout.IntStridePerSpecimen * sizeof(int));
+            _bestEverM = new GpuBuffer("bestEverM", layout.MultiplierStridePerSpecimen * sizeof(double));
+            // 4 ints: [floatBitsToInt(fitness), nodeCount, synapseCount, valid]
+            _bestEverScalars = new GpuBuffer("bestEverScalars", 4 * sizeof(int));
+
             UploadInitialPopulation(seeds);
             UploadTestCases(testCaseList);
             UploadRngStates();
+            ResetBestEver();
         }
         catch
         {
@@ -141,6 +174,14 @@ public sealed class GpuRunner : IDisposable
         _testOutputCount!.UploadInts(outputCounts);
     }
 
+    private void ResetBestEver()
+    {
+        // valid=0 means update_best_ever.comp will adopt the first generation's
+        // rank-0 specimen unconditionally. The genome and multiplier buffers can
+        // stay zero-initialized; they're only read after at least one adoption.
+        _bestEverScalars!.UploadInts(new int[4]);
+    }
+
     private void UploadRngStates()
     {
         int popSize = _layout.PopulationSize;
@@ -155,60 +196,95 @@ public sealed class GpuRunner : IDisposable
         _rngStates!.UploadInts(seeds);
     }
 
-    public Network Run(int generations, int progressInterval = 0, Action<int, float>? onProgress = null)
+    /// <summary>
+    /// Initial-population evaluation — must be called once before any StepGeneration call.
+    /// Mirrors gen-0 of the original Run loop: bind buffers, evaluate the seeded population,
+    /// adopt rank-0 into BestEver. After this, ReadBestFitness reflects the seeded population.
+    /// </summary>
+    public void Bootstrap()
     {
         ThrowIfDisposed();
-        bool genomeIsCurrent = true;
+        if (_bootstrapped)
+            throw new InvalidOperationException("GpuRunner already bootstrapped");
+        _bootstrapped = true;
+        _genomeIsCurrent = true;
+
         int popSize = _layout.PopulationSize;
         int popGroups = (popSize + 63) / 64;
         int specGroups = (popSize + 15) / 16;
         int tcGroups = (_layout.TestCaseCount + 3) / 4;
 
-        for (int gen = 0; gen < generations; ++gen)
+        BindBuffers(_genomeIsCurrent);
+        DispatchEvaluate(specGroups, tcGroups, popGroups, 0);
+        DispatchUpdateBestEver(0);
+    }
+
+    /// <summary>
+    /// Run one generation: mutate the previous generation's parents into the next-buffer,
+    /// swap, then evaluate and update BestEver. <paramref name="gen"/> is the index of the
+    /// new generation (1-based; pass 1 for the first call after Bootstrap).
+    /// </summary>
+    public void StepGeneration(int gen)
+    {
+        ThrowIfDisposed();
+        if (!_bootstrapped)
+            throw new InvalidOperationException("GpuRunner.Bootstrap() must be called before StepGeneration");
+        if (gen < 1)
+            throw new ArgumentOutOfRangeException(nameof(gen), "gen must be >= 1; gen 0 is handled by Bootstrap");
+
+        int popSize = _layout.PopulationSize;
+        int popGroups = (popSize + 63) / 64;
+        int specGroups = (popSize + 15) / 16;
+        int tcGroups = (_layout.TestCaseCount + 3) / 4;
+
+        BindBuffers(_genomeIsCurrent);
+        _mutate!.Use();
+        GL.Uniform1(_mutate!.GetUniformLocation("generationIndex"), (uint)(gen - 1));
+        _mutate!.Dispatch(popGroups);
+        GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
+
+        _genomeIsCurrent = !_genomeIsCurrent;
+        BindBuffers(_genomeIsCurrent);
+        DispatchEvaluate(specGroups, tcGroups, popGroups, gen);
+        DispatchUpdateBestEver(gen);
+    }
+
+    public Network DownloadBestEverNetwork()
+    {
+        ThrowIfDisposed();
+        int[] specInts = _bestEverI!.DownloadInts(_layout.IntStridePerSpecimen);
+        double[] specMults = _bestEverM!.DownloadDoubles(_layout.MultiplierStridePerSpecimen);
+        return FlatGenome.Decode(specInts, specMults, _layout);
+    }
+
+    /// <summary>
+    /// Convenience wrapper: bootstrap + N step generations + download BestEver. Resets
+    /// BestEver at the start so the returned network reflects only this run.
+    /// </summary>
+    public Network Run(int generations, int progressInterval = 0, Action<int, float>? onProgress = null)
+    {
+        ThrowIfDisposed();
+        ResetBestEver();
+        _bootstrapped = false;
+        Bootstrap();
+        if (onProgress != null && progressInterval > 0)
+            onProgress(1, ReadBestFitness());
+
+        for (int gen = 1; gen <= generations; gen++)
         {
-            BindBuffers(genomeIsCurrent);
-            DispatchEvaluate(specGroups, tcGroups, popGroups, gen);
-
-            if (onProgress != null && progressInterval > 0 &&
-                (gen == 0 || (gen + 1) % progressInterval == 0))
-            {
-                int bestSpec = _parentByRank!.DownloadInts(1)[0];
-                float[] fits = _fitness!.DownloadFloats(_layout.PopulationSize);
-                onProgress(gen + 1, fits[bestSpec]);
-            }
-
-            _mutate!.Use();
-            GL.Uniform1(_mutate!.GetUniformLocation("generationIndex"), (uint)gen);
-            _mutate!.Dispatch(popGroups);
-            GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
-
-            genomeIsCurrent = !genomeIsCurrent;
+            StepGeneration(gen);
+            if (onProgress != null && progressInterval > 0 && ((gen + 1) % progressInterval == 0 || gen == generations))
+                onProgress(gen + 1, ReadBestFitness());
         }
 
-        BindBuffers(genomeIsCurrent);
-        DispatchEvaluate(specGroups, tcGroups, popGroups, generations);
-
-        int bestSpecimen = _parentByRank!.DownloadInts(1)[0];
-
-        GpuBuffer currentI = genomeIsCurrent ? _genomeI! : _nextGenomeI!;
-        GpuBuffer currentM = genomeIsCurrent ? _genomeM! : _nextGenomeM!;
-        int[] allInts = currentI.DownloadInts(_layout.PopulationSize * _layout.IntStridePerSpecimen);
-        double[] allMults = currentM.DownloadDoubles(_layout.PopulationSize * _layout.MultiplierStridePerSpecimen);
-
-        int[] specInts = new int[_layout.IntStridePerSpecimen];
-        double[] specMults = new double[_layout.MultiplierStridePerSpecimen];
-        Array.Copy(allInts, bestSpecimen * _layout.IntStridePerSpecimen, specInts, 0, _layout.IntStridePerSpecimen);
-        Array.Copy(allMults, bestSpecimen * _layout.MultiplierStridePerSpecimen, specMults, 0, _layout.MultiplierStridePerSpecimen);
-
-        return FlatGenome.Decode(specInts, specMults, _layout);
+        return DownloadBestEverNetwork();
     }
 
     public float ReadBestFitness()
     {
         ThrowIfDisposed();
-        float[] fits = _fitness!.DownloadFloats(_layout.PopulationSize);
-        int[] pbr = _parentByRank!.DownloadInts(1);
-        return fits[pbr[0]];
+        int[] scalars = _bestEverScalars!.DownloadInts(4);
+        return BitConverter.Int32BitsToSingle(scalars[0]);
     }
 
     /// <summary>
@@ -253,6 +329,14 @@ public sealed class GpuRunner : IDisposable
             PerTestCaseScore = scoresAll,
             PerTestCaseGood = good
         };
+    }
+
+    private void DispatchUpdateBestEver(int gen)
+    {
+        _updateBestEver!.Use();
+        GL.Uniform1(_updateBestEver!.GetUniformLocation("generationIndex"), (uint)gen);
+        _updateBestEver!.Dispatch(1);
+        GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
     }
 
     private void DispatchEvaluate(int specGroups, int tcGroups, int popGroups, int gen)
@@ -302,6 +386,9 @@ public sealed class GpuRunner : IDisposable
         _rngStates!.Bind(13);
         _testInputCount!.Bind(14);
         _testOutputCount!.Bind(15);
+        _bestEverI!.Bind(16);
+        _bestEverM!.Bind(17);
+        _bestEverScalars!.Bind(18);
     }
 
     private void ThrowIfDisposed()
@@ -327,6 +414,7 @@ public sealed class GpuRunner : IDisposable
         _score?.Dispose(); _score = null;
         _aggregate?.Dispose(); _aggregate = null;
         _rank?.Dispose(); _rank = null;
+        _updateBestEver?.Dispose(); _updateBestEver = null;
         _mutate?.Dispose(); _mutate = null;
         _genomeI?.Dispose(); _genomeI = null;
         _genomeM?.Dispose(); _genomeM = null;
@@ -344,6 +432,11 @@ public sealed class GpuRunner : IDisposable
         _testInputCount?.Dispose(); _testInputCount = null;
         _testOutputCount?.Dispose(); _testOutputCount = null;
         _rngStates?.Dispose(); _rngStates = null;
-        _context?.Dispose(); _context = null;
+        _bestEverI?.Dispose(); _bestEverI = null;
+        _bestEverM?.Dispose(); _bestEverM = null;
+        _bestEverScalars?.Dispose(); _bestEverScalars = null;
+        if (_ownsContext)
+            _context?.Dispose();
+        _context = null;
     }
 }

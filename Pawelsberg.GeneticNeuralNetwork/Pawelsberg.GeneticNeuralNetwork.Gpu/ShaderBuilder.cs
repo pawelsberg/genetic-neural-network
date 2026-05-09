@@ -39,7 +39,14 @@ internal sealed class ShaderBuilder
         StringBuilder sb = new StringBuilder();
         sb.AppendLine("#version 430 core");
         AppendDefines(sb);
-        sb.AppendLine(LoadResource("common.glsl"));
+        // update_best_ever uses a slim header (common_best_ever.glsl) declaring only
+        // the SSBOs it touches. Including the full common.glsl would push that shader
+        // past GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS on drivers that count declared
+        // (not just statically-active) buffers.
+        string commonResource = mainCompResourceName == "update_best_ever.comp"
+            ? "common_best_ever.glsl"
+            : "common.glsl";
+        sb.AppendLine(LoadResource(commonResource));
         if (includeMutators)
         {
             sb.AppendLine(LoadResource("genome_rw.glsl"));

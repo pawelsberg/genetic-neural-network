@@ -56,6 +56,11 @@ public class SetCommand : Command
                 throw new Exception(string.Format("Variable {0} not found", _variableName));
         }
     }
+    // True only when Run actually changed a variable (display/list invocations don't
+    // touch any state, so the GPU sim's snapshot is still valid). MainMenu reads this
+    // after Run to decide whether to invalidate the GPU sim.
+    public override bool InvalidatesGpuSimulation => !_listSets && !_displayVariable;
+
     public override string ShortDescription { get { return "Show/set general settings of genetic algorithm"; } }
     public override IEnumerable<string> GetParameterCompletions(string[] parameters)
     {

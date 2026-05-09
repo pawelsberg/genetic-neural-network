@@ -21,5 +21,6 @@ public class LoadSudokuCaseListCommand : Command
         simulation.TestCaseList = testCaseList;
     }
     public override string ShortDescription { get { return "Loads a test case list in sudoku format"; } }
+    public override bool InvalidatesGpuSimulation => true;
 }
 

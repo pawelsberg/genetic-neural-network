@@ -35,6 +35,8 @@ public class MainMenu
                 codedText.SkipWhiteCharacters();
                 command.LoadParameters(codedText);
                 command.Run(_simulation);
+                if (command.InvalidatesGpuSimulation)
+                    GpuSimulationProvider.Reload(_simulation);
             }
             catch (Exception ex)
             {

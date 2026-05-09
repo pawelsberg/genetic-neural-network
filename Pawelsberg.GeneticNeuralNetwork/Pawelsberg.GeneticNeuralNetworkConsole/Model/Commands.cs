@@ -28,7 +28,9 @@ public static class Commands
         { LoadQualityMetersCommand.Name, () => new LoadQualityMetersCommand() },
         { SaveQualityMetersCommand.Name, () => new SaveQualityMetersCommand() },
         { TopCommand.Name, () => new TopCommand() },
-        { GpuRunCommand.Name, () => new GpuRunCommand() }
+        { GpuRunCommand.Name, () => new GpuRunCommand() },
+        { GpuStartCommand.Name, () => new GpuStartCommand() },
+        { GpuPauseCommand.Name, () => new GpuPauseCommand() }
     };
 
     public static IEnumerable<string> Names => NameCommands.Keys;

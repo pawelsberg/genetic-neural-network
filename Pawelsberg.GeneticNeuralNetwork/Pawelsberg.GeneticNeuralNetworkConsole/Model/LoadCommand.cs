@@ -25,6 +25,7 @@ public class LoadCommand : Command
         simulation.Add(network);
     }
     public override string ShortDescription { get { return "Loads specific neural network as additional specimen in generation"; } }
+    public override bool InvalidatesGpuSimulation => true;
     public override IEnumerable<string> GetParameterCompletions(string[] parameters)
     {
         if (parameters.Length <= 1)

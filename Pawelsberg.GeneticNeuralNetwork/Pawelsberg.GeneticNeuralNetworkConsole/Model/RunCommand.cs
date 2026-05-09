@@ -60,9 +60,11 @@ public class RunCommand : Command
                 if (_fractionDoneFileName != null && (!_fractionUpdateInterval.HasValue || (currentGeneration - startingGeneration) % _fractionUpdateInterval.Value == 0))
                     Write(fileStream, textWriter, (double)(currentGeneration - startingGeneration) / _generationCount);
 
-                if (targetGeneration == currentGeneration)
+                if (targetGeneration == currentGeneration || Cancellation.Requested)
                     nextGenerationEventArgs.Pause = true;
             };
+
+            Cancellation.Reset();
 
             try
             {

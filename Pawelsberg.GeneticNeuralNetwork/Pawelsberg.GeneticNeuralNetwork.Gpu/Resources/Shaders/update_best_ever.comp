@@ -1,0 +1,45 @@
+layout(local_size_x = 1) in;
+
+// Mirrors CPU Simulation<TSpecimen>.BestEver tracking:
+//   - keep the all-time best across generations
+//   - tiebreak on equal fitness using SimulationMeter (smaller network wins:
+//     fewer nodes first, then fewer synapses)
+// Source candidate is parentByRank[0] (current generation's GA-selected best,
+// matching CPU's _generation.Best). Single-thread dispatch: one comparison +
+// one conditional genome copy per generation.
+
+void main() {
+    if (gl_GlobalInvocationID.x != 0u) return;
+
+    uint cur = uint(parentByRank[0]);
+    float curFitness = fitness[cur];
+    int curNodes = activeNodes(cur);
+    int curSyns = 0;
+    for (int s = 0; s < MAX_SYNAPSES; ++s)
+        if (synapseActive(cur, s) != 0) curSyns++;
+
+    bool adopt = false;
+    if (bestEverValid == 0)
+        adopt = true;
+    else if (curFitness > bestEverFitness)
+        adopt = true;
+    else if (curFitness == bestEverFitness) {
+        if (curNodes < bestEverNodeCount)
+            adopt = true;
+        else if (curNodes == bestEverNodeCount && curSyns < bestEverSynapseCount)
+            adopt = true;
+    }
+
+    if (adopt) {
+        int srcI = int(cur) * INT_STRIDE;
+        int srcM = int(cur) * MULT_STRIDE;
+        for (int i = 0; i < INT_STRIDE; ++i)
+            bestEverI[i] = genomeI[srcI + i];
+        for (int i = 0; i < MULT_STRIDE; ++i)
+            bestEverM[i] = genomeM[srcM + i];
+        bestEverFitness = curFitness;
+        bestEverNodeCount = curNodes;
+        bestEverSynapseCount = curSyns;
+        bestEverValid = 1;
+    }
+}
