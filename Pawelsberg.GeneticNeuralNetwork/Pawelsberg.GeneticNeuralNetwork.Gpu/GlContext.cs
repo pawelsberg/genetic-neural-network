@@ -11,6 +11,8 @@ public sealed class GlContext : IDisposable
 
     public GlContext()
     {
+        GpuSelector.ForceDedicatedGpu();
+
         NativeWindowSettings settings = NativeWindowSettings.Default;
         settings.ClientSize = new Vector2i(1, 1);
         settings.StartVisible = false;
