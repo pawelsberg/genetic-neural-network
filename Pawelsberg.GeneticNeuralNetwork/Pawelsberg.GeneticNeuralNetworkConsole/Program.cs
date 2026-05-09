@@ -81,6 +81,35 @@ class Program
             return;
         }
 
+        // Apples-to-apples comparison: bypass GpuSimulation (no worker thread, no
+        // fence pacing, no locks) and run GpuRunner.Run synchronously on main thread.
+        // This matches the original --gpurun behaviour; lets us see whether the worker
+        // thread infra is the source of the CPU 12.5% / GPU 50% pattern, or whether the
+        // shader pipeline itself is the ceiling.
+        // Usage: --gpurun-sync <tcl> [generations]
+        if (args.Length > 0 && args[0] == "--gpurun-sync")
+        {
+            new InitCommand().Run(simulation);
+            new LoadAllCommand().Run(simulation);
+            if (args.Length > 1)
+                simulation.TestCaseList = TestCaseLists.LoadTestCaseList(args[1]);
+            int gens = args.Length > 2 ? int.Parse(args[2]) : 1000;
+
+            Network seed = simulation.BestEver
+                ?? Pawelsberg.GeneticNeuralNetwork.Model.NeuralNetworking.Network.CreateSimplest(simulation.TestCaseList.TestCases[0].Inputs.Count, simulation.TestCaseList.TestCases[0].Outputs.Count);
+            Pawelsberg.GeneticNeuralNetwork.Gpu.GpuLayout layout = GpuSimulationProvider.ComputeLayout(seed, simulation.TestCaseList, simulation, simulation.Propagations);
+
+            Stopwatch swSync = Stopwatch.StartNew();
+            using Pawelsberg.GeneticNeuralNetwork.Gpu.GpuRunner runner = new Pawelsberg.GeneticNeuralNetwork.Gpu.GpuRunner(seed, simulation.TestCaseList, layout);
+            Console.WriteLine($"Sync mode (no worker, no fences). Device: {runner.DeviceInfo}");
+            Console.WriteLine($"Setup: {swSync.ElapsedMilliseconds} ms. Running {gens} gens synchronously...");
+            swSync.Restart();
+            runner.Run(gens, progressInterval: 100, (g, f) => Console.WriteLine($"  gen {g,5}/{gens} fit={f:F6}"));
+            swSync.Stop();
+            Console.WriteLine($"Sync done in {swSync.Elapsed.TotalSeconds:F2} s ({gens / swSync.Elapsed.TotalSeconds:F1} gens/sec).");
+            return;
+        }
+
         // Verifies that Ctrl+C / cancellation interrupts gpurun within seconds, not
         // minutes. Without the in-flight-fence cap the GPU command queue grows
         // unbounded and Pause + SyncNow waits for the entire backlog to drain.

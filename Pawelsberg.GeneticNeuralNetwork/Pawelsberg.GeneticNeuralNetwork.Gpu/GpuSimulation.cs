@@ -13,7 +13,10 @@ namespace Pawelsberg.GeneticNeuralNetwork.Gpu;
 /// </summary>
 public sealed class GpuSimulation : IDisposable
 {
-    private readonly IList<Network> _seeds;
+    // Single seed network — the CPU sim's BestEver. Avoids transferring the full CPU
+    // generation across the CPU/GPU boundary; the GPU mutates 1000 copies of the seed
+    // into its own population in a few generations anyway.
+    private readonly Network _seed;
     private readonly TestCaseList _testCaseList;
     private readonly GpuLayout _layout;
     private readonly GlContext _glContext;
@@ -35,18 +38,25 @@ public sealed class GpuSimulation : IDisposable
     private bool _disposed;
     private Action<Network, float>? _periodicSyncCallback;
     private int _periodicSyncInterval = 1000;
-    private int _maxStepsInFlight = 8;
+    private int _maxStepsInFlight = 64;
     // Worker-thread-only — never touched off-thread, so no lock needed.
     private readonly Queue<IntPtr> _inFlightFences = new Queue<IntPtr>();
+    // We hold at most this many sync objects regardless of MaxStepsInFlight; the
+    // fence-insertion cadence (stepsPerFence) is derived to give the desired step cap.
+    // Rationale: per-step glFenceSync + glClientWaitSync drives serious driver-thread
+    // work; spacing fences out by ~8 steps cuts that overhead ~8x while still bounding
+    // the queue depth. Min 1 fence-per-step when MaxStepsInFlight is tiny.
+    private const int FenceCount = 8;
+    private int _stepsSinceLastFence;
 
     /// <summary>
     /// Must be constructed on the main thread: GLFW requires window creation there. The
     /// constructor creates the GlContext (binds it to the main thread) and immediately
     /// releases it so the worker thread can MakeCurrent on itself when EnsureStarted runs.
     /// </summary>
-    public GpuSimulation(IList<Network> seeds, TestCaseList testCaseList, GpuLayout layout)
+    public GpuSimulation(Network seed, TestCaseList testCaseList, GpuLayout layout)
     {
-        _seeds = seeds;
+        _seed = seed;
         _testCaseList = testCaseList;
         _layout = layout;
         _glContext = new GlContext();
@@ -212,12 +222,26 @@ public sealed class GpuSimulation : IDisposable
         cb(best, fit);
     }
 
-    // Worker-thread-only. Pops the oldest fence, blocks until the GPU has signalled it,
-    // and releases the sync object.
+    // Worker-thread-only. Pops the oldest fence, waits for the GPU to signal it, and
+    // releases the sync object. Uses a non-blocking poll + Thread.Sleep(1) instead of
+    // ClientWaitSync(timeout=infinite) because NVIDIA's implementation busy-spins for
+    // a noticeable interval before falling back to a kernel wait — which keeps the
+    // worker thread at full single-core utilisation even though it's "waiting." The
+    // explicit Thread.Sleep guarantees the OS parks the thread; latency cost is
+    // ~Windows scheduler tick (~15 ms) per outstanding fence, negligible vs. the
+    // step time on the workloads where this fires.
     private void WaitAndDeleteOldestFence()
     {
         IntPtr oldest = _inFlightFences.Dequeue();
-        GL.ClientWaitSync(oldest, ClientWaitSyncFlags.SyncFlushCommandsBit, ulong.MaxValue);
+        // Issue one flush before the polling loop so commands actually reach the GPU
+        // (otherwise the fence may sit unsignaled forever — same role as
+        // ClientWaitSync's SyncFlushCommandsBit, but only paid once).
+        WaitSyncStatus status = GL.ClientWaitSync(oldest, ClientWaitSyncFlags.SyncFlushCommandsBit, 0);
+        while (status != WaitSyncStatus.AlreadySignaled && status != WaitSyncStatus.ConditionSatisfied)
+        {
+            Thread.Sleep(1);
+            status = GL.ClientWaitSync(oldest, 0, 0);
+        }
         GL.DeleteSync(oldest);
     }
 
@@ -234,7 +258,7 @@ public sealed class GpuSimulation : IDisposable
         {
             // Take ownership of the context (main thread released it after construction).
             _glContext.MakeCurrent();
-            runner = new GpuRunner(_seeds, _testCaseList, _layout, _glContext);
+            runner = new GpuRunner(_seed, _testCaseList, _layout, _glContext);
             lock (_lock) _deviceInfo = runner.DeviceInfo;
             runner.Bootstrap();
             lock (_lock) _bestEverFitness = runner.ReadBestFitness();
@@ -275,17 +299,24 @@ public sealed class GpuSimulation : IDisposable
                 runner.StepGeneration(gen);
                 Volatile.Write(ref _generationNumber, gen);
 
-                // Pace the worker: insert a fence and, if we already have MaxStepsInFlight
-                // unfinished fences queued, wait for the oldest. This bounds the GPU command
-                // queue depth — without this the worker enqueues thousands of steps ahead of
-                // the GPU and any subsequent download (Pause / SyncNow) blocks for minutes
-                // while the backlog drains.
-                IntPtr fence = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, 0);
-                _inFlightFences.Enqueue(fence);
+                // Pace the worker: insert a fence every `stepsPerFence` steps and, when we
+                // already hold FenceCount unfinished ones, wait for the oldest. This bounds
+                // the GPU command queue depth (~MaxStepsInFlight steps), without per-step
+                // fence overhead — `glFenceSync`/`glClientWaitSync` per step adds enough
+                // CPU work to starve the GPU on small workloads. Spacing fences out keeps
+                // GPU saturated; cancellation latency stays bounded by MaxStepsInFlight.
                 int maxInFlight;
                 lock (_lock) maxInFlight = _maxStepsInFlight;
-                while (_inFlightFences.Count > maxInFlight)
-                    WaitAndDeleteOldestFence();
+                int stepsPerFence = Math.Max(1, maxInFlight / FenceCount);
+                _stepsSinceLastFence++;
+                if (_stepsSinceLastFence >= stepsPerFence)
+                {
+                    _stepsSinceLastFence = 0;
+                    IntPtr fence = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, 0);
+                    _inFlightFences.Enqueue(fence);
+                    while (_inFlightFences.Count > FenceCount)
+                        WaitAndDeleteOldestFence();
+                }
 
                 // Keep the GPU command queue full: do NOT download fitness per step (that
                 // forces a CPU/GPU sync and tanks utilisation). Only sync to CPU at the

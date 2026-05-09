@@ -25,6 +25,26 @@ public static class GpuSimulationProvider
     /// </summary>
     public static int MaxGpuSpecimens { get; set; } = GpuConstants.PopulationSize;
 
+    /// <summary>
+    /// Cap on how many StepGeneration calls the worker is allowed to enqueue ahead of the
+    /// GPU. Higher values give the GPU more pipeline buffer (closer to 100% utilisation
+    /// on large workloads where each step is many ms); lower values give snappier
+    /// cancellation (Pause/Ctrl+C waits at most ~MaxGpuStepsInFlight × step time for the
+    /// queue to drain). Applied immediately to the live GPU sim if one exists; also used
+    /// as the initial value when the next GPU sim is built.
+    /// </summary>
+    private static int _maxGpuStepsInFlight = 64;
+    public static int MaxGpuStepsInFlight
+    {
+        get => _maxGpuStepsInFlight;
+        set
+        {
+            _maxGpuStepsInFlight = Math.Max(1, value);
+            GpuSimulation? sim = GetExisting();
+            if (sim != null) sim.MaxStepsInFlight = _maxGpuStepsInFlight;
+        }
+    }
+
     public static GpuSimulation? GetExisting()
     {
         lock (_lock) return _instance;
@@ -41,15 +61,18 @@ public static class GpuSimulationProvider
                 throw new Exception("No active test case list - use loadtcl <name> first.");
 
             TestCase firstTestCase = tcl.TestCases[0];
-            List<Network> seeds = simulation.CollectSeedSpecimens();
-            if (seeds.Count == 0)
-            {
-                Console.WriteLine($"No seed networks in simulation; using CreateSimplest({firstTestCase.Inputs.Count}, {firstTestCase.Outputs.Count}).");
-                seeds.Add(Network.CreateSimplest(firstTestCase.Inputs.Count, firstTestCase.Outputs.Count));
-            }
+            // Only the BestEver crosses CPU→GPU. The full CPU generation isn't worth
+            // transferring — the GPU mutates 1000 copies into its own population in a
+            // few generations anyway. Falls back to the simplest network if CPU has
+            // no BestEver yet (fresh sim, no CPU run done).
+            Network seed = simulation.BestEver
+                ?? Network.CreateSimplest(firstTestCase.Inputs.Count, firstTestCase.Outputs.Count);
 
-            GpuLayout layout = ComputeLayout(seeds, tcl, simulation, simulation.Propagations);
-            GpuSimulation sim = new GpuSimulation(seeds, tcl, layout);
+            GpuLayout layout = ComputeLayout(seed, tcl, simulation, simulation.Propagations);
+            GpuSimulation sim = new GpuSimulation(seed, tcl, layout)
+            {
+                MaxStepsInFlight = _maxGpuStepsInFlight,
+            };
             // Wire the periodic CPU sync: every PeriodicSyncInterval generations (and on
             // every SyncNow call from gpurun-end / gpupause), push the GPU's BestEver into
             // the CPU NetworkSimulation. AddAndRefreshBestEver re-evaluates the candidate
@@ -93,6 +116,11 @@ public static class GpuSimulationProvider
             wasRunning = old.IsRunning;
             _instance = null;
         }
+        // Pull GPU's latest BestEver into the CPU sim before tearing down — otherwise
+        // any improvement the GPU made since the last periodic sync is lost. The new
+        // GpuSim's seed is read from simulation.BestEver below, so the new run starts
+        // from the GPU's best result, not a stale one.
+        try { old.SyncNow(); } catch { /* swallow — sim may be in a bad state */ }
         old.Dispose();
         if (wasRunning)
         {
@@ -101,27 +129,19 @@ public static class GpuSimulationProvider
         }
     }
 
-    public static GpuLayout ComputeLayout(IList<Network> seeds, TestCaseList tcl, NetworkSimulation simulation, int propagations)
+    public static GpuLayout ComputeLayout(Network seed, TestCaseList tcl, NetworkSimulation simulation, int propagations)
     {
-        int observedMaxNodes = 0;
-        int observedMaxSynapses = 0;
+        int observedMaxNodes = seed.Nodes.Count;
+        int observedMaxSynapses = seed.SynapseCount();
         int observedMaxInputsPerNode = 0;
         int observedMaxOutputsPerNode = 0;
-        int observedMaxNetIn = 0;
-        int observedMaxNetOut = 0;
-        foreach (Network n in seeds)
+        int observedMaxNetIn = seed.Inputs.Count;
+        int observedMaxNetOut = seed.Outputs.Count;
+        foreach (Node node in seed.Nodes)
         {
-            if (n.Nodes.Count > observedMaxNodes) observedMaxNodes = n.Nodes.Count;
-            int synCount = n.SynapseCount();
-            if (synCount > observedMaxSynapses) observedMaxSynapses = synCount;
-            if (n.Inputs.Count > observedMaxNetIn) observedMaxNetIn = n.Inputs.Count;
-            if (n.Outputs.Count > observedMaxNetOut) observedMaxNetOut = n.Outputs.Count;
-            foreach (Node node in n.Nodes)
-            {
-                if (node.Outputs.Count > observedMaxOutputsPerNode) observedMaxOutputsPerNode = node.Outputs.Count;
-                if (node is Neuron neuron && neuron.Inputs.Count > observedMaxInputsPerNode)
-                    observedMaxInputsPerNode = neuron.Inputs.Count;
-            }
+            if (node.Outputs.Count > observedMaxOutputsPerNode) observedMaxOutputsPerNode = node.Outputs.Count;
+            if (node is Neuron neuron && neuron.Inputs.Count > observedMaxInputsPerNode)
+                observedMaxInputsPerNode = neuron.Inputs.Count;
         }
 
         int observedMaxTcIn = 0;

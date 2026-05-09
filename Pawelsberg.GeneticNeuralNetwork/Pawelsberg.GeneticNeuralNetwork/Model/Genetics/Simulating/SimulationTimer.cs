@@ -17,7 +17,9 @@ public class SimulationTimer
     {
         lock (_callbackLock)
         {
-            _timer.Dispose();
+            // No-op when the timer was never started (or already paused) — `pause` is
+            // commonly typed after a GPU-only session where the CPU timer never ran.
+            _timer?.Dispose();
             _timer = null;
         }
     }

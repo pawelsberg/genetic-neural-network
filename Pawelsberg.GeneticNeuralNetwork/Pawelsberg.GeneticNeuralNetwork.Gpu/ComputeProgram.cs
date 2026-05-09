@@ -6,6 +6,11 @@ public sealed class ComputeProgram : IDisposable
 {
     public int Handle { get; private set; }
 
+    // Cache uniform locations: glGetUniformLocation does a string lookup against the
+    // program's introspection table. Hot loops (StepGeneration runs many times per second)
+    // were calling it once per dispatch, which adds measurable driver-thread CPU.
+    private readonly Dictionary<string, int> _uniformLocationCache = new Dictionary<string, int>();
+
     public ComputeProgram(string source, string debugName)
     {
         int shader = GL.CreateShader(ShaderType.ComputeShader);
@@ -45,7 +50,11 @@ public sealed class ComputeProgram : IDisposable
 
     public int GetUniformLocation(string name)
     {
-        return GL.GetUniformLocation(Handle, name);
+        if (_uniformLocationCache.TryGetValue(name, out int cached))
+            return cached;
+        int location = GL.GetUniformLocation(Handle, name);
+        _uniformLocationCache[name] = location;
+        return location;
     }
 
     public void Dispose()

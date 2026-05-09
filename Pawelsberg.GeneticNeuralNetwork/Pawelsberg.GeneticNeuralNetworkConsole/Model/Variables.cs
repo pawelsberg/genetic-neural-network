@@ -19,6 +19,8 @@ public static class Variables
         // the core lib that doesn't reference the GPU project). Changing this triggers the
         // standard reload-on-set path so the next gpu* command picks up the new size.
         new Variable { Name = "maxGpuSpecimens", Getter = (_) => GpuSimulationProvider.MaxGpuSpecimens, Setter = (_, val) => GpuSimulationProvider.MaxGpuSpecimens = (int)val, Parse = ParseInt },
+        // Trade-off knob: higher = better GPU saturation but slower Pause/Ctrl+C drain.
+        new Variable { Name = "maxGpuStepsInFlight", Getter = (_) => GpuSimulationProvider.MaxGpuStepsInFlight, Setter = (_, val) => GpuSimulationProvider.MaxGpuStepsInFlight = (int)val, Parse = ParseInt },
         new Variable { Name = "delayTimeMs", Getter = (sim) => sim.SimulationTimer.DelayTimeMs, Setter = (sim, val) => sim.SimulationTimer.DelayTimeMs = (int)val, Parse = ParseInt },
         new Variable { Name = "generationMultiplier", Getter = (sim) => sim.GenerationMultiplier, Setter = (sim, val) => sim.GenerationMultiplier = (int)val, Parse = ParseInt },
         new Variable { Name = "parentQueuer", Getter = (sim) => sim.ParentQueuerType, Setter = (sim, val) => sim.ParentQueuerType = (ParentQueuerType)val, Parse = ParseParentQueuerType },

@@ -44,8 +44,8 @@ public sealed class GpuRunner : IDisposable
     public string DeviceInfo => _context!.GetDeviceInfo();
     public GpuLayout Layout => _layout;
 
-    public GpuRunner(IList<Network> seeds, TestCaseList testCaseList, GpuLayout layout)
-        : this(seeds, testCaseList, layout, externalContext: null) { }
+    public GpuRunner(Network seed, TestCaseList testCaseList, GpuLayout layout)
+        : this(seed, testCaseList, layout, externalContext: null) { }
 
     /// <summary>
     /// <paramref name="externalContext"/>: pass an already-created GlContext that is current
@@ -54,10 +54,10 @@ public sealed class GpuRunner : IDisposable
     /// constructor create a context bound to the calling thread (synchronous --gpurun path).
     /// The runner only disposes the context if it created it.
     /// </summary>
-    public GpuRunner(IList<Network> seeds, TestCaseList testCaseList, GpuLayout layout, GlContext? externalContext)
+    public GpuRunner(Network seed, TestCaseList testCaseList, GpuLayout layout, GlContext? externalContext)
     {
-        if (seeds == null || seeds.Count == 0)
-            throw new ArgumentException("At least one seed network is required", nameof(seeds));
+        if (seed == null)
+            throw new ArgumentNullException(nameof(seed));
         if (testCaseList.TestCases.Count != layout.TestCaseCount)
             throw new ArgumentException($"Layout TestCaseCount={layout.TestCaseCount} but testCaseList has {testCaseList.TestCases.Count}");
         _layout = layout;
@@ -115,10 +115,15 @@ public sealed class GpuRunner : IDisposable
             // 4 ints: [floatBitsToInt(fitness), nodeCount, synapseCount, valid]
             _bestEverScalars = new GpuBuffer("bestEverScalars", 4 * sizeof(int));
 
-            UploadInitialPopulation(seeds);
+            UploadInitialPopulation(seed);
             UploadTestCases(testCaseList);
             UploadRngStates();
             ResetBestEver();
+            // Bind the never-swapping SSBOs once. StepGeneration only rebinds slots 0-3
+            // (the genome/nextGenome pair that flips each step). This drops the per-step
+            // bind count from 38 to 4 and is one of the biggest wins for keeping the GPU
+            // saturated on light workloads where CPU enqueue is the bottleneck.
+            BindStaticBuffers();
         }
         catch
         {
@@ -127,11 +132,11 @@ public sealed class GpuRunner : IDisposable
         }
     }
 
-    private void UploadInitialPopulation(IList<Network> seeds)
+    private void UploadInitialPopulation(Network seed)
     {
-        FlatGenome[] encoded = new FlatGenome[seeds.Count];
-        for (int s = 0; s < seeds.Count; s++)
-            encoded[s] = FlatGenome.Encode(seeds[s], _layout);
+        // Single seed encoded once, replicated across the population. The GPU GA
+        // diverges them via per-specimen mutation in the first few generations.
+        FlatGenome g = FlatGenome.Encode(seed, _layout);
 
         int popSize = _layout.PopulationSize;
         int intStride = _layout.IntStridePerSpecimen;
@@ -141,7 +146,6 @@ public sealed class GpuRunner : IDisposable
         double[] allMults = new double[popSize * multStride];
         for (int s = 0; s < popSize; s++)
         {
-            FlatGenome g = encoded[s % encoded.Length];
             Array.Copy(g.Ints, 0, allInts, s * intStride, intStride);
             Array.Copy(g.Multipliers, 0, allMults, s * multStride, multStride);
         }
@@ -214,7 +218,7 @@ public sealed class GpuRunner : IDisposable
         int specGroups = (popSize + 15) / 16;
         int tcGroups = (_layout.TestCaseCount + 3) / 4;
 
-        BindBuffers(_genomeIsCurrent);
+        BindGenomeBuffers(_genomeIsCurrent);
         DispatchEvaluate(specGroups, tcGroups, popGroups, 0);
         DispatchUpdateBestEver(0);
     }
@@ -237,14 +241,17 @@ public sealed class GpuRunner : IDisposable
         int specGroups = (popSize + 15) / 16;
         int tcGroups = (_layout.TestCaseCount + 3) / 4;
 
-        BindBuffers(_genomeIsCurrent);
+        // The bind state from the previous Bootstrap/StepGeneration already has the
+        // current population at slots 0/1 — exactly what mutate reads from. Skip a
+        // redundant BindGenomeBuffers call here. After mutate writes to slots 2/3,
+        // toggle _genomeIsCurrent and rebind once so eval reads from the new current.
         _mutate!.Use();
         GL.Uniform1(_mutate!.GetUniformLocation("generationIndex"), (uint)(gen - 1));
         _mutate!.Dispatch(popGroups);
         GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
 
         _genomeIsCurrent = !_genomeIsCurrent;
-        BindBuffers(_genomeIsCurrent);
+        BindGenomeBuffers(_genomeIsCurrent);
         DispatchEvaluate(specGroups, tcGroups, popGroups, gen);
         DispatchUpdateBestEver(gen);
     }
@@ -311,7 +318,7 @@ public sealed class GpuRunner : IDisposable
         int specGroups = (popSize + 15) / 16;
         int tcGroups = (_layout.TestCaseCount + 3) / 4;
 
-        BindBuffers(true);
+        BindGenomeBuffers(true);
         DispatchEvaluate(specGroups, tcGroups, popGroups, 0);
 
         float[] diffsAll = _outputDiffs!.DownloadFloats(_layout.TestCaseCount);
@@ -362,7 +369,9 @@ public sealed class GpuRunner : IDisposable
         GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
     }
 
-    private void BindBuffers(bool genomeIsCurrent)
+    // Bind only the genome / nextGenome pair (slots 0-3) that swaps each generation.
+    // The other SSBOs (slots 4-18) are bound once via BindStaticBuffers and never change.
+    private void BindGenomeBuffers(bool genomeIsCurrent)
     {
         if (genomeIsCurrent)
         {
@@ -374,6 +383,10 @@ public sealed class GpuRunner : IDisposable
             _nextGenomeI!.Bind(0); _nextGenomeM!.Bind(1);
             _genomeI!.Bind(2); _genomeM!.Bind(3);
         }
+    }
+
+    private void BindStaticBuffers()
+    {
         _potentials!.Bind(4);
         _outputDiffs!.Bind(5);
         _perTestScores!.Bind(6);

@@ -37,6 +37,15 @@ public class ShowCommand : Command
 
     public override void Run(NetworkSimulation simulation)
     {
+        // If a GPU simulation is alive, pull its current BestEver into the CPU sim before
+        // displaying. The worker only pushes every PeriodicSyncInterval generations, so
+        // without this `show` could be stale by hundreds of generations during gpustart.
+        // SyncNow blocks for one fence drain (~MaxStepsInFlight × step time) which is
+        // negligible compared to typical interactive input cadence.
+        Pawelsberg.GeneticNeuralNetwork.Gpu.GpuSimulation? gpuSim = GpuSimulationProvider.GetExisting();
+        if (gpuSim != null && gpuSim.IsAlive)
+            gpuSim.SyncNow();
+
         if (_test || _tests)
         {
 
