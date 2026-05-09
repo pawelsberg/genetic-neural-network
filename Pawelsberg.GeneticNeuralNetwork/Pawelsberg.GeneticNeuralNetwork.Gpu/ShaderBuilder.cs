@@ -8,13 +8,26 @@ internal sealed class ShaderBuilder
 {
     public GpuLayout Layout { get; }
 
-    public const int WeightNeuronModifier = 30;
-    public const int WeightSynapseAdder = 15;
-    public const int WeightSynapseRemover = 5;
-    public const int WeightActivationFlipper = 5;
-    public const int WeightBiasAdder = 3;
-    public const int WeightNeuronAdder = 3;
-    public const int WeightNodeRemover = 5;
+    // CPU CreateNormal weights, scaled x10 so they remain integers (CPU uses 30, 15, ..., 0.1).
+    public const int WeightNeuronModifier = 300;
+    public const int WeightSynapseAdder = 150;
+    public const int WeightSynapseRemover = 50;
+    public const int WeightSynapseReconnector = 150;
+    public const int WeightActivationFlipper = 50;
+    public const int WeightBiasAdder = 30;
+    public const int WeightNeuronAdder = 30;
+    public const int WeightNodeRemover = 50;
+    public const int WeightNodeReorderer = 20;
+    public const int WeightNeuronMerger = 50;
+    public const int WeightInputRemover = 10;
+    public const int WeightOutputRemover = 10;
+    public const int WeightSynapseReducer = 10;
+    public const int WeightNeuronReducer = 10;
+    public const int WeightTransparentNeuronAdder = 10;
+    public const int WeightNothingDoer = 10;
+    public const int WeightInputAdder = 1;
+    public const int WeightOutputAdder = 1;
+    public const int WeightMultipleTimes = 200;
 
     public ShaderBuilder(GpuLayout layout)
     {
@@ -33,10 +46,21 @@ internal sealed class ShaderBuilder
             sb.AppendLine(LoadResource("mutator_neuron_modifier.glsl"));
             sb.AppendLine(LoadResource("mutator_synapse_adder.glsl"));
             sb.AppendLine(LoadResource("mutator_synapse_remover.glsl"));
+            sb.AppendLine(LoadResource("mutator_synapse_reconnector.glsl"));
             sb.AppendLine(LoadResource("mutator_activation_function_flipper.glsl"));
             sb.AppendLine(LoadResource("mutator_bias_adder.glsl"));
             sb.AppendLine(LoadResource("mutator_neuron_adder.glsl"));
             sb.AppendLine(LoadResource("mutator_node_remover.glsl"));
+            sb.AppendLine(LoadResource("mutator_node_reorderer.glsl"));
+            sb.AppendLine(LoadResource("mutator_neuron_merger.glsl"));
+            sb.AppendLine(LoadResource("mutator_input_adder.glsl"));
+            sb.AppendLine(LoadResource("mutator_input_remover.glsl"));
+            sb.AppendLine(LoadResource("mutator_output_adder.glsl"));
+            sb.AppendLine(LoadResource("mutator_output_remover.glsl"));
+            sb.AppendLine(LoadResource("mutator_synapse_reducer.glsl"));
+            sb.AppendLine(LoadResource("mutator_neuron_reducer.glsl"));
+            sb.AppendLine(LoadResource("mutator_transparent_neuron_adder.glsl"));
+            sb.AppendLine(LoadResource("mutator_nothing_doer.glsl"));
         }
         sb.AppendLine(LoadResource(mainCompResourceName));
         return sb.ToString();
@@ -93,19 +117,34 @@ internal sealed class ShaderBuilder
         sb.AppendLine($"#define QUALITY_FOR_MULTIPLIER_SUM_EQ_ONE {GpuConstants.QualityForMultiplierSumEqOne.ToString("R", CultureInfo.InvariantCulture)}");
         sb.AppendLine($"#define QUALITY_FOR_ONE_MS 25.0");
 
-        int cumNm = WeightNeuronModifier;
-        int cumSa = cumNm + WeightSynapseAdder;
-        int cumSr = cumSa + WeightSynapseRemover;
-        int cumAf = cumSr + WeightActivationFlipper;
-        int cumBa = cumAf + WeightBiasAdder;
-        int cumNa = cumBa + WeightNeuronAdder;
-        int total = cumNa + WeightNodeRemover;
-        sb.AppendLine($"#define CUM_NEURON_MODIFIER {cumNm}");
-        sb.AppendLine($"#define CUM_SYNAPSE_ADDER {cumSa}");
-        sb.AppendLine($"#define CUM_SYNAPSE_REMOVER {cumSr}");
-        sb.AppendLine($"#define CUM_ACTIVATION_FLIPPER {cumAf}");
-        sb.AppendLine($"#define CUM_BIAS_ADDER {cumBa}");
-        sb.AppendLine($"#define CUM_NEURON_ADDER {cumNa}");
+        int baseTotal =
+            WeightNeuronModifier + WeightSynapseAdder + WeightSynapseRemover +
+            WeightSynapseReconnector + WeightActivationFlipper + WeightBiasAdder +
+            WeightNeuronAdder + WeightNodeRemover + WeightNodeReorderer +
+            WeightNeuronMerger + WeightInputRemover + WeightOutputRemover +
+            WeightSynapseReducer + WeightNeuronReducer + WeightTransparentNeuronAdder +
+            WeightNothingDoer + WeightInputAdder + WeightOutputAdder;
+        int total = baseTotal + WeightMultipleTimes;
+        sb.AppendLine($"#define WEIGHT_NEURON_MODIFIER {WeightNeuronModifier}");
+        sb.AppendLine($"#define WEIGHT_SYNAPSE_ADDER {WeightSynapseAdder}");
+        sb.AppendLine($"#define WEIGHT_SYNAPSE_REMOVER {WeightSynapseRemover}");
+        sb.AppendLine($"#define WEIGHT_SYNAPSE_RECONNECTOR {WeightSynapseReconnector}");
+        sb.AppendLine($"#define WEIGHT_ACTIVATION_FLIPPER {WeightActivationFlipper}");
+        sb.AppendLine($"#define WEIGHT_BIAS_ADDER {WeightBiasAdder}");
+        sb.AppendLine($"#define WEIGHT_NEURON_ADDER {WeightNeuronAdder}");
+        sb.AppendLine($"#define WEIGHT_NODE_REMOVER {WeightNodeRemover}");
+        sb.AppendLine($"#define WEIGHT_NODE_REORDERER {WeightNodeReorderer}");
+        sb.AppendLine($"#define WEIGHT_NEURON_MERGER {WeightNeuronMerger}");
+        sb.AppendLine($"#define WEIGHT_INPUT_REMOVER {WeightInputRemover}");
+        sb.AppendLine($"#define WEIGHT_OUTPUT_REMOVER {WeightOutputRemover}");
+        sb.AppendLine($"#define WEIGHT_SYNAPSE_REDUCER {WeightSynapseReducer}");
+        sb.AppendLine($"#define WEIGHT_NEURON_REDUCER {WeightNeuronReducer}");
+        sb.AppendLine($"#define WEIGHT_TRANSPARENT_NEURON_ADDER {WeightTransparentNeuronAdder}");
+        sb.AppendLine($"#define WEIGHT_NOTHING_DOER {WeightNothingDoer}");
+        sb.AppendLine($"#define WEIGHT_INPUT_ADDER {WeightInputAdder}");
+        sb.AppendLine($"#define WEIGHT_OUTPUT_ADDER {WeightOutputAdder}");
+        sb.AppendLine($"#define WEIGHT_MULTIPLE_TIMES {WeightMultipleTimes}");
+        sb.AppendLine($"#define BASE_MUTATOR_WEIGHT {baseTotal}");
         sb.AppendLine($"#define TOTAL_MUTATOR_WEIGHT {total}");
     }
 

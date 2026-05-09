@@ -8,7 +8,7 @@ namespace Pawelsberg.GeneticNeuralNetwork.Gpu;
 public static class GpuConstants
 {
     public const int PopulationSize = 1000;
-    public const int Generations = 1000;
+    public const int Generations = 10000;
 
     public const double GoodDifference = 0.001d;
     public const double QualityForOneDiff = 0.01d;

@@ -2,8 +2,97 @@ layout(local_size_x = 64) in;
 
 // Per-child thread:
 //   childIdx == 0       -> unmutated clone of rank-0 parent (the "best clone")
-//   childIdx >= 1       -> clone of parents[(childIdx-1)/2] then ONE weighted-random mutator.
-// Mirrors the SimpleParentQueuer + Generation.CreateNextGeneration pairing on CPU.
+//   childIdx >= 1       -> clone of parents[(childIdx-1)/2] then a weighted-random
+//                          selection from the CPU "Normal" mutator set.
+//
+// Mirrors CPU CreateNormal weights and wrappers:
+//   - RandomNumberOfTimes(mutator, 1, 3) repeats the inner mutator a uniform random
+//     number of times in [1, 3].
+//   - MultipleTimes(self, 5) re-runs the dispatcher 5 times. To stay non-recursive
+//     (GLSL forbids recursion), the inner runs use a base dispatch that excludes
+//     MultipleTimes itself - probability-equivalent to CPU's behavior modulo the
+//     small chance of nested MultipleTimes which would only deepen the search anyway.
+
+// Apply one mutator from the base set (excluding MultipleTimes). w in [0, BASE_TOTAL).
+void applyMutatorBase(uint childIdx, inout uint rng, int w) {
+    int t = w;
+    t -= WEIGHT_NEURON_MODIFIER;
+    if (t < 0) {
+        int times = rngInt(rng, 3) + 1;
+        for (int i = 0; i < times; ++i) mutateNeuronModifier(childIdx, rng);
+        return;
+    }
+    t -= WEIGHT_SYNAPSE_ADDER;
+    if (t < 0) {
+        int times = rngInt(rng, 3) + 1;
+        for (int i = 0; i < times; ++i) mutateSynapseAdder(childIdx, rng);
+        return;
+    }
+    t -= WEIGHT_SYNAPSE_REMOVER;
+    if (t < 0) {
+        int times = rngInt(rng, 3) + 1;
+        for (int i = 0; i < times; ++i) mutateSynapseRemover(childIdx, rng);
+        return;
+    }
+    t -= WEIGHT_SYNAPSE_RECONNECTOR;
+    if (t < 0) {
+        int times = rngInt(rng, 3) + 1;
+        for (int i = 0; i < times; ++i) mutateSynapseReconnector(childIdx, rng);
+        return;
+    }
+    t -= WEIGHT_ACTIVATION_FLIPPER;
+    if (t < 0) {
+        int times = rngInt(rng, 3) + 1;
+        for (int i = 0; i < times; ++i) mutateActivationFunctionFlipper(childIdx, rng);
+        return;
+    }
+    t -= WEIGHT_BIAS_ADDER;
+    if (t < 0) {
+        int times = rngInt(rng, 3) + 1;
+        for (int i = 0; i < times; ++i) mutateBiasAdder(childIdx, rng);
+        return;
+    }
+    t -= WEIGHT_NEURON_ADDER;
+    if (t < 0) {
+        int times = rngInt(rng, 3) + 1;
+        for (int i = 0; i < times; ++i) mutateNeuronAdder(childIdx, rng);
+        return;
+    }
+    t -= WEIGHT_NODE_REMOVER;
+    if (t < 0) {
+        int times = rngInt(rng, 3) + 1;
+        for (int i = 0; i < times; ++i) mutateNodeRemover(childIdx, rng);
+        return;
+    }
+    t -= WEIGHT_NODE_REORDERER;
+    if (t < 0) {
+        int times = rngInt(rng, 3) + 1;
+        for (int i = 0; i < times; ++i) mutateNodeReorderer(childIdx, rng);
+        return;
+    }
+    t -= WEIGHT_NEURON_MERGER;
+    if (t < 0) { mutateNeuronMerger(childIdx, rng); return; }
+    t -= WEIGHT_INPUT_REMOVER;
+    if (t < 0) { mutateInputRemover(childIdx, rng); return; }
+    t -= WEIGHT_OUTPUT_REMOVER;
+    if (t < 0) { mutateOutputRemover(childIdx, rng); return; }
+    t -= WEIGHT_SYNAPSE_REDUCER;
+    if (t < 0) { mutateSynapseReducer(childIdx, rng); return; }
+    t -= WEIGHT_NEURON_REDUCER;
+    if (t < 0) { mutateNeuronReducer(childIdx, rng); return; }
+    t -= WEIGHT_TRANSPARENT_NEURON_ADDER;
+    if (t < 0) {
+        int times = rngInt(rng, 2) + 1;
+        for (int i = 0; i < times; ++i) mutateTransparentNeuronAdder(childIdx, rng);
+        return;
+    }
+    t -= WEIGHT_NOTHING_DOER;
+    if (t < 0) { mutateNothingDoer(childIdx, rng); return; }
+    t -= WEIGHT_INPUT_ADDER;
+    if (t < 0) { mutateInputAdder(childIdx, rng); return; }
+    // last bucket - OutputAdder
+    mutateOutputAdder(childIdx, rng);
+}
 
 void main() {
     uint childIdx = gl_GlobalInvocationID.x;
@@ -28,14 +117,20 @@ void main() {
     uint rng = rngStates[childIdx] ^ (generationIndex * 0x9E3779B9u + childIdx * 0x85EBCA6Bu);
     rngNext(rng);
 
+    // Top-level pick across the full mutator weight, including MultipleTimes.
     int w = rngInt(rng, TOTAL_MUTATOR_WEIGHT);
-    if (w < CUM_NEURON_MODIFIER) mutateNeuronModifier(childIdx, rng);
-    else if (w < CUM_SYNAPSE_ADDER) mutateSynapseAdder(childIdx, rng);
-    else if (w < CUM_SYNAPSE_REMOVER) mutateSynapseRemover(childIdx, rng);
-    else if (w < CUM_ACTIVATION_FLIPPER) mutateActivationFunctionFlipper(childIdx, rng);
-    else if (w < CUM_BIAS_ADDER) mutateBiasAdder(childIdx, rng);
-    else if (w < CUM_NEURON_ADDER) mutateNeuronAdder(childIdx, rng);
-    else mutateNodeRemover(childIdx, rng);
+    if (w < WEIGHT_MULTIPLE_TIMES) {
+        // MultipleTimes(self, 5): run the base dispatcher 5 times.
+        for (int k = 0; k < 5; ++k) {
+            int wInner = rngInt(rng, BASE_MUTATOR_WEIGHT);
+            applyMutatorBase(childIdx, rng, wInner);
+        }
+    } else {
+        // Re-roll into the base set so probabilities of each non-MultipleTimes
+        // bucket exactly match (WEIGHT_X / TOTAL_MUTATOR_WEIGHT).
+        int wInner = rngInt(rng, BASE_MUTATOR_WEIGHT);
+        applyMutatorBase(childIdx, rng, wInner);
+    }
 
     rngStates[childIdx] = rng;
 }

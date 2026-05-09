@@ -20,9 +20,43 @@ void setNextNodeOutputSynapse(uint s, int n, int o, int v) { nextGenomeI[specOff
 double nextNodeInputMultiplier(uint s, int n, int i) { return nextGenomeM[specOffsetM(s) + n * MAX_INPUTS_PER_NODE + i]; }
 void setNextNodeInputMultiplier(uint s, int n, int i, double v) { nextGenomeM[specOffsetM(s) + n * MAX_INPUTS_PER_NODE + i] = v; }
 int nextNetworkInputSynapse(uint s, int i) { return nextGenomeI[specOffsetI(s) + OFF_NETWORK_INPUT_SYNAPSE + i]; }
+void setNextNetworkInputSynapse(uint s, int i, int v) { nextGenomeI[specOffsetI(s) + OFF_NETWORK_INPUT_SYNAPSE + i] = v; }
+void setNextNetworkInputCount(uint s, int v) { nextGenomeI[specOffsetI(s) + OFF_NETWORK_INPUT_COUNT] = v; }
 int nextNetworkOutputSynapse(uint s, int i) { return nextGenomeI[specOffsetI(s) + OFF_NETWORK_OUTPUT_SYNAPSE + i]; }
+void setNextNetworkOutputSynapse(uint s, int i, int v) { nextGenomeI[specOffsetI(s) + OFF_NETWORK_OUTPUT_SYNAPSE + i] = v; }
+void setNextNetworkOutputCount(uint s, int v) { nextGenomeI[specOffsetI(s) + OFF_NETWORK_OUTPUT_COUNT] = v; }
 int nextSynapseActive(uint s, int idx) { return nextGenomeI[specOffsetI(s) + OFF_SYNAPSE_ACTIVE + idx]; }
 void setNextSynapseActive(uint s, int idx, int v) { nextGenomeI[specOffsetI(s) + OFF_SYNAPSE_ACTIVE + idx] = v; }
+
+// Find the targetActiveIdx-th active synapse slot, or -1 if not found.
+int findNthActiveSynapse(uint s, int targetIdx) {
+    int counter = 0;
+    for (int i = 0; i < MAX_SYNAPSES; ++i) {
+        if (nextSynapseActive(s, i) != 0) {
+            if (counter == targetIdx) return i;
+            counter++;
+        }
+    }
+    return -1;
+}
+
+// Remove input #i from neuron n by shifting subsequent inputs down.
+void removeInputAt(uint s, int n, int i) {
+    int inCount = nextNodeInputCount(s, n);
+    for (int j = i; j < inCount - 1; ++j) {
+        setNextNodeInputSynapse(s, n, j, nextNodeInputSynapse(s, n, j + 1));
+        setNextNodeInputMultiplier(s, n, j, nextNodeInputMultiplier(s, n, j + 1));
+    }
+    setNextNodeInputCount(s, n, inCount - 1);
+}
+
+// Remove output #o from node n by shifting subsequent outputs down.
+void removeOutputAt(uint s, int n, int o) {
+    int outCount = nextNodeOutputCount(s, n);
+    for (int j = o; j < outCount - 1; ++j)
+        setNextNodeOutputSynapse(s, n, j, nextNodeOutputSynapse(s, n, j + 1));
+    setNextNodeOutputCount(s, n, outCount - 1);
+}
 
 void cloneParentIntoChild(uint childIdx, uint parentIdx) {
     int srcI = specOffsetI(parentIdx);
