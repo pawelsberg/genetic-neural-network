@@ -6,33 +6,35 @@ namespace Pawelsberg.GeneticNeuralNetwork.Gpu;
 
 public sealed class GpuRunner : IDisposable
 {
-    private readonly GlContext _context;
-    private readonly ComputeProgram _propagate;
-    private readonly ComputeProgram _score;
-    private readonly ComputeProgram _aggregate;
-    private readonly ComputeProgram _rank;
-    private readonly ComputeProgram _mutate;
+    private GlContext? _context;
+    private ComputeProgram? _propagate;
+    private ComputeProgram? _score;
+    private ComputeProgram? _aggregate;
+    private ComputeProgram? _rank;
+    private ComputeProgram? _mutate;
 
-    private readonly GpuBuffer _genomeI;
-    private readonly GpuBuffer _genomeM;
-    private readonly GpuBuffer _nextGenomeI;
-    private readonly GpuBuffer _nextGenomeM;
-    private readonly GpuBuffer _potentials;
-    private readonly GpuBuffer _outputDiffs;
-    private readonly GpuBuffer _perTestScores;
-    private readonly GpuBuffer _perTestAllGood;
-    private readonly GpuBuffer _fitness;
-    private readonly GpuBuffer _specRank;
-    private readonly GpuBuffer _parentByRank;
-    private readonly GpuBuffer _testInputs;
-    private readonly GpuBuffer _testOutputs;
-    private readonly GpuBuffer _testInputCount;
-    private readonly GpuBuffer _testOutputCount;
-    private readonly GpuBuffer _rngStates;
+    private GpuBuffer? _genomeI;
+    private GpuBuffer? _genomeM;
+    private GpuBuffer? _nextGenomeI;
+    private GpuBuffer? _nextGenomeM;
+    private GpuBuffer? _potentials;
+    private GpuBuffer? _outputDiffs;
+    private GpuBuffer? _perTestScores;
+    private GpuBuffer? _perTestAllGood;
+    private GpuBuffer? _fitness;
+    private GpuBuffer? _specRank;
+    private GpuBuffer? _parentByRank;
+    private GpuBuffer? _testInputs;
+    private GpuBuffer? _testOutputs;
+    private GpuBuffer? _testInputCount;
+    private GpuBuffer? _testOutputCount;
+    private GpuBuffer? _rngStates;
+
+    private bool _disposed;
 
     private readonly GpuLayout _layout;
 
-    public string DeviceInfo => _context.GetDeviceInfo();
+    public string DeviceInfo => _context!.GetDeviceInfo();
     public GpuLayout Layout => _layout;
 
     public GpuRunner(IList<Network> seeds, TestCaseList testCaseList, GpuLayout layout)
@@ -43,41 +45,53 @@ public sealed class GpuRunner : IDisposable
             throw new ArgumentException($"Layout TestCaseCount={layout.TestCaseCount} but testCaseList has {testCaseList.TestCases.Count}");
         _layout = layout;
 
-        _context = new GlContext();
+        // If any allocation/compile fails partway through, release whatever was already
+        // created (GL context, programs, buffers) before propagating the exception. The
+        // caller never gets a reference back, so without this any partial state would leak
+        // until process exit.
+        try
+        {
+            _context = new GlContext();
 
-        ShaderBuilder builder = new ShaderBuilder(layout);
-        _propagate = new ComputeProgram(builder.BuildKernel("propagate.comp", false), "propagate");
-        _score = new ComputeProgram(builder.BuildKernel("score_per_test_case.comp", false), "score");
-        _aggregate = new ComputeProgram(builder.BuildKernel("aggregate_fitness.comp", false), "aggregate");
-        _rank = new ComputeProgram(builder.BuildKernel("rank.comp", false), "rank");
-        _mutate = new ComputeProgram(builder.BuildKernel("mutate.comp", true), "mutate");
+            ShaderBuilder builder = new ShaderBuilder(layout);
+            _propagate = new ComputeProgram(builder.BuildKernel("propagate.comp", false), "propagate");
+            _score = new ComputeProgram(builder.BuildKernel("score_per_test_case.comp", false), "score");
+            _aggregate = new ComputeProgram(builder.BuildKernel("aggregate_fitness.comp", false), "aggregate");
+            _rank = new ComputeProgram(builder.BuildKernel("rank.comp", false), "rank");
+            _mutate = new ComputeProgram(builder.BuildKernel("mutate.comp", true), "mutate");
 
-        int popSize = layout.PopulationSize;
-        int genomeIBytes = popSize * layout.IntStridePerSpecimen * sizeof(int);
-        int genomeMBytes = popSize * layout.MultiplierStridePerSpecimen * sizeof(double);
-        _genomeI = new GpuBuffer("genomeI", genomeIBytes);
-        _genomeM = new GpuBuffer("genomeM", genomeMBytes);
-        _nextGenomeI = new GpuBuffer("nextGenomeI", genomeIBytes);
-        _nextGenomeM = new GpuBuffer("nextGenomeM", genomeMBytes);
+            int popSize = layout.PopulationSize;
+            int genomeIBytes = popSize * layout.IntStridePerSpecimen * sizeof(int);
+            int genomeMBytes = popSize * layout.MultiplierStridePerSpecimen * sizeof(double);
+            _genomeI = new GpuBuffer("genomeI", genomeIBytes);
+            _genomeM = new GpuBuffer("genomeM", genomeMBytes);
+            _nextGenomeI = new GpuBuffer("nextGenomeI", genomeIBytes);
+            _nextGenomeM = new GpuBuffer("nextGenomeM", genomeMBytes);
 
-        _potentials = new GpuBuffer("potentials", popSize * layout.TestCaseCount * layout.MaxSynapses * sizeof(double));
-        _outputDiffs = new GpuBuffer("outputDiffs", popSize * layout.TestCaseCount * sizeof(float));
-        _perTestScores = new GpuBuffer("perTestScores", popSize * layout.TestCaseCount * sizeof(float));
-        _perTestAllGood = new GpuBuffer("perTestAllGood", popSize * layout.TestCaseCount * sizeof(int));
+            _potentials = new GpuBuffer("potentials", popSize * layout.TestCaseCount * layout.MaxSynapses * sizeof(double));
+            _outputDiffs = new GpuBuffer("outputDiffs", popSize * layout.TestCaseCount * sizeof(float));
+            _perTestScores = new GpuBuffer("perTestScores", popSize * layout.TestCaseCount * sizeof(float));
+            _perTestAllGood = new GpuBuffer("perTestAllGood", popSize * layout.TestCaseCount * sizeof(int));
 
-        _fitness = new GpuBuffer("fitness", popSize * sizeof(float));
-        _specRank = new GpuBuffer("specRank", popSize * sizeof(int));
-        _parentByRank = new GpuBuffer("parentByRank", popSize * sizeof(int));
+            _fitness = new GpuBuffer("fitness", popSize * sizeof(float));
+            _specRank = new GpuBuffer("specRank", popSize * sizeof(int));
+            _parentByRank = new GpuBuffer("parentByRank", popSize * sizeof(int));
 
-        _testInputs = new GpuBuffer("testInputs", layout.TestCaseCount * layout.MaxTestCaseInputs * sizeof(float));
-        _testOutputs = new GpuBuffer("testOutputs", layout.TestCaseCount * layout.MaxTestCaseOutputs * sizeof(float));
-        _testInputCount = new GpuBuffer("testInputCount", layout.TestCaseCount * sizeof(int));
-        _testOutputCount = new GpuBuffer("testOutputCount", layout.TestCaseCount * sizeof(int));
-        _rngStates = new GpuBuffer("rngStates", popSize * sizeof(uint));
+            _testInputs = new GpuBuffer("testInputs", layout.TestCaseCount * layout.MaxTestCaseInputs * sizeof(float));
+            _testOutputs = new GpuBuffer("testOutputs", layout.TestCaseCount * layout.MaxTestCaseOutputs * sizeof(float));
+            _testInputCount = new GpuBuffer("testInputCount", layout.TestCaseCount * sizeof(int));
+            _testOutputCount = new GpuBuffer("testOutputCount", layout.TestCaseCount * sizeof(int));
+            _rngStates = new GpuBuffer("rngStates", popSize * sizeof(uint));
 
-        UploadInitialPopulation(seeds);
-        UploadTestCases(testCaseList);
-        UploadRngStates();
+            UploadInitialPopulation(seeds);
+            UploadTestCases(testCaseList);
+            UploadRngStates();
+        }
+        catch
+        {
+            DisposeInternal();
+            throw;
+        }
     }
 
     private void UploadInitialPopulation(IList<Network> seeds)
@@ -98,8 +112,8 @@ public sealed class GpuRunner : IDisposable
             Array.Copy(g.Ints, 0, allInts, s * intStride, intStride);
             Array.Copy(g.Multipliers, 0, allMults, s * multStride, multStride);
         }
-        _genomeI.UploadInts(allInts);
-        _genomeM.UploadDoubles(allMults);
+        _genomeI!.UploadInts(allInts);
+        _genomeM!.UploadDoubles(allMults);
     }
 
     private void UploadTestCases(TestCaseList testCaseList)
@@ -121,10 +135,10 @@ public sealed class GpuRunner : IDisposable
             for (int i = 0; i < tc.Outputs.Count; i++)
                 outputs[t * maxOut + i] = (float)tc.Outputs[i];
         }
-        _testInputs.UploadFloats(inputs);
-        _testOutputs.UploadFloats(outputs);
-        _testInputCount.UploadInts(inputCounts);
-        _testOutputCount.UploadInts(outputCounts);
+        _testInputs!.UploadFloats(inputs);
+        _testOutputs!.UploadFloats(outputs);
+        _testInputCount!.UploadInts(inputCounts);
+        _testOutputCount!.UploadInts(outputCounts);
     }
 
     private void UploadRngStates()
@@ -138,11 +152,12 @@ public sealed class GpuRunner : IDisposable
             if (v == 0u) v = 0x12345678u;
             seeds[s] = unchecked((int)v);
         }
-        _rngStates.UploadInts(seeds);
+        _rngStates!.UploadInts(seeds);
     }
 
     public Network Run(int generations, int progressInterval = 0, Action<int, float>? onProgress = null)
     {
+        ThrowIfDisposed();
         bool genomeIsCurrent = true;
         int popSize = _layout.PopulationSize;
         int popGroups = (popSize + 63) / 64;
@@ -157,14 +172,14 @@ public sealed class GpuRunner : IDisposable
             if (onProgress != null && progressInterval > 0 &&
                 (gen == 0 || (gen + 1) % progressInterval == 0))
             {
-                int bestSpec = _parentByRank.DownloadInts(1)[0];
-                float[] fits = _fitness.DownloadFloats(_layout.PopulationSize);
+                int bestSpec = _parentByRank!.DownloadInts(1)[0];
+                float[] fits = _fitness!.DownloadFloats(_layout.PopulationSize);
                 onProgress(gen + 1, fits[bestSpec]);
             }
 
-            _mutate.Use();
-            GL.Uniform1(_mutate.GetUniformLocation("generationIndex"), (uint)gen);
-            _mutate.Dispatch(popGroups);
+            _mutate!.Use();
+            GL.Uniform1(_mutate!.GetUniformLocation("generationIndex"), (uint)gen);
+            _mutate!.Dispatch(popGroups);
             GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
 
             genomeIsCurrent = !genomeIsCurrent;
@@ -173,10 +188,10 @@ public sealed class GpuRunner : IDisposable
         BindBuffers(genomeIsCurrent);
         DispatchEvaluate(specGroups, tcGroups, popGroups, generations);
 
-        int bestSpecimen = _parentByRank.DownloadInts(1)[0];
+        int bestSpecimen = _parentByRank!.DownloadInts(1)[0];
 
-        GpuBuffer currentI = genomeIsCurrent ? _genomeI : _nextGenomeI;
-        GpuBuffer currentM = genomeIsCurrent ? _genomeM : _nextGenomeM;
+        GpuBuffer currentI = genomeIsCurrent ? _genomeI! : _nextGenomeI!;
+        GpuBuffer currentM = genomeIsCurrent ? _genomeM! : _nextGenomeM!;
         int[] allInts = currentI.DownloadInts(_layout.PopulationSize * _layout.IntStridePerSpecimen);
         double[] allMults = currentM.DownloadDoubles(_layout.PopulationSize * _layout.MultiplierStridePerSpecimen);
 
@@ -190,8 +205,9 @@ public sealed class GpuRunner : IDisposable
 
     public float ReadBestFitness()
     {
-        float[] fits = _fitness.DownloadFloats(_layout.PopulationSize);
-        int[] pbr = _parentByRank.DownloadInts(1);
+        ThrowIfDisposed();
+        float[] fits = _fitness!.DownloadFloats(_layout.PopulationSize);
+        int[] pbr = _parentByRank!.DownloadInts(1);
         return fits[pbr[0]];
     }
 
@@ -202,6 +218,7 @@ public sealed class GpuRunner : IDisposable
     /// </summary>
     public GpuEvaluation Evaluate(Network network)
     {
+        ThrowIfDisposed();
         FlatGenome g = FlatGenome.Encode(network, _layout);
         int popSize = _layout.PopulationSize;
         int intStride = _layout.IntStridePerSpecimen;
@@ -211,8 +228,8 @@ public sealed class GpuRunner : IDisposable
         double[] allMults = new double[popSize * multStride];
         Array.Copy(g.Ints, 0, allInts, 0, intStride);
         Array.Copy(g.Multipliers, 0, allMults, 0, multStride);
-        _genomeI.UploadInts(allInts);
-        _genomeM.UploadDoubles(allMults);
+        _genomeI!.UploadInts(allInts);
+        _genomeM!.UploadDoubles(allMults);
 
         int popGroups = (popSize + 63) / 64;
         int specGroups = (popSize + 15) / 16;
@@ -221,10 +238,10 @@ public sealed class GpuRunner : IDisposable
         BindBuffers(true);
         DispatchEvaluate(specGroups, tcGroups, popGroups, 0);
 
-        float[] diffsAll = _outputDiffs.DownloadFloats(_layout.TestCaseCount);
-        float[] scoresAll = _perTestScores.DownloadFloats(_layout.TestCaseCount);
-        int[] allGoodAll = _perTestAllGood.DownloadInts(_layout.TestCaseCount);
-        float[] fitsAll = _fitness.DownloadFloats(1);
+        float[] diffsAll = _outputDiffs!.DownloadFloats(_layout.TestCaseCount);
+        float[] scoresAll = _perTestScores!.DownloadFloats(_layout.TestCaseCount);
+        int[] allGoodAll = _perTestAllGood!.DownloadInts(_layout.TestCaseCount);
+        float[] fitsAll = _fitness!.DownloadFloats(1);
 
         bool[] good = new bool[_layout.TestCaseCount];
         for (int t = 0; t < _layout.TestCaseCount; t++) good[t] = allGoodAll[t] != 0;
@@ -240,24 +257,24 @@ public sealed class GpuRunner : IDisposable
 
     private void DispatchEvaluate(int specGroups, int tcGroups, int popGroups, int gen)
     {
-        _propagate.Use();
-        GL.Uniform1(_propagate.GetUniformLocation("generationIndex"), (uint)gen);
-        _propagate.Dispatch(specGroups, tcGroups);
+        _propagate!.Use();
+        GL.Uniform1(_propagate!.GetUniformLocation("generationIndex"), (uint)gen);
+        _propagate!.Dispatch(specGroups, tcGroups);
         GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
 
-        _score.Use();
-        GL.Uniform1(_score.GetUniformLocation("generationIndex"), (uint)gen);
-        _score.Dispatch(specGroups, tcGroups);
+        _score!.Use();
+        GL.Uniform1(_score!.GetUniformLocation("generationIndex"), (uint)gen);
+        _score!.Dispatch(specGroups, tcGroups);
         GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
 
-        _aggregate.Use();
-        GL.Uniform1(_aggregate.GetUniformLocation("generationIndex"), (uint)gen);
-        _aggregate.Dispatch(popGroups);
+        _aggregate!.Use();
+        GL.Uniform1(_aggregate!.GetUniformLocation("generationIndex"), (uint)gen);
+        _aggregate!.Dispatch(popGroups);
         GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
 
-        _rank.Use();
-        GL.Uniform1(_rank.GetUniformLocation("generationIndex"), (uint)gen);
-        _rank.Dispatch(popGroups);
+        _rank!.Use();
+        GL.Uniform1(_rank!.GetUniformLocation("generationIndex"), (uint)gen);
+        _rank!.Dispatch(popGroups);
         GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
     }
 
@@ -265,51 +282,68 @@ public sealed class GpuRunner : IDisposable
     {
         if (genomeIsCurrent)
         {
-            _genomeI.Bind(0); _genomeM.Bind(1);
-            _nextGenomeI.Bind(2); _nextGenomeM.Bind(3);
+            _genomeI!.Bind(0); _genomeM!.Bind(1);
+            _nextGenomeI!.Bind(2); _nextGenomeM!.Bind(3);
         }
         else
         {
-            _nextGenomeI.Bind(0); _nextGenomeM.Bind(1);
-            _genomeI.Bind(2); _genomeM.Bind(3);
+            _nextGenomeI!.Bind(0); _nextGenomeM!.Bind(1);
+            _genomeI!.Bind(2); _genomeM!.Bind(3);
         }
-        _potentials.Bind(4);
-        _outputDiffs.Bind(5);
-        _perTestScores.Bind(6);
-        _perTestAllGood.Bind(7);
-        _fitness.Bind(8);
-        _specRank.Bind(9);
-        _parentByRank.Bind(10);
-        _testInputs.Bind(11);
-        _testOutputs.Bind(12);
-        _rngStates.Bind(13);
-        _testInputCount.Bind(14);
-        _testOutputCount.Bind(15);
+        _potentials!.Bind(4);
+        _outputDiffs!.Bind(5);
+        _perTestScores!.Bind(6);
+        _perTestAllGood!.Bind(7);
+        _fitness!.Bind(8);
+        _specRank!.Bind(9);
+        _parentByRank!.Bind(10);
+        _testInputs!.Bind(11);
+        _testOutputs!.Bind(12);
+        _rngStates!.Bind(13);
+        _testInputCount!.Bind(14);
+        _testOutputCount!.Bind(15);
+    }
+
+    private void ThrowIfDisposed()
+    {
+        if (_disposed)
+            throw new ObjectDisposedException(nameof(GpuRunner));
     }
 
     public void Dispose()
     {
-        _propagate.Dispose();
-        _score.Dispose();
-        _aggregate.Dispose();
-        _rank.Dispose();
-        _mutate.Dispose();
-        _genomeI.Dispose();
-        _genomeM.Dispose();
-        _nextGenomeI.Dispose();
-        _nextGenomeM.Dispose();
-        _potentials.Dispose();
-        _outputDiffs.Dispose();
-        _perTestScores.Dispose();
-        _perTestAllGood.Dispose();
-        _fitness.Dispose();
-        _specRank.Dispose();
-        _parentByRank.Dispose();
-        _testInputs.Dispose();
-        _testOutputs.Dispose();
-        _testInputCount.Dispose();
-        _testOutputCount.Dispose();
-        _rngStates.Dispose();
-        _context.Dispose();
+        if (_disposed) return;
+        DisposeInternal();
+        _disposed = true;
+    }
+
+    // Releases any resources that have been successfully created. Used both by
+    // Dispose() and by the constructor's catch block to clean up partial state on
+    // a mid-construction throw. Each field is independently nullable, so order does
+    // not matter and previously-disposed (or never-allocated) slots are skipped.
+    private void DisposeInternal()
+    {
+        _propagate?.Dispose(); _propagate = null;
+        _score?.Dispose(); _score = null;
+        _aggregate?.Dispose(); _aggregate = null;
+        _rank?.Dispose(); _rank = null;
+        _mutate?.Dispose(); _mutate = null;
+        _genomeI?.Dispose(); _genomeI = null;
+        _genomeM?.Dispose(); _genomeM = null;
+        _nextGenomeI?.Dispose(); _nextGenomeI = null;
+        _nextGenomeM?.Dispose(); _nextGenomeM = null;
+        _potentials?.Dispose(); _potentials = null;
+        _outputDiffs?.Dispose(); _outputDiffs = null;
+        _perTestScores?.Dispose(); _perTestScores = null;
+        _perTestAllGood?.Dispose(); _perTestAllGood = null;
+        _fitness?.Dispose(); _fitness = null;
+        _specRank?.Dispose(); _specRank = null;
+        _parentByRank?.Dispose(); _parentByRank = null;
+        _testInputs?.Dispose(); _testInputs = null;
+        _testOutputs?.Dispose(); _testOutputs = null;
+        _testInputCount?.Dispose(); _testInputCount = null;
+        _testOutputCount?.Dispose(); _testOutputCount = null;
+        _rngStates?.Dispose(); _rngStates = null;
+        _context?.Dispose(); _context = null;
     }
 }

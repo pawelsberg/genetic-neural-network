@@ -4,7 +4,7 @@ namespace Pawelsberg.GeneticNeuralNetwork.Gpu;
 
 public sealed class ComputeProgram : IDisposable
 {
-    public int Handle { get; }
+    public int Handle { get; private set; }
 
     public ComputeProgram(string source, string debugName)
     {
@@ -50,7 +50,9 @@ public sealed class ComputeProgram : IDisposable
 
     public void Dispose()
     {
+        if (Handle == 0) return;
         GL.DeleteProgram(Handle);
+        Handle = 0;
     }
 
     private static string NumberedSource(string source)

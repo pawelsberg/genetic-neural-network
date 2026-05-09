@@ -4,7 +4,7 @@ namespace Pawelsberg.GeneticNeuralNetwork.Gpu;
 
 public sealed class GpuBuffer : IDisposable
 {
-    public int Handle { get; }
+    public int Handle { get; private set; }
     public int SizeBytes { get; }
     public string Name { get; }
 
@@ -73,6 +73,8 @@ public sealed class GpuBuffer : IDisposable
 
     public void Dispose()
     {
+        if (Handle == 0) return;
         GL.DeleteBuffer(Handle);
+        Handle = 0;
     }
 }
