@@ -38,6 +38,10 @@ public sealed class GpuRunner : IDisposable
     private bool _bootstrapped;
     private bool _genomeIsCurrent = true;
     private bool _ownsContext;
+    // Mixed into the per-specimen RNG seed so two GpuRunners over the same Network seed
+    // take different mutation paths. Used by gpurunparallel to give each island a
+    // distinct evolutionary trajectory.
+    private readonly int _rngSalt;
 
     private readonly GpuLayout _layout;
 
@@ -53,14 +57,18 @@ public sealed class GpuRunner : IDisposable
     /// thread builds the context and the worker MakeCurrents it). Pass null to let the
     /// constructor create a context bound to the calling thread (synchronous --gpurun path).
     /// The runner only disposes the context if it created it.
+    /// <paramref name="rngSalt"/>: per-specimen RNG seed salt. Different values produce
+    /// different mutation sequences from the same starting Network — used to diverge
+    /// island runs in gpurunparallel. 0 means "no salt" (default behaviour).
     /// </summary>
-    public GpuRunner(Network seed, TestCaseList testCaseList, GpuLayout layout, GlContext? externalContext)
+    public GpuRunner(Network seed, TestCaseList testCaseList, GpuLayout layout, GlContext? externalContext, int rngSalt = 0)
     {
         if (seed == null)
             throw new ArgumentNullException(nameof(seed));
         if (testCaseList.TestCases.Count != layout.TestCaseCount)
             throw new ArgumentException($"Layout TestCaseCount={layout.TestCaseCount} but testCaseList has {testCaseList.TestCases.Count}");
         _layout = layout;
+        _rngSalt = rngSalt;
 
         // If any allocation/compile fails partway through, release whatever was already
         // created (GL context, programs, buffers) before propagating the exception. The
@@ -189,12 +197,14 @@ public sealed class GpuRunner : IDisposable
     private void UploadRngStates()
     {
         int popSize = _layout.PopulationSize;
+        uint salt = unchecked((uint)_rngSalt) * 0x85EBCA77u;
         int[] seeds = new int[popSize];
         for (int s = 0; s < popSize; s++)
         {
             uint v = (uint)(s + 1) * 0x9E3779B9u;
             v ^= 0xDEADBEEFu;
-            if (v == 0u) v = 0x12345678u;
+            v ^= salt;
+            if (v == 0u) v = 0x12345678u + salt;
             seeds[s] = unchecked((int)v);
         }
         _rngStates!.UploadInts(seeds);

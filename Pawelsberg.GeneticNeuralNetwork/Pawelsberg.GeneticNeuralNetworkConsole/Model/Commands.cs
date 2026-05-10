@@ -30,7 +30,8 @@ public static class Commands
         { TopCommand.Name, () => new TopCommand() },
         { GpuRunCommand.Name, () => new GpuRunCommand() },
         { GpuStartCommand.Name, () => new GpuStartCommand() },
-        { GpuPauseCommand.Name, () => new GpuPauseCommand() }
+        { GpuPauseCommand.Name, () => new GpuPauseCommand() },
+        { GpuRunParallelCommand.Name, () => new GpuRunParallelCommand() }
     };
 
     public static IEnumerable<string> Names => NameCommands.Keys;

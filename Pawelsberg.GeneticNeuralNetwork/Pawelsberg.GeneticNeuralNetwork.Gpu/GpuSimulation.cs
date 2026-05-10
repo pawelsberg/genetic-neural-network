@@ -18,6 +18,7 @@ public sealed class GpuSimulation : IDisposable
     // into its own population in a few generations anyway.
     private readonly Network _seed;
     private readonly TestCaseList _testCaseList;
+    private readonly int _rngSalt;
     private readonly GpuLayout _layout;
     private readonly GlContext _glContext;
 
@@ -54,11 +55,12 @@ public sealed class GpuSimulation : IDisposable
     /// constructor creates the GlContext (binds it to the main thread) and immediately
     /// releases it so the worker thread can MakeCurrent on itself when EnsureStarted runs.
     /// </summary>
-    public GpuSimulation(Network seed, TestCaseList testCaseList, GpuLayout layout)
+    public GpuSimulation(Network seed, TestCaseList testCaseList, GpuLayout layout, int rngSalt = 0)
     {
         _seed = seed;
         _testCaseList = testCaseList;
         _layout = layout;
+        _rngSalt = rngSalt;
         _glContext = new GlContext();
         _glContext.ReleaseCurrent();
     }
@@ -258,7 +260,7 @@ public sealed class GpuSimulation : IDisposable
         {
             // Take ownership of the context (main thread released it after construction).
             _glContext.MakeCurrent();
-            runner = new GpuRunner(_seed, _testCaseList, _layout, _glContext);
+            runner = new GpuRunner(_seed, _testCaseList, _layout, _glContext, _rngSalt);
             lock (_lock) _deviceInfo = runner.DeviceInfo;
             runner.Bootstrap();
             lock (_lock) _bestEverFitness = runner.ReadBestFitness();

@@ -81,6 +81,23 @@ class Program
             return;
         }
 
+        // Smoke-test for gpurunparallel: load tcl, run N islands x G generations.
+        // Usage: --gpurunparallel <tcl> [generations] [islands]
+        if (args.Length > 0 && args[0] == "--gpurunparallel")
+        {
+            new InitCommand().Run(simulation);
+            new LoadAllCommand().Run(simulation);
+            if (args.Length > 1)
+                simulation.TestCaseList = TestCaseLists.LoadTestCaseList(args[1]);
+            string gensArg = args.Length > 2 ? args[2] : "200";
+            string islandsArg = args.Length > 3 ? args[3] : "4";
+
+            GpuRunParallelCommand cmd = new GpuRunParallelCommand();
+            cmd.LoadParameters(new CodedText($"{gensArg} {islandsArg}"));
+            cmd.Run(simulation);
+            return;
+        }
+
         // Apples-to-apples comparison: bypass GpuSimulation (no worker thread, no
         // fence pacing, no locks) and run GpuRunner.Run synchronously on main thread.
         // This matches the original --gpurun behaviour; lets us see whether the worker
