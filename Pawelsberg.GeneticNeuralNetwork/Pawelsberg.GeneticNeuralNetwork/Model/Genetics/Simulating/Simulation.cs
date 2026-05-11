@@ -224,6 +224,37 @@ public class Simulation<TSpecimen> where TSpecimen : ISpecimen
         }
     }
 
+    /// <summary>
+    /// Synchronous variant of <see cref="Replace"/>: drops any queued additions,
+    /// clears the current generation, and sets BestEver to the given specimen
+    /// before returning. Use when a downstream consumer reads BestEver before any
+    /// tick can run — e.g. a GPU rebuild that seeds from BestEver. Plain Replace
+    /// only marks the next tick to do this, which is too late for that case.
+    /// </summary>
+    public void ReplaceImmediate(TSpecimen spec)
+    {
+        QualityMeter<TSpecimen> meter;
+        lock (_parametersLock)
+        {
+            _specsToAdd.Clear();
+            _generation.Specimens.Clear();
+            _generation.Specimens.Add(spec);
+            _clearSpecs = false;
+            _reevaluateBest = false;
+            BestEver = spec;
+            meter = _generationMeter;
+        }
+
+        double quality = meter != null
+            ? meter.MeasureQualityRecursive(spec, null).Quality
+            : -1d;
+
+        lock (_parametersLock)
+        {
+            BestEverQuality = quality;
+        }
+    }
+
     private void SimulationTimer_Ticked(object sender, EventArgs e)
     {
         QualityMeter<TSpecimen> generationMeter;

@@ -15,6 +15,7 @@ public static class Commands
         { SaveCommand.Name, () => new SaveCommand() },
         { LoadCommand.Name, () => new LoadCommand() },
         { CreateCommand.Name, () => new CreateCommand() },
+        { CreateClearDummyCommand.Name, () => new CreateClearDummyCommand() },
         { LoadAllCommand.Name, () => new LoadAllCommand() },
         { LoadClearCommand.Name, () => new LoadClearCommand() },
         { LoadTestCaseListCommand.Name, () => new LoadTestCaseListCommand() },
