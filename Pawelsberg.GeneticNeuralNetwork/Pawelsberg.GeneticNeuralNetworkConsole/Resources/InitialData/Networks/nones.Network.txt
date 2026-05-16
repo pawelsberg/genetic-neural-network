@@ -1,0 +1,8 @@
+Input 0 * 1.0000000000000 -> Neuron(L) 1
+Bias 0 * 1.0000000000000 -> Neuron(L) 2
+Neuron(L) 2 * 1.0000000000000 -> Neuron(L) 2
+Neuron(L) 1 * 1.0000000000000 -> Neuron(L) 3
+Neuron(L) 2 * -1.0000000000000 -> Neuron(L) 3
+Bias 0 * 1.0000000000000 -> Neuron(L) 3
+Neuron(L) 3 * 1.0000000000000 -> Neuron(S) 4
+Neuron(S) 4 -> Output 0
