@@ -1,0 +1,19 @@
+{
+ "generatedUtc": "2026-05-17T02:17:15Z",
+ "entries": [
+  {
+   "testCases": "and",
+   "file": "and.json",
+   "networks": [
+    "and"
+   ]
+  },
+  {
+   "testCases": "mul3",
+   "file": "mul3.json",
+   "networks": [
+    "mul_uni"
+   ]
+  }
+ ]
+}

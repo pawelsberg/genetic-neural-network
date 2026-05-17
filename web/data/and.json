@@ -1,0 +1,364 @@
+{
+ "testCases": "and",
+ "networks": [
+  {
+   "network": "and",
+   "propagations": 2,
+   "solves": true,
+   "comment": "Logical AND",
+   "networkText": "Input 0 * 1.0000000000000 -\u003e Neuron(S) 0\r\nInput 1 * 1.0000000000000 -\u003e Neuron(S) 0\r\nInput 2 * 1.0000000000000 -\u003e Neuron(S) 0\r\nNeuron(S) 0 * -2.0000000000000 -\u003e Neuron(S) 0\r\nNeuron(S) 0 -\u003e Output 0\r\n",
+   "nodes": [
+    {
+     "index": 0,
+     "type": "Neuron",
+     "activation": "S"
+    }
+   ],
+   "synapses": [
+    {
+     "index": 0,
+     "role": "input",
+     "inputIndex": 0,
+     "outputIndex": null,
+     "from": null,
+     "to": 0,
+     "multiplier": 1
+    },
+    {
+     "index": 1,
+     "role": "input",
+     "inputIndex": 1,
+     "outputIndex": null,
+     "from": null,
+     "to": 0,
+     "multiplier": 1
+    },
+    {
+     "index": 2,
+     "role": "input",
+     "inputIndex": 2,
+     "outputIndex": null,
+     "from": null,
+     "to": 0,
+     "multiplier": 1
+    },
+    {
+     "index": 3,
+     "role": "output",
+     "inputIndex": null,
+     "outputIndex": 0,
+     "from": 0,
+     "to": null,
+     "multiplier": null
+    },
+    {
+     "index": 4,
+     "role": "inner",
+     "inputIndex": null,
+     "outputIndex": null,
+     "from": 0,
+     "to": 0,
+     "multiplier": -2
+    }
+   ],
+   "testCaseResults": [
+    {
+     "inputs": [
+      0,
+      0,
+      0
+     ],
+     "expected": [
+      0
+     ],
+     "actual": [
+      0
+     ],
+     "pass": true,
+     "snapshots": [
+      [
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ]
+    },
+    {
+     "inputs": [
+      0,
+      0,
+      1
+     ],
+     "expected": [
+      0
+     ],
+     "actual": [
+      0
+     ],
+     "pass": true,
+     "snapshots": [
+      [
+       0,
+       0,
+       1,
+       0,
+       0
+      ],
+      [
+       0,
+       0,
+       1,
+       1,
+       1
+      ],
+      [
+       0,
+       0,
+       1,
+       0,
+       0
+      ]
+     ]
+    },
+    {
+     "inputs": [
+      0,
+      1,
+      0
+     ],
+     "expected": [
+      0
+     ],
+     "actual": [
+      0
+     ],
+     "pass": true,
+     "snapshots": [
+      [
+       0,
+       1,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       1,
+       0,
+       1,
+       1
+      ],
+      [
+       0,
+       1,
+       0,
+       0,
+       0
+      ]
+     ]
+    },
+    {
+     "inputs": [
+      0,
+      1,
+      1
+     ],
+     "expected": [
+      0
+     ],
+     "actual": [
+      0
+     ],
+     "pass": true,
+     "snapshots": [
+      [
+       0,
+       1,
+       1,
+       0,
+       0
+      ],
+      [
+       0,
+       1,
+       1,
+       1,
+       1
+      ],
+      [
+       0,
+       1,
+       1,
+       0,
+       0
+      ]
+     ]
+    },
+    {
+     "inputs": [
+      1,
+      0,
+      0
+     ],
+     "expected": [
+      0
+     ],
+     "actual": [
+      0
+     ],
+     "pass": true,
+     "snapshots": [
+      [
+       1,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       1,
+       0,
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       0,
+       0,
+       0,
+       0
+      ]
+     ]
+    },
+    {
+     "inputs": [
+      1,
+      0,
+      1
+     ],
+     "expected": [
+      0
+     ],
+     "actual": [
+      0
+     ],
+     "pass": true,
+     "snapshots": [
+      [
+       1,
+       0,
+       1,
+       0,
+       0
+      ],
+      [
+       1,
+       0,
+       1,
+       1,
+       1
+      ],
+      [
+       1,
+       0,
+       1,
+       0,
+       0
+      ]
+     ]
+    },
+    {
+     "inputs": [
+      1,
+      1,
+      0
+     ],
+     "expected": [
+      0
+     ],
+     "actual": [
+      0
+     ],
+     "pass": true,
+     "snapshots": [
+      [
+       1,
+       1,
+       0,
+       0,
+       0
+      ],
+      [
+       1,
+       1,
+       0,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       0,
+       0,
+       0
+      ]
+     ]
+    },
+    {
+     "inputs": [
+      1,
+      1,
+      1
+     ],
+     "expected": [
+      1
+     ],
+     "actual": [
+      1
+     ],
+     "pass": true,
+     "snapshots": [
+      [
+       1,
+       1,
+       1,
+       0,
+       0
+      ],
+      [
+       1,
+       1,
+       1,
+       1,
+       1
+      ],
+      [
+       1,
+       1,
+       1,
+       1,
+       1
+      ]
+     ]
+    }
+   ]
+  }
+ ]
+}

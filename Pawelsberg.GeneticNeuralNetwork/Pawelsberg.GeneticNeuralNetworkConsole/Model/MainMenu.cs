@@ -7,6 +7,7 @@ public class MainMenu
 {
     private NetworkSimulation _simulation;
     private CommandInput _commandInput;
+    private readonly bool _inputRedirected = Console.IsInputRedirected;
 
     public MainMenu(NetworkSimulation simulation)
     {
@@ -20,7 +21,9 @@ public class MainMenu
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.Write(">");
-            string inputText = _commandInput.ReadLine();
+            // When stdin is piped (e.g. the web-export generator), Console.ReadKey throws,
+            // so fall back to plain line reading without completion/history.
+            string inputText = _inputRedirected ? Console.In.ReadLine() : _commandInput.ReadLine();
             if (inputText == null)
                 break;
             Console.ResetColor();
